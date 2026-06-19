@@ -253,7 +253,8 @@ async def debug_client():
     cert = tls.get("client_cert_path", "")
     key = tls.get("client_key_path", "")
     return {
-        "ssl_ctx": str(bae_client.ssl_ctx),
+        "verify": str(bae_client._verify),
+        "client_cert": str(bae_client._client_cert),
         "ssl_verify_config": tls.get("ssl_verify"),
         "ca_cert_path": ca,
         "ca_cert_exists": Path(ca).exists() if ca else False,
@@ -264,7 +265,6 @@ async def debug_client():
         "socks5_enabled": net.get("socks5_enabled", False),
         "socks5_proxy": net.get("socks5_proxy", ""),
         "timeout": net.get("timeout_seconds", 30),
-        "httpx_client_verify": str(bae_client._client._transport),
         "environment": bae_client.env,
         "token_configured": bool(bae_client.auth_cfg.get("username") and bae_client.auth_cfg.get("password")),
     }

@@ -1,5 +1,4 @@
 import httpx
-import ssl
 import json
 import logging
 import os
@@ -23,10 +22,11 @@ def load_config() -> dict:
 class TokenManager:
     """Handles Keycloak OAuth2 token lifecycle."""
 
-    def __init__(self, auth_cfg: dict, env_cfg: dict, ssl_ctx, proxy: str = ""):
+    def __init__(self, auth_cfg: dict, env_cfg: dict, verify, client_cert, proxy: str = ""):
         self.auth_cfg = auth_cfg
         self.env_cfg = env_cfg
-        self.ssl_ctx = ssl_ctx
+        self.verify = verify
+        self.client_cert = client_cert
         self.proxy = proxy
         self.access_token: str = ""
         self.id_token: str = ""
@@ -59,8 +59,7 @@ class TokenManager:
             "scope": self.auth_cfg.get("scope", "openid"),
         }
 
-        verify = self.ssl_ctx if self.ssl_ctx else False
-        with httpx.Client(timeout=15, verify=verify) as client:
+        with httpx.Client(timeout=15, verify=self.verify, cert=self.client_cert) as client:
             r = client.post(url, data=data)
             api_logs.append({
                 "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -107,58 +106,46 @@ class BAEClient:
 
         # Token manager
         self.token_mgr = TokenManager(
-            self.auth_cfg, self.env, self.ssl_ctx,
+            self.auth_cfg, self.env, self._verify, self._client_cert,
             self.network_cfg.get("socks5_proxy", "")
         )
 
         # HTTP client
-        # ssl_ctx is either False (no ssl config) or an ssl.SSLContext
-        verify = self.ssl_ctx if self.ssl_ctx else False
         timeout = self.network_cfg.get("timeout_seconds", 30)
 
         proxy = self.network_cfg.get("socks5_proxy", "")
         socks_enabled = self.network_cfg.get("socks5_enabled", False)
         if proxy and socks_enabled:
             import httpx_socks
-            transport = httpx_socks.AsyncProxyTransport.from_url(proxy, verify=verify)
-            self._client = httpx.AsyncClient(timeout=timeout, transport=transport)
+            transport = httpx_socks.AsyncProxyTransport.from_url(proxy, verify=self._verify)
+            self._client = httpx.AsyncClient(timeout=timeout, transport=transport, cert=self._client_cert)
         else:
-            self._client = httpx.AsyncClient(timeout=timeout, verify=verify)
+            self._client = httpx.AsyncClient(timeout=timeout, verify=self._verify, cert=self._client_cert)
 
-        logger.info(f"BAEClient loaded: ssl_ctx={type(self.ssl_ctx).__name__}, verify={verify is not False}, socks5={proxy if socks_enabled else 'DISABLED'}")
+        logger.info(f"BAEClient loaded: verify={self._verify}, cert={self._client_cert}, socks5={proxy if socks_enabled else 'DISABLED'}")
 
     def _build_ssl(self):
         ca = self.tls_cfg.get("ca_cert_path", "")
         cert = self.tls_cfg.get("client_cert_path", "")
         key = self.tls_cfg.get("client_key_path", "")
-        verify = self.tls_cfg.get("ssl_verify", False)
+        verify_cfg = self.tls_cfg.get("ssl_verify", False)
 
         has_ca = ca and Path(ca).exists()
         has_client_cert = cert and key and Path(cert).exists() and Path(key).exists()
 
-        # If no certs at all and no verify, just skip SSL
-        if not verify and not has_client_cert:
-            return False
+        # Store client cert tuple for httpx
+        self._client_cert = (cert, key) if has_client_cert else None
 
-        try:
-            if verify and has_ca:
-                ctx = ssl.create_default_context(cafile=ca)
-            elif verify:
-                ctx = ssl.create_default_context()
-            else:
-                # Don't verify server cert, but still need context for client cert
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
+        # Determine verify parameter for httpx
+        if verify_cfg and has_ca:
+            self._verify = ca  # verify against specific CA
+        elif verify_cfg:
+            self._verify = True  # verify against system CAs
+        else:
+            self._verify = False  # skip server cert verification
 
-            if has_client_cert:
-                ctx.load_cert_chain(certfile=cert, keyfile=key)
-                logger.info(f"mTLS: loaded client cert={cert}, key={key}")
-
-            return ctx
-        except Exception as e:
-            logger.warning(f"SSL setup failed: {e}")
-            return False
+        logger.info(f"SSL config: verify={self._verify}, client_cert={self._client_cert}")
+        return self._verify
 
     def reload(self):
         """Reload config and reinitialize."""
@@ -194,12 +181,13 @@ class BAEClient:
             "headers": safe_headers,
             "request_body": body,
             "status": "-",
-            "ssl_verify": str(self.ssl_ctx),
+            "ssl_verify": str(self._verify),
+            "client_cert": str(self._client_cert),
             "socks5_enabled": self.network_cfg.get("socks5_enabled", False),
             "socks5_proxy": self.network_cfg.get("socks5_proxy", "") if self.network_cfg.get("socks5_enabled") else "DISABLED",
         }
         api_logs.append(entry)
-        logger.info(f"REQUEST: {method} {url} | ssl_verify={self.ssl_ctx} | headers={safe_headers}")
+        logger.info(f"REQUEST: {method} {url} | verify={self._verify} | cert={self._client_cert}")
 
     def _log_response(self, method: str, url: str, status, req_body=None, res_body: str = "", res_headers: dict = None):
         entry = {
