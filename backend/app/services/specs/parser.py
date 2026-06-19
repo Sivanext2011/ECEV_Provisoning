@@ -159,6 +159,17 @@ def _extract_contract_specs(ed: dict) -> list:
         version = _get_active_version(cs.get("versions", []))
         if not version:
             continue
+
+        # Extract logical resource specs linked to this contract spec
+        resource_specs = []
+        for rs in version.get("logicalResourceSpecifications", []) or cs.get("logicalResourceSpecifications", []):
+            resource_specs.append({
+                "id": rs.get("id", ""),
+                "name": rs.get("name", ""),
+                "externalId": rs.get("externalId", ""),
+                "resourceType": rs.get("resourceType", ""),
+            })
+
         specs.append({
             "id": cs["id"],
             "name": cs["name"],
@@ -166,6 +177,7 @@ def _extract_contract_specs(ed: dict) -> list:
             "externalId": cs.get("externalId", ""),
             "paymentContext": cs.get("paymentContext", ""),
             "characteristics": _extract_characteristics(version.get("characteristics", [])),
+            "logicalResourceSpecifications": resource_specs,
         })
     return specs
 
@@ -198,12 +210,48 @@ def _extract_product_offerings(ed: dict) -> list:
         if not version:
             continue
 
+        # Extract resource specs from product spec
+        resource_specs = []
+        product_spec = version.get("productSpecification", {})
+        for rs in product_spec.get("logicalResourceSpecifications", []):
+            resource_specs.append({
+                "id": rs.get("id", ""),
+                "name": rs.get("name", ""),
+                "externalId": rs.get("externalId", ""),
+                "resourceType": rs.get("resourceType", ""),
+            })
+        # Also check top-level resourceSpecifications
+        for rs in version.get("logicalResourceSpecifications", []):
+            resource_specs.append({
+                "id": rs.get("id", ""),
+                "name": rs.get("name", ""),
+                "externalId": rs.get("externalId", ""),
+                "resourceType": rs.get("resourceType", ""),
+            })
+
+        # Extract product characteristics
+        product_chars = _extract_characteristics(
+            product_spec.get("characteristics", []) or version.get("characteristics", [])
+        )
+
+        # Extract bucket specs
+        bucket_specs = []
+        for bs in product_spec.get("bucketSpecifications", []) or version.get("bucketSpecifications", []):
+            bucket_specs.append({
+                "id": bs.get("id", ""),
+                "name": bs.get("name", ""),
+                "externalId": bs.get("externalId", ""),
+            })
+
         offerings.append({
             "id": po["id"],
             "name": po["name"],
             "description": po.get("description", ""),
             "externalId": po.get("externalId", ""),
             "offeringTypes": po.get("offeringTypes", []),
+            "resourceSpecifications": resource_specs,
+            "characteristics": product_chars,
+            "bucketSpecifications": bucket_specs,
         })
     return offerings
 

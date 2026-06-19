@@ -109,34 +109,61 @@ function ProvisionWizard() {
         customerBody.account[0].characteristic = baChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
       }
 
-      // Build contract body
+      // Build contract body from spec
       const contractBody: any = {
         externalId: contractExtId,
         contractSpecification: { externalId: selectedContractSpec },
         status: [{ status: 'Active' }],
-        product: [{
+      }
+
+      // Product from selected PO
+      if (selectedPO) {
+        const poProduct: any = {
           productOfferingExternalId: selectedPO,
           externalId: `${selectedPO}-${msisdn}`,
           name: selectedPO,
-        }],
+        }
+        // Add PO characteristics
+        const poCharEntries = Object.entries(formValues.contract)
+          .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
+          .map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
+        if (poCharEntries.length) {
+          poProduct.characteristic = poCharEntries
+        }
+        contractBody.product = [poProduct]
       }
-      // Only add resource if user provides resourceSpecExternalId
-      if (formValues.contract._resourceSpecMSISDN) {
-        contractBody.resource = [{
+
+      // Resources from spec-driven fields
+      const cs = specs?.contractSpecifications?.find((s: any) => s.externalId === selectedContractSpec)
+      const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
+      const resourceSpecs = cs?.logicalResourceSpecifications || po?.resourceSpecifications || []
+      const resources: any[] = []
+      for (const rs of resourceSpecs) {
+        const resKey = `_res_${rs.externalId || rs.id}`
+        const resNumber = formValues.contract[resKey]
+        if (resNumber && resNumber.trim()) {
+          resources.push({
+            externalId: `${rs.externalId || rs.id}-${resNumber}`,
+            resourceNumber: resNumber,
+            resourceSpecificationExternalId: rs.externalId || rs.id,
+          })
+        }
+      }
+      // Fallback manual resource field
+      if (resources.length === 0 && formValues.contract._resourceSpecMSISDN) {
+        resources.push({
           externalId: `LRS_msisdn-${msisdn}`,
           resourceNumber: msisdn,
           resourceSpecificationExternalId: formValues.contract._resourceSpecMSISDN,
-        }]
-      }
-      if (formValues.contract._resourceSpecIMSI && formValues.contract._imsi) {
-        if (!contractBody.resource) contractBody.resource = []
-        contractBody.resource.push({
-          externalId: `LRS_imsi-${formValues.contract._imsi}`,
-          resourceNumber: formValues.contract._imsi,
-          resourceSpecificationExternalId: formValues.contract._resourceSpecIMSI,
         })
       }
-      const contractChars = Object.entries(formValues.contract).filter(([k, v]) => v && (v as string).trim() && !k.startsWith('_'))
+      if (resources.length) {
+        contractBody.resource = resources
+      }
+
+      // Contract characteristics (exclude _prefixed internal fields)
+      const contractChars = Object.entries(formValues.contract)
+        .filter(([k, v]) => !k.startsWith('_') && v && (v as string).trim())
       if (contractChars.length) {
         contractBody.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
       }
@@ -191,7 +218,7 @@ function ProvisionWizard() {
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
             </select>
           </label>
-          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec || !selectedPO} onClick={() => setStep(1)}>Next →</button>
+          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec} onClick={() => setStep(1)}>Next →</button>
         </div>
       )}
 
@@ -234,20 +261,36 @@ function ProvisionWizard() {
 
           {(() => {
             const cs = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
+            const po = poList.find((p: any) => p.externalId === selectedPO)
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
+            // Resource specs from contract spec or product offering
+            const resourceSpecs = cs?.logicalResourceSpecifications || po?.resourceSpecifications || []
+            // Product characteristics from PO
+            const poChars = po ? getPersonalizableChars(po.characteristics || []) : []
             return (
-              <fieldset><legend>Contract</legend>
-                <label style={{ display: 'block', marginBottom: 6 }}>MSISDN Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
-                  <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_MSISDN" value={formValues.contract._resourceSpecMSISDN || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecMSISDN: e.target.value } })} />
-                </label>
-                <label style={{ display: 'block', marginBottom: 6 }}>IMSI <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
-                  <input style={{ width: '100%' }} placeholder="e.g. 24112345678" value={formValues.contract._imsi || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _imsi: e.target.value } })} />
-                </label>
-                <label style={{ display: 'block', marginBottom: 6 }}>IMSI Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
-                  <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_IMSI" value={formValues.contract._resourceSpecIMSI || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecIMSI: e.target.value } })} />
-                </label>
+              <fieldset><legend>Contract & Product</legend>
+                {resourceSpecs.length > 0 && <>
+                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (from spec):</p>
+                  {resourceSpecs.map((rs: any) => (
+                    <label key={rs.id || rs.externalId} style={{ display: 'block', marginBottom: 6 }}>
+                      {rs.name || rs.externalId || rs.id} — Resource Number
+                      <input style={{ width: '100%' }} placeholder={`Enter ${rs.name || 'resource'} number`}
+                        value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
+                        onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
+                    </label>
+                  ))}
+                </>}
+                {resourceSpecs.length === 0 && <>
+                  <label style={{ display: 'block', marginBottom: 6 }}>MSISDN Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
+                    <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_MSISDN" value={formValues.contract._resourceSpecMSISDN || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecMSISDN: e.target.value } })} />
+                  </label>
+                </>}
+                {poChars.length > 0 && <>
+                  <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Characteristics:</p>
+                  {poChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}
+                </>}
                 {chars.length > 0 && <>
-                  <hr style={{ margin: '8px 0' }} />
+                  <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Contract Characteristics:</p>
                   {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.id]: v } })} />)}
                 </>}
               </fieldset>
