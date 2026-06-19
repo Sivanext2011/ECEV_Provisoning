@@ -118,7 +118,7 @@ function ProvisionWizard() {
           resourceSpecificationExternalId: 'ext_LRS_MSISDN',
         }],
       }
-      const contractChars = Object.entries(formValues.contract).filter(([, v]) => (v as string).trim())
+      const contractChars = Object.entries(formValues.contract).filter(([, v]) => v && (v as string).trim())
       if (contractChars.length) {
         contractBody.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
       }
@@ -639,10 +639,10 @@ function CharInput({ char: c, value, onChange }: { char: any; value: string; onC
       {c.name || c.externalId} {(isMust || c.required) && <span style={{ color: 'red' }}>*</span>}
       {c.description && <span style={{ fontSize: 11, color: '#888', marginLeft: 4 }}>({c.description})</span>}
       {isSelection && possibleValues.length > 0 ? (
-        <select style={{ width: '100%' }} value={value || c.defaultValue || ''} onChange={e => onChange(e.target.value)}>
+        <select style={{ width: '100%' }} value={value} onChange={e => onChange(e.target.value)}>
           <option value="">-- Select --</option>
           {possibleValues.map((pv: any, i: number) => (
-            <option key={i} value={pv.value || ''}>{pv.name || pv.value}</option>
+            <option key={i} value={pv.value || ''}>{pv.name || pv.value}{pv.default ? ' (default)' : ''}</option>
           ))}
         </select>
       ) : (
