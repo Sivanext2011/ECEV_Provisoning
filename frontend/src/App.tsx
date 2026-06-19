@@ -122,6 +122,9 @@ function ProvisionWizard() {
           productOfferingExternalId: selectedPO,
           externalId: `${selectedPO}-${msisdn}`,
           name: selectedPO,
+          billingAccountReference: {
+            externalId: baExtId,
+          },
         }
         // Add PO characteristics
         const poCharEntries = Object.entries(formValues.contract)
