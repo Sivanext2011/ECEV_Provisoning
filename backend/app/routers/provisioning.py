@@ -340,18 +340,12 @@ async def provision_subscriber(body: dict):
             "@referredType": "Individual"
         },
         "homeTimeZone": [{"timeZone": body.get("customerHTZ", "America/Los_Angeles")}],
-        "characteristic": [
-            {"charSpecExternalId": "customerType", "value": [{"value": body.get("charCustomerType", "defaultCustomerType")}]},
-            {"charSpecExternalId": "accountType", "value": [{"value": body.get("charAccountType", "defaultAccountType")}]},
-            {"charSpecExternalId": "accountSubType", "value": [{"value": body.get("charAccountSubType", "defaultAccountSubType")}]},
-            {"charSpecExternalId": "customerID", "value": [{"value": body.get("charCustomerID", "defaultCustomerID")}]}
-        ]
+        "characteristic": []
     }
     if body.get("customerCharacteristics"):
-        extra_chars = [
+        customer_body["characteristic"] = [
             {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["customerCharacteristics"].items() if v
         ]
-        customer_body["characteristic"].extend(extra_chars)
     try:
         results["customer"] = await bae_client.call("create_customer", body=customer_body)
     except Exception as e:
