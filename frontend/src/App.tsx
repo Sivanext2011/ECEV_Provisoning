@@ -269,9 +269,11 @@ function OperationsPanel() {
   const [loading, setLoading] = useState(false)
 
   const operations: Record<string, { label: string; method: string; path: string; fields: string[]; queryParams?: string[] }> = {
-    read_party: { label: 'Read Party', method: 'GET', path: '/party', fields: ['id'], queryParams: ['id'] },
+    read_party: { label: 'Read Party (External ID)', method: 'GET', path: '/party', fields: ['externalId'], queryParams: ['externalId'] },
+    read_party_id: { label: 'Read Party (Internal ID)', method: 'GET', path: '/party', fields: ['id'], queryParams: ['id'] },
     delete_party: { label: 'Delete Party', method: 'DELETE', path: '/party/{externalId}', fields: ['externalId'] },
-    read_customer: { label: 'Read Customer', method: 'GET', path: '/customer', fields: ['id'], queryParams: ['id'] },
+    read_customer: { label: 'Read Customer (Internal ID)', method: 'GET', path: '/customer', fields: ['id'], queryParams: ['id'] },
+    read_customer_ext: { label: 'Read Customer (External ID)', method: 'GET', path: '/customer', fields: ['externalId'], queryParams: ['externalId'] },
     read_customer_msisdn: { label: 'Read Customer (MSISDN)', method: 'GET', path: '/customer', fields: ['msisdn'], queryParams: ['msisdn'] },
     delete_customer: { label: 'Delete Customer', method: 'DELETE', path: '/customer/{externalId}', fields: ['externalId'] },
     read_contract: { label: 'Read Contract', method: 'GET', path: '/contract', fields: ['customerId', 'contractId'], queryParams: ['customerId', 'contractId'] },
