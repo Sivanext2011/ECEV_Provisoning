@@ -133,15 +133,19 @@ class BAEClient:
         cert = self.tls_cfg.get("client_cert_path", "")
         key = self.tls_cfg.get("client_key_path", "")
 
-        if ca:
-            ctx = ssl.create_default_context(cafile=ca)
-        else:
-            ctx = ssl.create_default_context()
+        try:
+            if ca and Path(ca).exists():
+                ctx = ssl.create_default_context(cafile=ca)
+            else:
+                ctx = ssl.create_default_context()
 
-        if cert and key:
-            ctx.load_cert_chain(certfile=cert, keyfile=key)
+            if cert and key and Path(cert).exists() and Path(key).exists():
+                ctx.load_cert_chain(certfile=cert, keyfile=key)
 
-        return ctx
+            return ctx
+        except Exception as e:
+            logger.warning(f"SSL setup failed, disabling verify: {e}")
+            return False
 
     def reload(self):
         """Reload config and reinitialize."""
