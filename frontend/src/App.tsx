@@ -550,16 +550,57 @@ function SettingsPanel() {
 
         <fieldset>
           <legend><b>Defaults (Spec External IDs)</b></legend>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {Object.keys(config.defaults || {}).map(k => (
-              <label key={k}>{k}<input style={{ width: '100%' }} value={config.defaults?.[k] || ''} onChange={e => setConfig({ ...config, defaults: { ...config.defaults, [k]: e.target.value } })} /></label>
-            ))}
-          </div>
+          <DefaultsEditor config={config} setConfig={setConfig} />
         </fieldset>
 
         <button onClick={save} disabled={loading}>{loading ? 'Saving...' : 'Save Configuration'}</button>
         {msg && <p style={{ color: msg.startsWith('Error') ? 'red' : 'green' }}>{msg}</p>}
       </div>
+    </div>
+  )
+}
+
+function DefaultsEditor({ config, setConfig }: { config: any; setConfig: (c: any) => void }) {
+  const [specs, setSpecs] = useState<any>(null)
+
+  React.useEffect(() => {
+    fetch(`${API}/specs`).then(r => r.ok ? r.json() : null).then(setSpecs).catch(() => {})
+  }, [])
+
+  const update = (k: string, v: string) => setConfig({ ...config, defaults: { ...config.defaults, [k]: v } })
+
+  const partySpecs = specs?.partySpecifications || []
+  const custSpecs = specs?.customerSpecifications || []
+  const contractSpecs = specs?.contractSpecifications || []
+  const baSpecs = specs?.billingAccountSpecifications || []
+  const poList = specs?.productOfferings || []
+  const cmSpecs = specs?.contactMediumSpecifications || []
+
+  const SpecSelect = ({ label, field, options }: { label: string; field: string; options: any[] }) => (
+    <label>{label}
+      {options.length > 0 ? (
+        <select style={{ width: '100%' }} value={config.defaults?.[field] || ''} onChange={e => update(field, e.target.value)}>
+          <option value="">-- None --</option>
+          {options.map((s: any) => <option key={s.externalId || s.id} value={s.externalId}>{s.name || s.externalId} ({s.externalId})</option>)}
+        </select>
+      ) : (
+        <input style={{ width: '100%' }} value={config.defaults?.[field] || ''} onChange={e => update(field, e.target.value)} />
+      )}
+    </label>
+  )
+
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      {!specs && <p style={{ fontSize: 12, color: '#888' }}>No catalog loaded — showing free-text inputs. Upload BusinessConfig in Catalog tab for dropdowns.</p>}
+      <label>Partition ID<input style={{ width: '100%' }} value={config.defaults?.partitionId || ''} onChange={e => update('partitionId', e.target.value)} /></label>
+      <SpecSelect label="Party Spec" field="partySpecExternalId" options={partySpecs} />
+      <SpecSelect label="Customer Spec" field="customerSpecExternalId" options={custSpecs} />
+      <SpecSelect label="Billing Account Spec" field="billingAccountSpecExternalId" options={baSpecs} />
+      <SpecSelect label="Contract Spec" field="contractSpecExternalId" options={contractSpecs} />
+      <SpecSelect label="Base Plan Product Offering" field="basePlanProductOfferingExternalId" options={poList} />
+      <SpecSelect label="SMS Contact Medium Spec" field="SMS_contactMediumSpecExternalId" options={cmSpecs} />
+      <SpecSelect label="REST Contact Medium Spec" field="REST_contactMediumSpecExternalId" options={cmSpecs} />
+      <SpecSelect label="EMAIL Contact Medium Spec" field="EMAIL_contactMediumSpecExternalId" options={cmSpecs} />
     </div>
   )
 }
