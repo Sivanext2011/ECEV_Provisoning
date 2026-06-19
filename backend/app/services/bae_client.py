@@ -66,12 +66,13 @@ class TokenManager:
             "status": "-",
             "headers": {"Content-Type": "application/x-www-form-urlencoded"},
             "request_body": {"grant_type": "password", "username": data["username"], "client_id": data["client_id"]},
-            "ssl_verify": str(self.verify),
-            "client_cert": str(self.client_cert),
+            "ssl_verify": "False (token endpoint always skips verify)",
+            "client_cert": "None (token endpoint no client cert)",
         })
 
         try:
-            with httpx.Client(timeout=15, verify=self.verify, cert=self.client_cert) as client:
+            # Token endpoint: always verify=False, no client cert (like curl -sk)
+            with httpx.Client(timeout=15, verify=False) as client:
                 r = client.post(url, data=data)
         except Exception as e:
             import traceback
