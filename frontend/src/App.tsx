@@ -133,29 +133,19 @@ function ProvisionWizard() {
         contractBody.product = [poProduct]
       }
 
-      // Resources from spec-driven fields
-      const cs = specs?.contractSpecifications?.find((s: any) => s.externalId === selectedContractSpec)
-      const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-      const resourceSpecs = cs?.logicalResourceSpecifications || po?.resourceSpecifications || []
+      // Resources from catalog resource specs - only send those user filled in
+      const resSpecs = specs?.resourceSpecifications || []
       const resources: any[] = []
-      for (const rs of resourceSpecs) {
+      for (const rs of resSpecs) {
         const resKey = `_res_${rs.externalId || rs.id}`
         const resNumber = formValues.contract[resKey]
         if (resNumber && resNumber.trim()) {
           resources.push({
             externalId: `${rs.externalId || rs.id}-${resNumber}`,
             resourceNumber: resNumber,
-            resourceSpecificationExternalId: rs.externalId || rs.id,
+            resourceSpecificationExternalId: rs.externalId,
           })
         }
-      }
-      // Fallback manual resource field
-      if (resources.length === 0 && formValues.contract._resourceSpecMSISDN) {
-        resources.push({
-          externalId: `LRS_msisdn-${msisdn}`,
-          resourceNumber: msisdn,
-          resourceSpecificationExternalId: formValues.contract._resourceSpecMSISDN,
-        })
       }
       if (resources.length) {
         contractBody.resource = resources
@@ -263,28 +253,24 @@ function ProvisionWizard() {
             const cs = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
             const po = poList.find((p: any) => p.externalId === selectedPO)
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
-            // Resource specs from contract spec or product offering
-            const resourceSpecs = cs?.logicalResourceSpecifications || po?.resourceSpecifications || []
-            // Product characteristics from PO
             const poChars = po ? getPersonalizableChars(po.characteristics || []) : []
+            // Resource specs from catalog
+            const resSpecs = specs?.resourceSpecifications || []
+            const identificationSpecs = resSpecs.filter((rs: any) => rs.specificationType === 'IDENTIFICATION')
             return (
               <fieldset><legend>Contract & Product</legend>
-                {resourceSpecs.length > 0 && <>
-                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (from spec):</p>
-                  {resourceSpecs.map((rs: any) => (
-                    <label key={rs.id || rs.externalId} style={{ display: 'block', marginBottom: 6 }}>
-                      {rs.name || rs.externalId || rs.id} — Resource Number
-                      <input style={{ width: '100%' }} placeholder={`Enter ${rs.name || 'resource'} number`}
+                {identificationSpecs.length > 0 && <>
+                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (from catalog):</p>
+                  {identificationSpecs.map((rs: any) => (
+                    <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
+                      {rs.name} ({rs.externalId || rs.id}) — Resource Number <span style={{ fontSize: 10, color: '#999' }}>(leave blank to skip)</span>
+                      <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
                         value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
                         onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
                     </label>
                   ))}
                 </>}
-                {resourceSpecs.length === 0 && <>
-                  <label style={{ display: 'block', marginBottom: 6 }}>MSISDN Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
-                    <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_MSISDN" value={formValues.contract._resourceSpecMSISDN || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecMSISDN: e.target.value } })} />
-                  </label>
-                </>}
+                {identificationSpecs.length === 0 && <p style={{ fontSize: 11, color: '#888' }}>No resource specs in catalog. Re-upload BusinessConfig.</p>}
                 {poChars.length > 0 && <>
                   <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Characteristics:</p>
                   {poChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}

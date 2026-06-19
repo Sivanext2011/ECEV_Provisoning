@@ -41,6 +41,7 @@ def parse_business_config(file_bytes: bytes) -> dict:
         "billingAccountSpecifications": _extract_ba_specs(ed),
         "productOfferings": _extract_product_offerings(ed),
         "contactMediumSpecifications": _extract_contact_medium_specs(ed),
+        "resourceSpecifications": _extract_resource_specs(ed),
     }
 
     # Cache to disk and memory
@@ -268,5 +269,24 @@ def _extract_contact_medium_specs(ed: dict) -> list:
             "externalId": cms.get("externalId", ""),
             "contactMediumType": cms.get("contactMediumType", {}).get("contactMediumTypeId", ""),
             "characteristics": _extract_characteristics(version.get("characteristics", [])),
+        })
+    return specs
+
+
+def _extract_resource_specs(ed: dict) -> list:
+    specs = []
+    for rs in ed.get("resourceSpecifications", []):
+        # Only include LOGICAL_RESOURCE with IDENTIFICATION type (MSISDN, IMSI, etc.)
+        if rs.get("resourceType") != "LOGICAL_RESOURCE":
+            continue
+        version = _get_active_version(rs.get("versions", []))
+        specs.append({
+            "id": rs["id"],
+            "name": rs["name"],
+            "description": rs.get("description", ""),
+            "externalId": rs.get("externalId", ""),
+            "specificationType": rs.get("specificationType", ""),
+            "resourceType": rs.get("resourceType", ""),
+            "characteristics": _extract_characteristics(version.get("characteristics", [])) if version else [],
         })
     return specs
