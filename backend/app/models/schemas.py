@@ -18,8 +18,9 @@ class IndividualCreate(BaseModel):
 
 
 class CustomerCreate(BaseModel):
-    partyId: str
+    partyExternalId: str
     msisdn: str
+    customerSpecExternalId: Optional[str] = ""
 
 
 class CustomerExtIdCreate(BaseModel):

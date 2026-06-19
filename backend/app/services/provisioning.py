@@ -61,21 +61,17 @@ async def delete_party(party_id: str) -> dict:
     return await ericsson_client.request("delete_party", path_params={"partyId": party_id})
 
 
-async def create_customer(party_id: str, msisdn: str) -> dict:
+async def create_customer(party_external_id: str, msisdn: str, customer_spec_external_id: str = "") -> dict:
     defaults = _defaults()
-    now = _now_iso()
-    end = _end_date()
+    spec_id = customer_spec_external_id or defaults.get("customerSpecExternalId", "")
     body = {
-        "resource": {
-            "party": {"partyId": party_id},
-            "externalId": msisdn,
-            "statuses": [{"validFor": {"start": now}, "status": "CustomerActive"}],
-            "validFor": {"start": now, "end": end},
-            "homeTimeZones": [
-                {"timeZone": defaults.get("timezone", "Europe/Stockholm"), "validFor": {"start": now, "end": end}}
-            ],
-        }
+        "externalId": msisdn,
+        "relatedParty": [
+            {"externalId": party_external_id}
+        ],
     }
+    if spec_id:
+        body["customerSpecification"] = {"externalId": spec_id}
     return await ericsson_client.request("create_customer", body=body)
 
 
@@ -219,10 +215,11 @@ async def provision_subscriber(given_name: str, family_name: str, msisdn: str, e
     offering = _get_offering(offering_id)
 
     party_resp = await create_party(given_name, family_name, msisdn, email)
-    party_id = party_resp.get("resource", party_resp).get("partyId", party_resp.get("id", ""))
+    party_id = party_resp.get("id", party_resp.get("resource", {}).get("partyId", ""))
+    party_external_id = party_resp.get("externalId", msisdn)
 
-    customer_resp = await create_customer(party_id, msisdn)
-    customer_id = customer_resp.get("resource", customer_resp).get("customerId", customer_resp.get("id", ""))
+    customer_resp = await create_customer(party_external_id, msisdn)
+    customer_id = customer_resp.get("id", customer_resp.get("resource", {}).get("customerId", ""))
 
     # Get billing account ID from customer response
     billing_id = ""
