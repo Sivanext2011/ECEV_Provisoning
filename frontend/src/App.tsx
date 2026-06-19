@@ -89,19 +89,19 @@ function ProvisionWizard() {
           <label>Party Specification
             <select style={{ width: '100%' }} value={selectedPartySpec} onChange={e => setSelectedPartySpec(e.target.value)}>
               <option value="">-- Select --</option>
-              {partySpecs.map((s: any) => <option key={s.id} value={s.id}>{s.name} ({s.externalId})</option>)}
+              {partySpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
             </select>
           </label>
           <label>Customer Specification
             <select style={{ width: '100%' }} value={selectedCustSpec} onChange={e => setSelectedCustSpec(e.target.value)}>
               <option value="">-- Select --</option>
-              {custSpecs.map((s: any) => <option key={s.id} value={s.id}>{s.name} ({s.externalId})</option>)}
+              {custSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
             </select>
           </label>
           <label>Contract Specification
             <select style={{ width: '100%' }} value={selectedContractSpec} onChange={e => setSelectedContractSpec(e.target.value)}>
               <option value="">-- Select --</option>
-              {contractSpecs.map((s: any) => <option key={s.id} value={s.id}>{s.name} - {s.paymentContext} ({s.externalId})</option>)}
+              {contractSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} - {s.paymentContext} ({s.externalId})</option>)}
             </select>
           </label>
           <label>Product Offering
@@ -122,7 +122,7 @@ function ProvisionWizard() {
           <input placeholder="MSISDN *" value={msisdn} onChange={e => setMsisdn(e.target.value)} />
 
           {(() => {
-            const ps = partySpecs.find((s: any) => s.id === selectedPartySpec)
+            const ps = partySpecs.find((s: any) => s.externalId === selectedPartySpec)
             const chars = ps ? getPersonalizableChars(ps.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Party Characteristics</legend>
@@ -130,8 +130,8 @@ function ProvisionWizard() {
                   <label key={c.id} style={{ display: 'block', marginBottom: 6 }}>
                     {c.name} {c.required && '*'}
                     <input style={{ width: '100%' }} placeholder={c.defaultValue || ''}
-                      value={formValues.party[c.id] || ''}
-                      onChange={e => setFormValues({ ...formValues, party: { ...formValues.party, [c.id]: e.target.value } })} />
+                      value={formValues.party[c.name] || ''}
+                      onChange={e => setFormValues({ ...formValues, party: { ...formValues.party, [c.name]: e.target.value } })} />
                   </label>
                 ))}
               </fieldset>
@@ -139,7 +139,7 @@ function ProvisionWizard() {
           })()}
 
           {(() => {
-            const cs = contractSpecs.find((s: any) => s.id === selectedContractSpec)
+            const cs = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Contract Characteristics</legend>
@@ -147,8 +147,8 @@ function ProvisionWizard() {
                   <label key={c.id} style={{ display: 'block', marginBottom: 6 }}>
                     {c.name} {c.required && '*'}
                     <input style={{ width: '100%' }} placeholder={c.defaultValue || ''}
-                      value={formValues.contract[c.id] || ''}
-                      onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.id]: e.target.value } })} />
+                      value={formValues.contract[c.name] || ''}
+                      onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.name]: e.target.value } })} />
                   </label>
                 ))}
               </fieldset>
