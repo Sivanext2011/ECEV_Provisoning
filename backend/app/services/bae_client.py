@@ -132,10 +132,16 @@ class BAEClient:
         cert = self.tls_cfg.get("client_cert_path", "")
         key = self.tls_cfg.get("client_key_path", "")
 
+        # If CA specified but doesn't exist, disable verify
+        if ca and not Path(ca).exists():
+            logger.warning(f"CA cert not found at {ca}, disabling SSL verify")
+            return False
+
         try:
-            if ca and Path(ca).exists():
+            if ca:
                 ctx = ssl.create_default_context(cafile=ca)
             else:
+                # No CA specified but ssl_verify=true: use system CAs
                 ctx = ssl.create_default_context()
 
             if cert and key and Path(cert).exists() and Path(key).exists():
