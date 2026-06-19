@@ -179,24 +179,32 @@ class BAEClient:
 
     def _log_request(self, method: str, url: str, headers: dict, body=None):
         safe_headers = {k: (v[:20] + '...' if k == 'Authorization' and v else v) for k, v in headers.items()}
-        api_logs.append({
+        entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "REQUEST",
             "method": method, "url": url,
             "headers": safe_headers,
             "request_body": body,
-            "status": "-"
-        })
+            "status": "-",
+            "ssl_verify": str(self.ssl_ctx),
+            "socks5_enabled": self.network_cfg.get("socks5_enabled", False),
+            "socks5_proxy": self.network_cfg.get("socks5_proxy", "") if self.network_cfg.get("socks5_enabled") else "DISABLED",
+        }
+        api_logs.append(entry)
+        logger.info(f"REQUEST: {method} {url} | ssl_verify={self.ssl_ctx} | headers={safe_headers}")
 
-    def _log_response(self, method: str, url: str, status, req_body=None, res_body: str = ""):
-        api_logs.append({
+    def _log_response(self, method: str, url: str, status, req_body=None, res_body: str = "", res_headers: dict = None):
+        entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "RESPONSE",
             "method": method, "url": url,
             "status": status,
             "request_body": req_body,
-            "response_body": res_body[:2000]
-        })
+            "response_body": res_body[:4000],
+            "response_headers": res_headers,
+        }
+        api_logs.append(entry)
+        logger.info(f"RESPONSE: {method} {url} | status={status} | body={res_body[:200]}")
 
     async def call(self, api_key: str, params: dict = None, body: dict = None) -> dict:
         """Execute an API call by key from config."""
@@ -225,11 +233,13 @@ class BAEClient:
             else:
                 raise ValueError(f"Unsupported method: {method}")
         except Exception as e:
+            import traceback
+            err_detail = traceback.format_exc()
             err_msg = f"{type(e).__name__}: {e}"
-            self._log_response(method, url, "ERROR", body, err_msg)
+            self._log_response(method, url, "ERROR", body, f"{err_msg}\n\n{err_detail}")
             raise ConnectionError(f"{method} {url} failed: {err_msg}")
 
-        self._log_response(method, url, r.status_code, body, r.text)
+        self._log_response(method, url, r.status_code, body, r.text, dict(r.headers))
 
         # Retry once on 401
         if r.status_code == 401 and not getattr(self, '_retrying', False):
@@ -265,11 +275,13 @@ class BAEClient:
             else:
                 raise ValueError(f"Unsupported method: {method}")
         except Exception as e:
+            import traceback
+            err_detail = traceback.format_exc()
             err_msg = f"{type(e).__name__}: {e}"
-            self._log_response(method, url, "ERROR", body, err_msg)
+            self._log_response(method, url, "ERROR", body, f"{err_msg}\n\n{err_detail}")
             raise ConnectionError(f"{method} {url} failed: {err_msg}")
 
-        self._log_response(method, url, r.status_code, body, r.text)
+        self._log_response(method, url, r.status_code, body, r.text, dict(r.headers))
         r.raise_for_status()
         return r.json() if r.text else {}
 

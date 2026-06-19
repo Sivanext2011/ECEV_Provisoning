@@ -242,6 +242,34 @@ async def clear_api_logs():
     return {"status": "ok"}
 
 
+# === Debug ===
+@router.get("/debug/client")
+async def debug_client():
+    """Show current BAE client state for debugging."""
+    from pathlib import Path
+    tls = bae_client.tls_cfg
+    net = bae_client.network_cfg
+    ca = tls.get("ca_cert_path", "")
+    cert = tls.get("client_cert_path", "")
+    key = tls.get("client_key_path", "")
+    return {
+        "ssl_ctx": str(bae_client.ssl_ctx),
+        "ssl_verify_config": tls.get("ssl_verify"),
+        "ca_cert_path": ca,
+        "ca_cert_exists": Path(ca).exists() if ca else False,
+        "client_cert_path": cert,
+        "client_cert_exists": Path(cert).exists() if cert else False,
+        "client_key_path": key,
+        "client_key_exists": Path(key).exists() if key else False,
+        "socks5_enabled": net.get("socks5_enabled", False),
+        "socks5_proxy": net.get("socks5_proxy", ""),
+        "timeout": net.get("timeout_seconds", 30),
+        "httpx_client_verify": str(bae_client._client._transport),
+        "environment": bae_client.env,
+        "token_configured": bool(bae_client.auth_cfg.get("username") and bae_client.auth_cfg.get("password")),
+    }
+
+
 # === Cert Upload ===
 @router.post("/certs/upload")
 async def upload_cert(file: UploadFile = File(...), name: str = ""):

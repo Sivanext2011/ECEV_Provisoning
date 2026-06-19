@@ -398,9 +398,11 @@ function ApiLogsPanel() {
               </tr>
               {expanded === i && (
                 <tr><td colSpan={5} style={{ padding: 10, background: '#f9f9f9' }}>
-                  {l.headers && <><b>Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.headers, null, 2)}</pre></>}
+                  {l.ssl_verify && <><b>SSL Verify:</b> {l.ssl_verify} | <b>SOCKS5:</b> {l.socks5_proxy}<br/></>}
+                  {l.headers && <><b>Request Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.headers, null, 2)}</pre></>}
                   {l.request_body && <><b>Request Body:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.request_body, null, 2)}</pre></>}
-                  {l.response_body && <><b>Response:</b><pre style={{ fontSize: 11, margin: '4px 0', maxHeight: 300, overflow: 'auto' }}>{l.response_body}</pre></>}
+                  {l.response_headers && <><b>Response Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.response_headers, null, 2)}</pre></>}
+                  {l.response_body && <><b>Response Body:</b><pre style={{ fontSize: 11, margin: '4px 0', maxHeight: 300, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{l.response_body}</pre></>}
                 </td></tr>
               )}
             </React.Fragment>
