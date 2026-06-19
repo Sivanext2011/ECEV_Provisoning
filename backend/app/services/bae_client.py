@@ -112,6 +112,7 @@ class BAEClient:
         )
 
         # HTTP client
+        # ssl_ctx is either False (no ssl config) or an ssl.SSLContext
         verify = self.ssl_ctx if self.ssl_ctx else False
         timeout = self.network_cfg.get("timeout_seconds", 30)
 
@@ -124,32 +125,39 @@ class BAEClient:
         else:
             self._client = httpx.AsyncClient(timeout=timeout, verify=verify)
 
-    def _build_ssl(self):
-        if not self.tls_cfg.get("ssl_verify", False):
-            return False
+        logger.info(f"BAEClient loaded: ssl_ctx={type(self.ssl_ctx).__name__}, verify={verify is not False}, socks5={proxy if socks_enabled else 'DISABLED'}")
 
+    def _build_ssl(self):
         ca = self.tls_cfg.get("ca_cert_path", "")
         cert = self.tls_cfg.get("client_cert_path", "")
         key = self.tls_cfg.get("client_key_path", "")
+        verify = self.tls_cfg.get("ssl_verify", False)
 
-        # If CA specified but doesn't exist, disable verify
-        if ca and not Path(ca).exists():
-            logger.warning(f"CA cert not found at {ca}, disabling SSL verify")
+        has_ca = ca and Path(ca).exists()
+        has_client_cert = cert and key and Path(cert).exists() and Path(key).exists()
+
+        # If no certs at all and no verify, just skip SSL
+        if not verify and not has_client_cert:
             return False
 
         try:
-            if ca:
+            if verify and has_ca:
                 ctx = ssl.create_default_context(cafile=ca)
-            else:
-                # No CA specified but ssl_verify=true: use system CAs
+            elif verify:
                 ctx = ssl.create_default_context()
+            else:
+                # Don't verify server cert, but still need context for client cert
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
 
-            if cert and key and Path(cert).exists() and Path(key).exists():
+            if has_client_cert:
                 ctx.load_cert_chain(certfile=cert, keyfile=key)
+                logger.info(f"mTLS: loaded client cert={cert}, key={key}")
 
             return ctx
         except Exception as e:
-            logger.warning(f"SSL setup failed, disabling verify: {e}")
+            logger.warning(f"SSL setup failed: {e}")
             return False
 
     def reload(self):
