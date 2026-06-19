@@ -301,7 +301,7 @@ async def provision_subscriber(body: dict):
     }
     if body.get("partyCharacteristics"):
         party_body["characteristic"] = [
-            {"name": k, "value": v} for k, v in body["partyCharacteristics"].items() if v
+            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["partyCharacteristics"].items() if v
         ]
     try:
         results["party"] = await bae_client.call("create_party", body=party_body)
@@ -326,7 +326,13 @@ async def provision_subscriber(body: dict):
                         "billCycleSpecExternalId": body.get("billCycleSpecId", "1")
                     }
                 ],
-                "status": [{"status": "BillingAccountActive"}]
+                "status": [{"status": "BillingAccountActive"}],
+                **({
+                    "characteristic": [
+                        {"charSpecExternalId": k, "value": [{"value": v}]}
+                        for k, v in body.get("billingAccountCharacteristics", {}).items() if v
+                    ]
+                } if body.get("billingAccountCharacteristics") else {})
             }
         ],
         "engagedParty": {
@@ -342,9 +348,10 @@ async def provision_subscriber(body: dict):
         ]
     }
     if body.get("customerCharacteristics"):
-        customer_body["characteristic"] = [
-            {"name": k, "value": v} for k, v in body["customerCharacteristics"].items() if v
+        extra_chars = [
+            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["customerCharacteristics"].items() if v
         ]
+        customer_body["characteristic"].extend(extra_chars)
     try:
         results["customer"] = await bae_client.call("create_customer", body=customer_body)
     except Exception as e:
@@ -359,7 +366,7 @@ async def provision_subscriber(body: dict):
     }
     if body.get("contractCharacteristics"):
         contract_body["characteristic"] = [
-            {"name": k, "value": v} for k, v in body["contractCharacteristics"].items() if v
+            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["contractCharacteristics"].items() if v
         ]
     try:
         results["contract"] = await bae_client.call(

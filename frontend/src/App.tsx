@@ -33,7 +33,7 @@ function ProvisionWizard() {
   const [selectedBASpec, setSelectedBASpec] = useState('')
   const [selectedContractSpec, setSelectedContractSpec] = useState('')
   const [selectedPO, setSelectedPO] = useState('')
-  const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {} })
+  const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
   const [msisdn, setMsisdn] = useState('')
   const [givenName, setGivenName] = useState('')
   const [familyName, setFamilyName] = useState('')
@@ -59,7 +59,7 @@ function ProvisionWizard() {
   const poList = specs.productOfferings || []
 
   const getPersonalizableChars = (chars: any[]) =>
-    chars.filter((c: any) => c.valueRegulator === 'canBePersonalized' || c.valueRegulator === 'mustBePersonalized')
+    chars.filter((c: any) => c.valueRegulator === 'canBePersonalized' || c.valueRegulator === 'mustBePersonalized' || c.valueRegulator === 'selection')
 
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
@@ -73,6 +73,7 @@ function ProvisionWizard() {
         productOfferingId: selectedPO,
         partyCharacteristics: formValues.party,
         customerCharacteristics: formValues.customer,
+        billingAccountCharacteristics: formValues.billingAccount,
         contractCharacteristics: formValues.contract,
       }
       const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -135,14 +136,27 @@ function ProvisionWizard() {
             const chars = ps ? getPersonalizableChars(ps.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Party Characteristics</legend>
-                {chars.map((c: any) => (
-                  <label key={c.id} style={{ display: 'block', marginBottom: 6 }}>
-                    {c.name} {c.required && '*'}
-                    <input style={{ width: '100%' }} placeholder={c.defaultValue || ''}
-                      value={formValues.party[c.name] || ''}
-                      onChange={e => setFormValues({ ...formValues, party: { ...formValues.party, [c.name]: e.target.value } })} />
-                  </label>
-                ))}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.party[c.name] || formValues.party[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, party: { ...formValues.party, [c.externalId || c.name]: v } })} />)}
+              </fieldset>
+            )
+          })()}
+
+          {(() => {
+            const cs = custSpecs.find((s: any) => s.externalId === selectedCustSpec)
+            const chars = cs ? getPersonalizableChars(cs.characteristics) : []
+            return chars.length > 0 && (
+              <fieldset><legend>Customer Characteristics</legend>
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.customer[c.name] || formValues.customer[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, customer: { ...formValues.customer, [c.externalId || c.name]: v } })} />)}
+              </fieldset>
+            )
+          })()}
+
+          {(() => {
+            const bs = baSpecs.find((s: any) => s.externalId === selectedBASpec)
+            const chars = bs ? getPersonalizableChars(bs.characteristics) : []
+            return chars.length > 0 && (
+              <fieldset><legend>Billing Account Characteristics</legend>
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.billingAccount[c.name] || formValues.billingAccount[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, billingAccount: { ...formValues.billingAccount, [c.externalId || c.name]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -152,14 +166,7 @@ function ProvisionWizard() {
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Contract Characteristics</legend>
-                {chars.map((c: any) => (
-                  <label key={c.id} style={{ display: 'block', marginBottom: 6 }}>
-                    {c.name} {c.required && '*'}
-                    <input style={{ width: '100%' }} placeholder={c.defaultValue || ''}
-                      value={formValues.contract[c.name] || ''}
-                      onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.name]: e.target.value } })} />
-                  </label>
-                ))}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.name] || formValues.contract[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.name]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -566,6 +573,29 @@ function SettingsPanel() {
         {msg && <p style={{ color: msg.startsWith('Error') ? 'red' : 'green' }}>{msg}</p>}
       </div>
     </div>
+  )
+}
+
+function CharInput({ char: c, value, onChange }: { char: any; value: string; onChange: (v: string) => void }) {
+  const isMust = c.valueRegulator === 'mustBePersonalized'
+  const isSelection = c.valueRegulator === 'selection'
+  const possibleValues = c.possibleValues || []
+
+  return (
+    <label style={{ display: 'block', marginBottom: 6 }}>
+      {c.name || c.externalId} {(isMust || c.required) && <span style={{ color: 'red' }}>*</span>}
+      {c.description && <span style={{ fontSize: 11, color: '#888', marginLeft: 4 }}>({c.description})</span>}
+      {isSelection && possibleValues.length > 0 ? (
+        <select style={{ width: '100%' }} value={value || c.defaultValue || ''} onChange={e => onChange(e.target.value)}>
+          <option value="">-- Select --</option>
+          {possibleValues.map((pv: any, i: number) => (
+            <option key={i} value={pv.value || ''}>{pv.name || pv.value}</option>
+          ))}
+        </select>
+      ) : (
+        <input style={{ width: '100%' }} placeholder={c.defaultValue || (c.valueFrom && c.valueTo ? `${c.valueFrom} - ${c.valueTo}` : '')} value={value} onChange={e => onChange(e.target.value)} />
+      )}
+    </label>
   )
 }
 
