@@ -1,0 +1,215 @@
+{
+  "environment": {
+    "ROOT_BAE": "https://bss-trf.ecevns-trf-haber031.ews.gic.ericsson.se",
+    "ROOT_SEC": "https://sec-access-trf.ecevns-trf-haber031.ews.gic.ericsson.se",
+    "ROOT_CPM": "",
+    "ROOT_CPM_INTERNAL": "",
+    "ROOT_CPM_BATCH": "",
+    "ROOT_RMCA": "",
+    "SITE": ""
+  },
+  "auth": {
+    "username": "superuser",
+    "password": "Superuser@12345",
+    "client_id": "AuthorizationClient",
+    "token_endpoint": "https://sec-access-trf.ecevns-trf-haber031.ews.gic.ericsson.se/auth/realms/master/protocol/openid-connect/token",
+    "scope": "openid",
+    "grant_type": "password"
+  },
+  "tls": {
+    "ssl_verify": true,
+    "ca_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\trf.crt",
+    "client_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\ca.crt",
+    "client_key_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\ca.key"
+  },
+  "network": {
+    "socks5_proxy": "socks5://127.0.0.1:1234",
+    "timeout_seconds": 30,
+    "retry_attempts": 3
+  },
+  "apis": {
+    "create_party": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualParty"
+    },
+    "move_party": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/moveIndividualParty"
+    },
+    "get_party_by_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyEnquiry/v1/individualParty/?id={{partyId}}"
+    },
+    "get_party_by_external_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyEnquiry/v1/individualParty/?externalId={{partyExternalId}}"
+    },
+    "delete_party_by_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualParty/{{partyId}}"
+    },
+    "delete_party_by_external_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualPartyExternalId/{{partyExternalId}}"
+    },
+    "update_party": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualPartyExternalId/{{partyExternalId}}"
+    },
+    "create_customer": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customer/"
+    },
+    "update_customer": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customerExternalId/{{customerExternalId}}"
+    },
+    "get_customer_by_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerEnquiry/v1/customer/?id={{customerId}}"
+    },
+    "get_customer_by_external_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerEnquiry/v1/customer/?externalId={{customerExternalId}}"
+    },
+    "get_customer_by_msisdn": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerEnquiry/v1/customer/?communicationIdType=E.164&communicationId={{msisdn}}"
+    },
+    "delete_customer_by_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customer/{{customerId}}"
+    },
+    "delete_customer_by_external_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customerExternalId/{{customerExternalId}}"
+    },
+    "create_contract": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId"
+    },
+    "create_contract_by_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customer/{{customerId}}/contract"
+    },
+    "update_contract": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId/{{contractExternalId}}"
+    },
+    "update_contract_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customer/{{customerId}}/contract/{{contractId}}"
+    },
+    "get_contract_by_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/contract?customerId={{customerId}}&contractId={{contractId}}"
+    },
+    "get_contract_by_external_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/contract?customerExternalId={{customerExternalId}}&contractExternalId={{contractExternalId}}"
+    },
+    "get_contract_by_msisdn": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/contract?communicationId={{msisdn}}&communicationIdType=E.164"
+    },
+    "delete_contract_by_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customer/{{customerId}}/contract/{{contractId}}"
+    },
+    "delete_contract_by_external_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId/{{contractExternalId}}"
+    },
+    "delete_contract_by_msisdn": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/communication/{{msisdn}}/communicationType/E.164"
+    },
+    "replace_product": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/replaceProduct"
+    },
+    "swap_logical_resource": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfResourceManagement/v1/swapLogicalResource"
+    },
+    "balance_enquiry": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balance?customerExternalId={{customerExternalId}}&balanceType=ALL"
+    },
+    "balance_enquiry_msisdn": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balance?communicationId={{msisdn}}&communicationIdType=E.164&balanceType=ALL"
+    },
+    "balance_adjustment": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/bucketAdjustment/adjust"
+    },
+    "create_user": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/user"
+    },
+    "delete_user_by_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/user/{{userId}}"
+    },
+    "get_user_by_external_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfUserEnquiry/v1/user?externalId={{userExternalId}}"
+    },
+    "get_eligible_consumers": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/eligibleConsumerList?providerCustomerExternalId={{customerExternalId}}"
+    },
+    "get_consumer_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/consumerList?providerCommunicationId={{msisdn}}&providerCommunicationIdType=E.164&providerProductExternalId={{productExternalId}}"
+    },
+    "consumer_list_modify": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/consumerList/modify"
+    },
+    "consumer_list_terminate": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/consumerList/allEntries/terminate"
+    },
+    "recurrence_enquiry": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfRecurrenceEnquiry/v1/recurrenceInformation?communicationIdType=E.164&communicationId={{msisdn}}"
+    },
+    "create_recurrence_job": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfRecurrenceManagement/v1/recurrenceJob"
+    },
+    "spec_contract": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/contractSpecification?contractSpecificationExternalId={{specExternalId}}"
+    },
+    "spec_product": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productSpecification?productSpecificationExternalId={{specExternalId}}"
+    },
+    "spec_product_offering": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOffering?productOfferingExternalId={{specExternalId}}"
+    },
+    "spec_bucket": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/bucketSpecification?bucketSpecificationExternalId={{specExternalId}}"
+    },
+    "spec_billing_account": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingAccountSpecification?billingAccountSpecificationExternalId={{specExternalId}}"
+    }
+  },
+  "defaults": {
+    "partitionId": "1",
+    "partySpecExternalId": "",
+    "customerSpecExternalId": "",
+    "contractSpecExternalId": "",
+    "billingAccountSpecExternalId": "",
+    "basePlanProductOfferingExternalId": "",
+    "SMS_contactMediumSpecExternalId": "",
+    "REST_contactMediumSpecExternalId": "",
+    "EMAIL_contactMediumSpecExternalId": ""
+  }
+}

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.env
+config/certs/
+config/parsed_specs.json
+uvicorn.log
+*.log
+.vite/
