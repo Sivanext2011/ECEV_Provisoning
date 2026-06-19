@@ -269,19 +269,40 @@ function OperationsPanel() {
   const [loading, setLoading] = useState(false)
 
   const operations: Record<string, { label: string; method: string; path: string; fields: string[]; queryParams?: string[] }> = {
-    read_party: { label: 'Read Party (External ID)', method: 'GET', path: '/party', fields: ['externalId'], queryParams: ['externalId'] },
-    read_party_id: { label: 'Read Party (Internal ID)', method: 'GET', path: '/party', fields: ['id'], queryParams: ['id'] },
-    delete_party: { label: 'Delete Party', method: 'DELETE', path: '/party/{externalId}', fields: ['externalId'] },
-    read_customer: { label: 'Read Customer (Internal ID)', method: 'GET', path: '/customer', fields: ['id'], queryParams: ['id'] },
-    read_customer_ext: { label: 'Read Customer (External ID)', method: 'GET', path: '/customer', fields: ['externalId'], queryParams: ['externalId'] },
-    read_customer_msisdn: { label: 'Read Customer (MSISDN)', method: 'GET', path: '/customer', fields: ['msisdn'], queryParams: ['msisdn'] },
-    delete_customer: { label: 'Delete Customer', method: 'DELETE', path: '/customer/{externalId}', fields: ['externalId'] },
-    read_contract: { label: 'Read Contract', method: 'GET', path: '/contract', fields: ['customerId', 'contractId'], queryParams: ['customerId', 'contractId'] },
-    read_contract_msisdn: { label: 'Read Contract (MSISDN)', method: 'GET', path: '/contract', fields: ['msisdn'], queryParams: ['msisdn'] },
-    delete_contract_msisdn: { label: 'Delete Contract (MSISDN)', method: 'DELETE', path: '/contract', fields: ['msisdn'], queryParams: ['msisdn'] },
-    balance_enquiry: { label: 'Balance Enquiry (MSISDN)', method: 'GET', path: '/balance', fields: ['msisdn'], queryParams: ['msisdn'] },
+    // Party
+    read_party_ext: { label: 'Get Party - ExternalId', method: 'GET', path: '/party', fields: ['externalId'], queryParams: ['externalId'] },
+    read_party_id: { label: 'Get Party - Id', method: 'GET', path: '/party', fields: ['id'], queryParams: ['id'] },
+    delete_party_ext: { label: 'Delete Party - ExternalId', method: 'DELETE', path: '/party/{externalId}', fields: ['externalId'] },
+    delete_party_id: { label: 'Delete Party - Id', method: 'DELETE', path: '/party/{id}?by=id', fields: ['id'] },
+    // Customer
+    read_customer_ext: { label: 'Get Customer - ExternalId', method: 'GET', path: '/customer', fields: ['externalId'], queryParams: ['externalId'] },
+    read_customer_id: { label: 'Get Customer - Id', method: 'GET', path: '/customer', fields: ['id'], queryParams: ['id'] },
+    read_customer_msisdn: { label: 'Get Customer - MSISDN', method: 'GET', path: '/customer', fields: ['msisdn'], queryParams: ['msisdn'] },
+    delete_customer_ext: { label: 'Delete Customer - ExternalId', method: 'DELETE', path: '/customer/{externalId}', fields: ['externalId'] },
+    // Contract
+    read_contract_ext: { label: 'Get Contract - ExternalId', method: 'GET', path: '/contract', fields: ['customerExternalId', 'contractExternalId'], queryParams: ['customerExternalId', 'contractExternalId'] },
+    read_contract_id: { label: 'Get Contract - Id', method: 'GET', path: '/contract', fields: ['customerId', 'contractId'], queryParams: ['customerId', 'contractId'] },
+    read_contract_msisdn: { label: 'Get Contract - MSISDN', method: 'GET', path: '/contract', fields: ['msisdn'], queryParams: ['msisdn'] },
+    delete_contract_ext: { label: 'Delete Contract - ExternalId', method: 'DELETE', path: '/contract', fields: ['customerExternalId', 'contractExternalId'], queryParams: ['customerExternalId', 'contractExternalId'] },
+    delete_contract_msisdn: { label: 'Delete Contract - MSISDN', method: 'DELETE', path: '/contract', fields: ['msisdn'], queryParams: ['msisdn'] },
+    // Balance
+    balance_customer: { label: 'Balance Enquiry - Customer', method: 'GET', path: '/balance', fields: ['customerExternalId'], queryParams: ['customerExternalId'] },
+    balance_msisdn: { label: 'Balance Enquiry - MSISDN', method: 'GET', path: '/balance', fields: ['msisdn'], queryParams: ['msisdn'] },
     balance_adj: { label: 'Balance Adjustment', method: 'POST', path: '/balance/adjust', fields: [] },
-    recurrence: { label: 'Recurrence Enquiry', method: 'GET', path: '/recurrence', fields: ['msisdn'], queryParams: ['msisdn'] },
+    // Resource
+    swap_resource: { label: 'Swap Logical Resource (MSISDN/IMSI)', method: 'POST', path: '/resource/swap', fields: [] },
+    // Product
+    replace_product: { label: 'Replace Product', method: 'POST', path: '/product/replace', fields: [] },
+    // Sharing
+    eligible_consumers: { label: 'Get Eligible Consumers', method: 'GET', path: '/sharing/eligible-consumers', fields: ['customerExternalId'], queryParams: ['customerExternalId'] },
+    // Recurrence
+    recurrence: { label: 'Recurrence Enquiry - MSISDN', method: 'GET', path: '/recurrence', fields: ['msisdn'], queryParams: ['msisdn'] },
+    // Spec Enquiry
+    spec_contract: { label: 'Read Contract Specification', method: 'GET', path: '/spec/contract', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_product: { label: 'Read Product Specification', method: 'GET', path: '/spec/product', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_offering: { label: 'Read Product Offering', method: 'GET', path: '/spec/product_offering', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_bucket: { label: 'Read Bucket Specification', method: 'GET', path: '/spec/bucket', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_billing: { label: 'Read Billing Account Spec', method: 'GET', path: '/spec/billing_account', fields: ['externalId'], queryParams: ['externalId'] },
   }
 
   const exec = async () => {
@@ -300,7 +321,7 @@ function OperationsPanel() {
     try {
       const opts: any = { method: cfg.method, headers: { 'Content-Type': 'application/json' } }
       if (cfg.method === 'POST' || cfg.method === 'PUT') {
-        opts.body = JSON.stringify(params)
+        opts.body = body || JSON.stringify(params)
       }
       const r = await fetch(url, opts)
       const text = await r.text()
@@ -327,6 +348,10 @@ function OperationsPanel() {
         {cfg.fields.map(f => (
           <input key={f} placeholder={f} value={params[f] || ''} onChange={e => setParams({ ...params, [f]: e.target.value })} />
         ))}
+        {(cfg.method === 'POST' || cfg.method === 'PUT') && (
+          <textarea placeholder='JSON body (for POST/PUT)' rows={6} style={{ fontFamily: 'monospace', fontSize: 12 }}
+            value={body} onChange={e => setBody(e.target.value)} />
+        )}
       </div>
       <button onClick={exec} disabled={loading}>{loading ? 'Executing...' : 'Execute'}</button>
       {error && <p style={{ color: 'red', wordBreak: 'break-all' }}>{error}</p>}

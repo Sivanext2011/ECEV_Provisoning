@@ -48,8 +48,8 @@ async def update_party(external_id: str, body: dict):
 @router.delete("/party/{identifier}")
 async def delete_party(identifier: str, by: str = "externalId"):
     if by == "id":
-        return await bae_client.call("delete_party_by_id", params={"partyId": identifier})
-    return await bae_client.call("delete_party_by_external_id", params={"partyExternalId": identifier})
+        return await _safe_call("delete_party_by_id", params={"partyId": identifier})
+    return await _safe_call("delete_party_by_external_id", params={"partyExternalId": identifier})
 
 
 # === Customer ===
