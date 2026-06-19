@@ -59,7 +59,10 @@ function ProvisionWizard() {
   const poList = specs.productOfferings || []
 
   const getPersonalizableChars = (chars: any[]) =>
-    chars.filter((c: any) => c.valueRegulator === 'canBePersonalized' || c.valueRegulator === 'mustBePersonalized' || c.valueRegulator === 'selection')
+    chars.filter((c: any) => 
+      (c.valueRegulator === 'canBePersonalized' || c.valueRegulator === 'mustBePersonalized' || c.valueRegulator === 'selection')
+      && (c.externalId || '').trim()
+    )
 
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
