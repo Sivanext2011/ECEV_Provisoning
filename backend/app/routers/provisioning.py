@@ -3,6 +3,7 @@ import httpx
 from ..services.bae_client import bae_client, load_config, api_logs, CONFIG_PATH
 from ..services.specs.parser import parse_business_config, get_parsed_specs
 import json
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/v1", tags=["provisioning"])
 
@@ -293,11 +294,13 @@ async def provision_subscriber(body: dict):
     defaults = cfg.get("defaults", {})
 
     # 1. Create Party
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     party_body = {
         "externalId": body.get("partyExternalId", f"extID-party-{body.get('msisdn')}"),
         "givenName": body.get("givenName"),
         "familyName": body.get("familyName"),
         "individualSpecification": {"externalId": body.get("partySpecId", defaults.get("partySpecExternalId", ""))},
+        "status": [{"status": "PartyActive", "validFor": {"start": now_iso}}],
     }
     if body.get("partyCharacteristics"):
         party_body["characteristic"] = [
@@ -315,7 +318,7 @@ async def provision_subscriber(body: dict):
     customer_body = {
         "externalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}"),
         "customerSpecification": {"externalId": body.get("customerSpecId", defaults.get("customerSpecExternalId", ""))},
-        "status": [{"status": "CustomerActive"}],
+        "status": [{"status": "CustomerActive", "validFor": {"start": now_iso}}],
         "account": [
             {
                 "externalId": body.get("customerBAExternalId", f"extID_BA-{body.get('msisdn')}"),
