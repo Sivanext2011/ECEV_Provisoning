@@ -197,6 +197,9 @@ class BAEClient:
         }
         if token:
             h["Authorization"] = f"Bearer {token}"
+        partition_id = self.defaults.get("partitionId", "")
+        if partition_id:
+            h["ERICSSON.Partition-Id"] = partition_id
         return h
 
     def _log_request(self, method: str, url: str, headers: dict, body=None):
