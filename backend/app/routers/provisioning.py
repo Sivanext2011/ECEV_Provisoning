@@ -288,106 +288,37 @@ async def upload_cert(file: UploadFile = File(...), name: str = ""):
 # === Full Provisioning Wizard ===
 @router.post("/subscribers/provision")
 async def provision_subscriber(body: dict):
-    """Full provisioning: Create Party → Customer → Contract with base plan."""
+    """Full provisioning: Create Party → Customer → Contract.
+    Frontend builds the complete payloads based on specs.
+    Backend just orchestrates the API calls."""
     results = {}
-    cfg = load_config()
-    defaults = cfg.get("defaults", {})
 
-    # 1. Create Party
-    party_body = {
-        "externalId": body.get("partyExternalId", f"extID-party-{body.get('msisdn')}"),
-        "givenName": body.get("givenName"),
-        "familyName": body.get("familyName"),
-        "individualSpecification": {"externalId": body.get("partySpecId", defaults.get("partySpecExternalId", ""))},
-        "status": [{"status": "PartyActive"}],
-    }
-    if body.get("partyCharacteristics"):
-        party_body["characteristic"] = [
-            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["partyCharacteristics"].items() if v
-        ]
-    try:
-        results["party"] = await bae_client.call("create_party", body=party_body)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Create Party failed: {e}")
+    # 1. Create Party - frontend provides full party body
+    party_body = body.get("partyBody")
+    if party_body:
+        try:
+            results["party"] = await bae_client.call("create_party", body=party_body)
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Create Party failed: {e}")
 
-    # 2. Create Customer
-    # engagedParty references the party by externalId
-    # characteristic tells BAE the rating type (internal/external)
-    party_external_id = body.get("partyExternalId", f"extID-party-{body.get('msisdn')}")
-    customer_body = {
-        "externalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}"),
-        "customerSpecification": {"externalId": body.get("customerSpecId", defaults.get("customerSpecExternalId", ""))},
-        "status": [{"status": "CustomerActive"}],
-        "account": [
-            {
-                "externalId": body.get("customerBAExternalId", f"extID_BA-{body.get('msisdn')}"),
-                "billingAccountSpecExternalId": body.get("billingAccountSpecId") or defaults.get("billingAccountSpecExternalId") or "MISSING_BA_SPEC",
-                "status": [{"status": "BillingAccountActive"}],
-                **({
-                    "customerBillCycleSpecification": [
-                        {
-                            "externalId": body.get("customerBCSExternalId", "extID_BCS"),
-                            "billCycleSpecExternalId": body.get("billCycleSpecId")
-                        }
-                    ]
-                } if body.get("billCycleSpecId") else {}),
-                **({
-                    "characteristic": [
-                        {"charSpecExternalId": k, "value": [{"value": v}]}
-                        for k, v in body.get("billingAccountCharacteristics", {}).items() if v
-                    ]
-                } if body.get("billingAccountCharacteristics") else {})
-            }
-        ],
-        "engagedParty": {
-            "externalId": party_external_id,
-            "@referredType": body.get("engagedPartyType", "Individual")
-        },
-        **({
-            "homeTimeZone": [{"timeZone": body.get("customerHTZ")}]
-        } if body.get("customerHTZ") else {}),
-        "characteristic": []
-    }
-    if body.get("customerCharacteristics"):
-        customer_body["characteristic"] = [
-            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["customerCharacteristics"].items() if v
-        ]
-    try:
-        results["customer"] = await bae_client.call("create_customer", body=customer_body)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Create Customer failed: {e}")
+    # 2. Create Customer - frontend provides full customer body
+    customer_body = body.get("customerBody")
+    if customer_body:
+        try:
+            results["customer"] = await bae_client.call("create_customer", body=customer_body)
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Create Customer failed: {e}")
 
-    # 3. Create Contract with base plan
-    product_offering_id = body.get("productOfferingId", defaults.get("basePlanProductOfferingExternalId", ""))
-    contract_body = {
-        "externalId": body.get("contractExternalId", f"extID-contract-{body.get('msisdn')}"),
-        "contractSpecification": {"externalId": body.get("contractSpecId", defaults.get("contractSpecExternalId", ""))},
-        "status": [{"status": "Active"}],
-    }
-    if product_offering_id:
-        contract_body["product"] = [{
-            "productOfferingExternalId": product_offering_id,
-            "externalId": body.get("basePlanProductExternalId", f"{product_offering_id}-{body.get('msisdn')}"),
-            "name": product_offering_id,
-        }]
-    if body.get("msisdn"):
-        contract_body["resource"] = [{
-            "externalId": f"LRS_msisdn_extid-{body.get('msisdn')}",
-            "resourceNumber": body.get("msisdn"),
-            "resourceSpecificationExternalId": body.get("logicalResourceSpecMSISDNExternalId", defaults.get("logicalResourceSpecMSISDNExternalId", ""))
-        }]
-        if not contract_body["resource"][0]["resourceSpecificationExternalId"]:
-            del contract_body["resource"]
-    if body.get("contractCharacteristics"):
-        contract_body["characteristic"] = [
-            {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["contractCharacteristics"].items() if v
-        ]
-    try:
-        results["contract"] = await bae_client.call(
-            "create_contract", params={"customerExternalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}")}, body=contract_body
-        )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Create Contract failed: {e}")
+    # 3. Create Contract - frontend provides full contract body and customerExternalId
+    contract_body = body.get("contractBody")
+    customer_external_id = body.get("customerExternalId", "")
+    if contract_body and customer_external_id:
+        try:
+            results["contract"] = await bae_client.call(
+                "create_contract", params={"customerExternalId": customer_external_id}, body=contract_body
+            )
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Create Contract failed: {e}")
 
     return results
 

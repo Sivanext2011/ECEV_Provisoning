@@ -64,17 +64,70 @@ function ProvisionWizard() {
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
     try {
+      const partyExtId = `extID-party-${msisdn}`
+      const customerExtId = `extID-customer-${msisdn}`
+      const baExtId = `extID_BA-${msisdn}`
+      const contractExtId = `extID-contract-${msisdn}`
+
+      // Build party body
+      const partyBody: any = {
+        externalId: partyExtId,
+        givenName, familyName,
+        individualSpecification: { externalId: selectedPartySpec },
+        status: [{ status: 'PartyActive' }],
+      }
+      const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
+      if (partyChars.length) {
+        partyBody.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+      }
+
+      // Build customer body
+      const customerBody: any = {
+        externalId: customerExtId,
+        customerSpecification: { externalId: selectedCustSpec },
+        status: [{ status: 'CustomerActive' }],
+        account: [{
+          externalId: baExtId,
+          billingAccountSpecExternalId: selectedBASpec,
+          status: [{ status: 'BillingAccountActive' }],
+        }],
+        engagedParty: { externalId: partyExtId, '@referredType': 'Individual' },
+      }
+      const custChars = Object.entries(formValues.customer).filter(([, v]) => v)
+      if (custChars.length) {
+        customerBody.characteristic = custChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+      }
+      const baChars = Object.entries(formValues.billingAccount).filter(([, v]) => v)
+      if (baChars.length) {
+        customerBody.account[0].characteristic = baChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+      }
+
+      // Build contract body
+      const contractBody: any = {
+        externalId: contractExtId,
+        contractSpecification: { externalId: selectedContractSpec },
+        status: [{ status: 'Active' }],
+        product: [{
+          productOfferingExternalId: selectedPO,
+          externalId: `${selectedPO}-${msisdn}`,
+          name: selectedPO,
+        }],
+        resource: [{
+          externalId: `LRS_msisdn-${msisdn}`,
+          resourceNumber: msisdn,
+          resourceSpecificationExternalId: 'ext_LRS_MSISDN',
+        }],
+      }
+      const contractChars = Object.entries(formValues.contract).filter(([, v]) => (v as string).trim())
+      if (contractChars.length) {
+        contractBody.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+      }
+
       const payload = {
-        givenName, familyName, msisdn,
-        partySpecId: selectedPartySpec,
-        customerSpecId: selectedCustSpec,
-        billingAccountSpecId: selectedBASpec,
-        contractSpecId: selectedContractSpec,
-        productOfferingId: selectedPO,
-        partyCharacteristics: formValues.party,
-        customerCharacteristics: formValues.customer,
-        billingAccountCharacteristics: formValues.billingAccount,
-        contractCharacteristics: formValues.contract,
+        partyBody,
+        customerBody,
+        contractBody,
+        customerExternalId: customerExtId,
       }
       const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!r.ok) throw new Error((await r.json()).detail)
