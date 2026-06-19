@@ -1,16 +1,14 @@
 import httpx
 import ssl
 import json
-import re
 import logging
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 logger = logging.getLogger(__name__)
 
-import os
 CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent / "config" / "config.json"))
 
 # In-memory API call log
@@ -118,7 +116,8 @@ class BAEClient:
         timeout = self.network_cfg.get("timeout_seconds", 30)
 
         proxy = self.network_cfg.get("socks5_proxy", "")
-        if proxy:
+        socks_enabled = self.network_cfg.get("socks5_enabled", False)
+        if proxy and socks_enabled:
             import httpx_socks
             transport = httpx_socks.AsyncProxyTransport.from_url(proxy, verify=verify)
             self._client = httpx.AsyncClient(timeout=timeout, transport=transport)
@@ -172,15 +171,27 @@ class BAEClient:
             h["Authorization"] = f"Bearer {token}"
         return h
 
-    def _log(self, method: str, url: str, status, req_body=None, res_body: str = ""):
+    def _log_request(self, method: str, url: str, headers: dict, body=None):
+        safe_headers = {k: (v[:20] + '...' if k == 'Authorization' and v else v) for k, v in headers.items()}
         api_logs.append({
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "type": "REQUEST",
             "method": method, "url": url,
-            "status": status, "request_body": req_body,
-            "response_body": res_body[:1000]
+            "headers": safe_headers,
+            "request_body": body,
+            "status": "-"
         })
 
-    @retry(stop=stop_after_attempt(2), wait=wait_fixed(1), retry=retry_if_exception_type(httpx.HTTPStatusError))
+    def _log_response(self, method: str, url: str, status, req_body=None, res_body: str = ""):
+        api_logs.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "type": "RESPONSE",
+            "method": method, "url": url,
+            "status": status,
+            "request_body": req_body,
+            "response_body": res_body[:2000]
+        })
+
     async def call(self, api_key: str, params: dict = None, body: dict = None) -> dict:
         """Execute an API call by key from config."""
         api = self.apis.get(api_key)
@@ -190,6 +201,9 @@ class BAEClient:
         method = api["method"]
         url = self._resolve_url(api["url"], params)
         headers = self._headers()
+
+        # Log the request before sending
+        self._log_request(method, url, headers, body)
 
         try:
             if method == "GET":
@@ -204,29 +218,34 @@ class BAEClient:
                 r = await self._client.put(url, json=body, headers=headers)
             else:
                 raise ValueError(f"Unsupported method: {method}")
-        except httpx.ConnectError as e:
-            self._log(method, url, "CONNECT_ERROR", body, str(e))
-            raise ConnectionError(f"Cannot connect to {url}: {e}")
-        except httpx.HTTPStatusError:
-            raise
         except Exception as e:
-            self._log(method, url, "ERROR", body, str(e))
-            raise ConnectionError(f"Request failed: {e}")
+            err_msg = f"{type(e).__name__}: {e}"
+            self._log_response(method, url, "ERROR", body, err_msg)
+            raise ConnectionError(f"{method} {url} failed: {err_msg}")
 
-        self._log(method, url, r.status_code, body, r.text)
+        self._log_response(method, url, r.status_code, body, r.text)
 
-        # Auto-retry on 401
-        if r.status_code == 401:
+        # Retry once on 401
+        if r.status_code == 401 and not getattr(self, '_retrying', False):
+            self._retrying = True
             self.token_mgr.expires_at = 0
-            raise httpx.HTTPStatusError("401 Unauthorized", request=r.request, response=r)
+            try:
+                return await self.call(api_key, params=params, body=body)
+            finally:
+                self._retrying = False
 
-        r.raise_for_status()
+        if r.status_code >= 400:
+            raise httpx.HTTPStatusError(
+                f"{r.status_code}: {r.text[:500]}", request=r.request, response=r
+            )
+
         return r.json() if r.text else {}
 
     async def raw_call(self, method: str, url_template: str, params: dict = None, body: dict = None) -> dict:
         """Execute a raw API call with URL template."""
         url = self._resolve_url(url_template, params)
         headers = self._headers()
+        self._log_request(method, url, headers, body)
 
         try:
             if method == "GET":
@@ -240,10 +259,11 @@ class BAEClient:
             else:
                 raise ValueError(f"Unsupported method: {method}")
         except Exception as e:
-            self._log(method, url, "ERROR", body, str(e))
-            raise
+            err_msg = f"{type(e).__name__}: {e}"
+            self._log_response(method, url, "ERROR", body, err_msg)
+            raise ConnectionError(f"{method} {url} failed: {err_msg}")
 
-        self._log(method, url, r.status_code, body, r.text)
+        self._log_response(method, url, r.status_code, body, r.text)
         r.raise_for_status()
         return r.json() if r.text else {}
 

@@ -233,7 +233,13 @@ async def update_settings(body: dict):
 # === Logs ===
 @router.get("/logs")
 async def get_api_logs():
-    return list(reversed(api_logs[-100:]))
+    return list(reversed(api_logs[-200:]))
+
+
+@router.delete("/logs/clear")
+async def clear_api_logs():
+    api_logs.clear()
+    return {"status": "ok"}
 
 
 # === Cert Upload ===

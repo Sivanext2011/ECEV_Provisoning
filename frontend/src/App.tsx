@@ -362,6 +362,7 @@ function SearchPanel() {
 
 function ApiLogsPanel() {
   const [logs, setLogs] = useState<any[]>([])
+  const [expanded, setExpanded] = useState<number | null>(null)
 
   const load = async () => {
     const r = await fetch(`${API}/logs`)
@@ -372,12 +373,14 @@ function ApiLogsPanel() {
 
   return (
     <div>
-      <h2>API Request Logs</h2>
+      <h2>API Request/Response Logs</h2>
       <button onClick={load}>Refresh</button>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 10, fontSize: 13 }}>
+      <button onClick={() => fetch(`${API}/logs/clear`, { method: 'DELETE' }).then(load)} style={{ marginLeft: 8 }}>Clear</button>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 10, fontSize: 12 }}>
         <thead>
           <tr style={{ background: '#eee', textAlign: 'left' }}>
             <th style={{ padding: 6 }}>Time</th>
+            <th style={{ padding: 6 }}>Type</th>
             <th style={{ padding: 6 }}>Method</th>
             <th style={{ padding: 6 }}>URL</th>
             <th style={{ padding: 6 }}>Status</th>
@@ -385,12 +388,22 @@ function ApiLogsPanel() {
         </thead>
         <tbody>
           {logs.map((l, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid #ddd' }}>
-              <td style={{ padding: 6 }}>{l.timestamp}</td>
-              <td style={{ padding: 6 }}>{l.method}</td>
-              <td style={{ padding: 6, wordBreak: 'break-all' }}>{l.url}</td>
-              <td style={{ padding: 6, color: l.status >= 400 ? 'red' : 'green' }}>{l.status}</td>
-            </tr>
+            <React.Fragment key={i}>
+              <tr style={{ borderBottom: '1px solid #ddd', cursor: 'pointer', background: l.status === 'ERROR' ? '#fff0f0' : undefined }} onClick={() => setExpanded(expanded === i ? null : i)}>
+                <td style={{ padding: 6 }}>{l.timestamp?.split('T')[1]?.slice(0,8)}</td>
+                <td style={{ padding: 6 }}>{l.type || 'RESPONSE'}</td>
+                <td style={{ padding: 6 }}>{l.method}</td>
+                <td style={{ padding: 6, wordBreak: 'break-all', maxWidth: 400 }}>{l.url}</td>
+                <td style={{ padding: 6, color: l.status >= 400 || l.status === 'ERROR' ? 'red' : 'green' }}>{l.status}</td>
+              </tr>
+              {expanded === i && (
+                <tr><td colSpan={5} style={{ padding: 10, background: '#f9f9f9' }}>
+                  {l.headers && <><b>Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.headers, null, 2)}</pre></>}
+                  {l.request_body && <><b>Request Body:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.request_body, null, 2)}</pre></>}
+                  {l.response_body && <><b>Response:</b><pre style={{ fontSize: 11, margin: '4px 0', maxHeight: 300, overflow: 'auto' }}>{l.response_body}</pre></>}
+                </td></tr>
+              )}
+            </React.Fragment>
           ))}
         </tbody>
       </table>
@@ -500,9 +513,9 @@ function SettingsPanel() {
         <fieldset>
           <legend><b>Network</b></legend>
           <div style={{ display: 'grid', gap: 8 }}>
-            <label>SOCKS5 Proxy<input style={{ width: '100%' }} placeholder="socks5://127.0.0.1:1080" value={config.network?.socks5_proxy || ''} onChange={e => updateNet('socks5_proxy', e.target.value)} /></label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={config.network?.socks5_enabled || false} onChange={e => updateNet('socks5_enabled', e.target.checked)} />Enable SOCKS5 Proxy</label>
+            <label>SOCKS5 Proxy<input style={{ width: '100%' }} placeholder="socks5://127.0.0.1:1080" value={config.network?.socks5_proxy || ''} onChange={e => updateNet('socks5_proxy', e.target.value)} disabled={!config.network?.socks5_enabled} /></label>
             <label>Timeout (s)<input style={{ width: '100%' }} type="number" value={config.network?.timeout_seconds || 30} onChange={e => updateNet('timeout_seconds', Number(e.target.value))} /></label>
-            <label>Retry Attempts<input style={{ width: '100%' }} type="number" value={config.network?.retry_attempts || 3} onChange={e => updateNet('retry_attempts', Number(e.target.value))} /></label>
           </div>
         </fieldset>
 

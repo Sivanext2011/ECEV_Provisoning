@@ -25,7 +25,8 @@
   "network": {
     "socks5_proxy": "socks5://127.0.0.1:1234",
     "timeout_seconds": 30,
-    "retry_attempts": 3
+    "retry_attempts": 3,
+    "socks5_enabled": false
   },
   "apis": {
     "create_party": {
