@@ -30,6 +30,7 @@ function ProvisionWizard() {
   const [step, setStep] = useState(0)
   const [selectedPartySpec, setSelectedPartySpec] = useState('')
   const [selectedCustSpec, setSelectedCustSpec] = useState('')
+  const [selectedBASpec, setSelectedBASpec] = useState('')
   const [selectedContractSpec, setSelectedContractSpec] = useState('')
   const [selectedPO, setSelectedPO] = useState('')
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {} })
@@ -53,6 +54,7 @@ function ProvisionWizard() {
 
   const partySpecs = specs.partySpecifications || []
   const custSpecs = specs.customerSpecifications || []
+  const baSpecs = specs.billingAccountSpecifications || []
   const contractSpecs = specs.contractSpecifications || []
   const poList = specs.productOfferings || []
 
@@ -66,6 +68,7 @@ function ProvisionWizard() {
         givenName, familyName, msisdn,
         partySpecId: selectedPartySpec,
         customerSpecId: selectedCustSpec,
+        billingAccountSpecId: selectedBASpec,
         contractSpecId: selectedContractSpec,
         productOfferingId: selectedPO,
         partyCharacteristics: formValues.party,
@@ -98,6 +101,12 @@ function ProvisionWizard() {
               {custSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
             </select>
           </label>
+          <label>Billing Account Specification
+            <select style={{ width: '100%' }} value={selectedBASpec} onChange={e => setSelectedBASpec(e.target.value)}>
+              <option value="">-- Select --</option>
+              {baSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
+            </select>
+          </label>
           <label>Contract Specification
             <select style={{ width: '100%' }} value={selectedContractSpec} onChange={e => setSelectedContractSpec(e.target.value)}>
               <option value="">-- Select --</option>
@@ -110,7 +119,7 @@ function ProvisionWizard() {
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
             </select>
           </label>
-          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedContractSpec || !selectedPO} onClick={() => setStep(1)}>Next →</button>
+          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec || !selectedPO} onClick={() => setStep(1)}>Next →</button>
         </div>
       )}
 
