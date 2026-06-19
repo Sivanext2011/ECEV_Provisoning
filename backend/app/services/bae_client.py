@@ -59,17 +59,43 @@ class TokenManager:
             "scope": self.auth_cfg.get("scope", "openid"),
         }
 
-        with httpx.Client(timeout=15, verify=self.verify, cert=self.client_cert) as client:
-            r = client.post(url, data=data)
+        # Log token request
+        api_logs.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "type": "REQUEST", "method": "POST", "url": url,
+            "status": "-",
+            "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+            "request_body": {"grant_type": "password", "username": data["username"], "client_id": data["client_id"]},
+            "ssl_verify": str(self.verify),
+            "client_cert": str(self.client_cert),
+        })
+
+        try:
+            with httpx.Client(timeout=15, verify=self.verify, cert=self.client_cert) as client:
+                r = client.post(url, data=data)
+        except Exception as e:
+            import traceback
+            err = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
             api_logs.append({
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "method": "POST", "url": url,
-                "status": r.status_code, "request_body": {"grant_type": "password", "username": data["username"]},
-                "response_body": r.text[:500]
+                "type": "RESPONSE", "method": "POST", "url": url,
+                "status": "ERROR", "response_body": err,
             })
-            r.raise_for_status()
-            token_data = r.json()
+            raise ConnectionError(f"Token fetch failed: {type(e).__name__}: {e}")
 
+        # Log token response
+        api_logs.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "type": "RESPONSE", "method": "POST", "url": url,
+            "status": r.status_code,
+            "response_body": r.text[:2000],
+            "response_headers": dict(r.headers),
+        })
+
+        if r.status_code >= 400:
+            raise ConnectionError(f"Token fetch HTTP {r.status_code}: {r.text[:300]}")
+
+        token_data = r.json()
         self.access_token = token_data.get("access_token", "")
         self.id_token = token_data.get("id_token", "")
         self.expires_at = time.time() + token_data.get("expires_in", 300)
