@@ -38,6 +38,7 @@ function ProvisionWizard() {
   const [selectedContractSpec, setSelectedContractSpec] = useState('')
   const [selectedPO, setSelectedPO] = useState('')
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
+  const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: false, sharingProvider: false })
   const [msisdn, setMsisdn] = useState('')
   const [givenName, setGivenName] = useState('')
   const [familyName, setFamilyName] = useState('')
@@ -187,6 +188,21 @@ function ProvisionWizard() {
                   ))}
                 </>}
                 {selectedPO && poResourceSpecs.length === 0 && <p style={{ fontSize: 11, color: '#888' }}>No resource specs linked to this Product Offering. Re-upload BusinessConfig to refresh.</p>}
+                {selectedPO && <>
+                  <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Options:</p>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                    <input type="checkbox" checked={productOptions.baRef} onChange={e => setProductOptions({...productOptions, baRef: e.target.checked})} />
+                    billingAccountReference
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                    <input type="checkbox" checked={productOptions.baRefRecurrence} onChange={e => setProductOptions({...productOptions, baRefRecurrence: e.target.checked})} />
+                    baRefForBillCycleAlignedRecurrence
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                    <input type="checkbox" checked={productOptions.sharingProvider} onChange={e => setProductOptions({...productOptions, sharingProvider: e.target.checked})} />
+                    Include Technical Product (sharingProvider/sharingConsumer)
+                  </label>
+                </>}
                 {poChars.length > 0 && <>
                   <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Characteristics:</p>
                   {poChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}
@@ -235,16 +251,43 @@ function ProvisionWizard() {
                 status: [{ status: 'Active' }],
               }
               if (selectedPO) {
-                ctb.product = [{
+                const basePlanProduct: any = {
                   productOfferingExternalId: selectedPO,
                   externalId: `${selectedPO}-${msisdn}`,
                   name: selectedPO,
-                  billingAccountReference: { externalId: baExtId },
-                }]
+                }
+                if (productOptions.baRef) basePlanProduct.billingAccountReference = { externalId: baExtId }
+                if (productOptions.baRefRecurrence) basePlanProduct.baRefForBillCycleAlignedRecurrence = { externalId: baExtId }
                 const poCharEntries = Object.entries(formValues.contract)
                   .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
                 if (poCharEntries.length) {
-                  ctb.product[0].characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
+                  basePlanProduct.characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
+                }
+
+                if (productOptions.sharingProvider) {
+                  const techProduct = {
+                    productOfferingExternalId: 'PO-Technical',
+                    externalId: `extID_tech-${msisdn}`,
+                    name: 'Technical Product',
+                    sharingProvider: {
+                      billingAccount: [{ externalId: baExtId }],
+                      consumerList: [{
+                        externalId: `Consumer_List_${msisdn}`,
+                        consumerCustomerExternalId: customerExtId,
+                        consumerContractExternalId: contractExtId,
+                      }],
+                    },
+                    sharingConsumer: {
+                      providerCustomerExternalId: customerExtId,
+                      providerContractExternalId: contractExtId,
+                      providerProductExternalId: `extID_tech-${msisdn}`,
+                      consumerListEntryExternalId: `Consumer_List_${msisdn}`,
+                    },
+                    status: [{ status: 'ProductActive' }],
+                  }
+                  ctb.product = [techProduct, basePlanProduct]
+                } else {
+                  ctb.product = [basePlanProduct]
                 }
               }
               // Resources from PO
