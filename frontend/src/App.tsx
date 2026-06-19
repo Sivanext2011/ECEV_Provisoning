@@ -261,7 +261,7 @@ function CatalogPanel() {
 }
 
 function OperationsPanel() {
-  const [op, setOp] = useState('read_party')
+  const [op, setOp] = useState('read_party_ext')
   const [params, setParams] = useState<any>({})
   const [body, setBody] = useState('')
   const [result, setResult] = useState<any>(null)
