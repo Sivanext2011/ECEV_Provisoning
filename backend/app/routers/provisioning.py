@@ -339,9 +339,11 @@ async def provision_subscriber(body: dict):
         ],
         "engagedParty": {
             "externalId": party_external_id,
-            "@referredType": "Individual"
+            "@referredType": body.get("engagedPartyType", "Individual")
         },
-        "homeTimeZone": [{"timeZone": body.get("customerHTZ", "America/Los_Angeles")}],
+        **({
+            "homeTimeZone": [{"timeZone": body.get("customerHTZ")}]
+        } if body.get("customerHTZ") else {}),
         "characteristic": []
     }
     if body.get("customerCharacteristics"):
