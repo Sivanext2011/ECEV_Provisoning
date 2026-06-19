@@ -200,6 +200,146 @@
     "spec_billing_account": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingAccountSpecification?billingAccountSpecificationExternalId={{specExternalId}}"
+    },
+    "terminate_party_cascade": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualPartyExternalId/{{partyExternalId}}"
+    },
+    "terminate_customer_cascade": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customerExternalId/{{customerExternalId}}"
+    },
+    "terminate_contract_cascade": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId/{{contractExternalId}}"
+    },
+    "get_customer_by_imsi": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerEnquiry/v1/customer/?communicationIdType=E.212&communicationId={{imsi}}"
+    },
+    "get_contract_by_imsi": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/contract?communicationId={{imsi}}&communicationIdType=E.212"
+    },
+    "get_contract_by_msisdn_product": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/contract?communicationId={{msisdn}}&communicationIdType=E.164&productExternalId={{productExternalId}}"
+    },
+    "balance_enquiry_imsi": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balance?communicationId={{imsi}}&communicationIdType=E.212&balanceType=ALL"
+    },
+    "balance_enquiry_contract": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balance?customerExternalId={{customerExternalId}}&contractExternalId={{contractExternalId}}&balanceType=ALL"
+    },
+    "balance_enquiry_msisdn_bucket": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balance?communicationId={{msisdn}}&communicationIdType=E.164&balanceType=ALL&productBucketSpecExternalId={{bucketSpecExternalId}}"
+    },
+    "delete_user_by_external_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/userExternalId/{{userExternalId}}"
+    },
+    "get_user_by_id": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfUserEnquiry/v1/user?id={{userId}}"
+    },
+    "cpm_id_translation_msisdn": {
+      "method": "GET",
+      "url": "{{ROOT_CPM_INTERNAL}}/eric-bss-cpm-app/idTranslation/v1/translation/{{msisdn}}/type/E.164"
+    },
+    "cpm_id_translation_imsi": {
+      "method": "GET",
+      "url": "{{ROOT_CPM_INTERNAL}}/eric-bss-cpm-app/idTranslation/v1/translation/{{imsi}}/type/E.212"
+    },
+    "cpm_communication_identity": {
+      "method": "GET",
+      "url": "{{ROOT_CPM}}/eric-bss-cpm-app/bssfCommunicationIdentityManagement/v1/communicationIdentity?communicationId={{msisdn}}&communicationIdType=E.164"
+    },
+    "mass_device_create_job": {
+      "method": "POST",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/massResource"
+    },
+    "mass_device_start_job": {
+      "method": "POST",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}/start"
+    },
+    "mass_device_stop_job": {
+      "method": "POST",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}/stop"
+    },
+    "mass_device_restart_job": {
+      "method": "POST",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}/restart"
+    },
+    "mass_device_delete_job": {
+      "method": "DELETE",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}"
+    },
+    "mass_device_job_status": {
+      "method": "GET",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}/status"
+    },
+    "mass_device_job_result": {
+      "method": "GET",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job/{{jobId}}/result"
+    },
+    "mass_device_list_jobs": {
+      "method": "GET",
+      "url": "{{ROOT_CPM_BATCH}}/eric-bss-cpm-batch/batch/v1/job"
+    },
+    "rmca_entity_read_contact_medium_spec": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/entityRead/v1/contactMediumSpecification?externalId={{specExternalId}}"
+    },
+    "rmca_entity_read_party_spec": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/entityRead/v1/individualPartySpecification?externalId={{specExternalId}}"
+    },
+    "rmca_entity_read_contract_spec": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/entityRead/v1/contractSpecification?externalId={{specExternalId}}"
+    },
+    "rmca_list_product_offerings": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/bssfProductCatalogIntegration/v1/productOffering"
+    },
+    "rmca_read_product_offering": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/bssfProductCatalogIntegration/v1/productOffering?externalId={{specExternalId}}"
+    },
+    "rmca_create_product_offering": {
+      "method": "POST",
+      "url": "{{ROOT_RMCA}}/rmca/bssfProductCatalogIntegration/v1/productOffering"
+    },
+    "rmca_export": {
+      "method": "POST",
+      "url": "{{ROOT_RMCA}}/rmca/catalogBusinessConfigurationUtility/v1/export"
+    },
+    "rmca_import": {
+      "method": "POST",
+      "url": "{{ROOT_RMCA}}/rmca/catalogBusinessConfigurationUtility/v1/import"
+    },
+    "rmca_global_list_spec_read": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/globalListManagement/v2/globalListSpecification/{{listSpecName}}"
+    },
+    "rmca_global_list_read": {
+      "method": "GET",
+      "url": "{{ROOT_RMCA}}/rmca/globalListManagement/v2/globalListSpecification/{{listSpecName}}/globalList/{{listName}}"
+    },
+    "rmca_global_list_create": {
+      "method": "POST",
+      "url": "{{ROOT_RMCA}}/rmca/globalListManagement/v2/globalListSpecification/{{listSpecName}}/globalList"
+    },
+    "spec_global_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataListSpecification?referenceDataListSpecificationId={{listSpecId}}"
+    },
+    "spec_global_list_data": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataList?referenceDataListId={{listId}}"
     }
   },
   "defaults": {

@@ -476,6 +476,41 @@ function OperationsPanel() {
     eligible_consumers: { label: 'Get Eligible Consumers', method: 'GET', path: '/sharing/eligible-consumers', fields: ['customerExternalId'], queryParams: ['customerExternalId'] },
     // Recurrence
     recurrence: { label: 'Recurrence Enquiry - MSISDN', method: 'GET', path: '/recurrence', fields: ['msisdn'], queryParams: ['msisdn'] },
+    // Terminate Cascade
+    terminate_party: { label: 'Terminate Party Cascade', method: 'POST', path: '/execute/terminate_party_cascade', fields: [] },
+    terminate_customer: { label: 'Terminate Customer Cascade', method: 'POST', path: '/execute/terminate_customer_cascade', fields: [] },
+    terminate_contract: { label: 'Terminate Contract Cascade', method: 'POST', path: '/execute/terminate_contract_cascade', fields: [] },
+    // IMSI lookups
+    read_customer_imsi: { label: 'Get Customer - IMSI', method: 'GET', path: '/execute/get_customer_by_imsi', fields: ['imsi'] },
+    read_contract_imsi: { label: 'Get Contract - IMSI', method: 'GET', path: '/execute/get_contract_by_imsi', fields: ['imsi'] },
+    read_contract_msisdn_product: { label: 'Get Contract - MSISDN + Product', method: 'GET', path: '/execute/get_contract_by_msisdn_product', fields: ['msisdn', 'productExternalId'] },
+    // Balance extended
+    balance_imsi: { label: 'Balance Enquiry - IMSI', method: 'GET', path: '/execute/balance_enquiry_imsi', fields: ['imsi'] },
+    balance_contract: { label: 'Balance Enquiry - Contract', method: 'GET', path: '/execute/balance_enquiry_contract', fields: ['customerExternalId', 'contractExternalId'] },
+    balance_bucket: { label: 'Balance Enquiry - MSISDN + Bucket', method: 'GET', path: '/execute/balance_enquiry_msisdn_bucket', fields: ['msisdn', 'bucketSpecExternalId'] },
+    // User
+    delete_user_ext: { label: 'Delete User - ExternalId', method: 'GET', path: '/execute/delete_user_by_external_id', fields: ['userExternalId'] },
+    get_user_id: { label: 'Get User - Id', method: 'GET', path: '/execute/get_user_by_id', fields: ['userId'] },
+    // CPM
+    cpm_translate_msisdn: { label: 'CPM ID Translation - MSISDN', method: 'GET', path: '/execute/cpm_id_translation_msisdn', fields: ['msisdn'] },
+    cpm_translate_imsi: { label: 'CPM ID Translation - IMSI', method: 'GET', path: '/execute/cpm_id_translation_imsi', fields: ['imsi'] },
+    cpm_comm_identity: { label: 'CPM Communication Identity', method: 'GET', path: '/execute/cpm_communication_identity', fields: ['msisdn'] },
+    // Mass Devices
+    mass_create_job: { label: 'Mass Device - Create Job', method: 'POST', path: '/execute/mass_device_create_job', fields: [] },
+    mass_start_job: { label: 'Mass Device - Start Job', method: 'POST', path: '/execute/mass_device_start_job', fields: ['jobId'] },
+    mass_stop_job: { label: 'Mass Device - Stop Job', method: 'POST', path: '/execute/mass_device_stop_job', fields: ['jobId'] },
+    mass_restart_job: { label: 'Mass Device - Restart Job', method: 'POST', path: '/execute/mass_device_restart_job', fields: ['jobId'] },
+    mass_delete_job: { label: 'Mass Device - Delete Job', method: 'DELETE', path: '/execute/mass_device_delete_job', fields: ['jobId'] },
+    mass_job_status: { label: 'Mass Device - Job Status', method: 'GET', path: '/execute/mass_device_job_status', fields: ['jobId'] },
+    mass_job_result: { label: 'Mass Device - Job Result', method: 'GET', path: '/execute/mass_device_job_result', fields: ['jobId'] },
+    mass_list_jobs: { label: 'Mass Device - List Jobs', method: 'GET', path: '/execute/mass_device_list_jobs', fields: [] },
+    // RMCA
+    rmca_list_po: { label: 'RMCA - List Product Offerings', method: 'GET', path: '/execute/rmca_list_product_offerings', fields: [] },
+    rmca_read_po: { label: 'RMCA - Read Product Offering', method: 'GET', path: '/execute/rmca_read_product_offering', fields: ['specExternalId'] },
+    rmca_create_po: { label: 'RMCA - Create Product Offering', method: 'POST', path: '/execute/rmca_create_product_offering', fields: [] },
+    rmca_read_party_spec: { label: 'RMCA - Read Party Spec', method: 'GET', path: '/execute/rmca_entity_read_party_spec', fields: ['specExternalId'] },
+    rmca_read_contract_spec: { label: 'RMCA - Read Contract Spec', method: 'GET', path: '/execute/rmca_entity_read_contract_spec', fields: ['specExternalId'] },
+    rmca_read_cms: { label: 'RMCA - Read Contact Medium Spec', method: 'GET', path: '/execute/rmca_entity_read_contact_medium_spec', fields: ['specExternalId'] },
     // Spec Enquiry
     spec_contract: { label: 'Read Contract Specification', method: 'GET', path: '/spec/contract', fields: ['externalId'], queryParams: ['externalId'] },
     spec_product: { label: 'Read Product Specification', method: 'GET', path: '/spec/product', fields: ['externalId'], queryParams: ['externalId'] },
@@ -499,7 +534,13 @@ function OperationsPanel() {
     }
     try {
       const opts: any = { method: cfg.method, headers: { 'Content-Type': 'application/json' } }
-      if (cfg.method === 'POST' || cfg.method === 'PUT') {
+      if (url.includes('/execute/')) {
+        // Generic executor - pass fields as _params
+        opts.method = 'POST'
+        const execBody = body ? JSON.parse(body) : {}
+        execBody._params = { ...params }
+        opts.body = JSON.stringify(execBody)
+      } else if (cfg.method === 'POST' || cfg.method === 'PUT') {
         opts.body = body || JSON.stringify(params)
       }
       const r = await fetch(url, opts)
