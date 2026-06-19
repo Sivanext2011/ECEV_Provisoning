@@ -284,6 +284,64 @@ async def upload_cert(file: UploadFile = File(...), name: str = ""):
     return {"path": str(dest.resolve())}
 
 
+# === Full Provisioning Wizard ===
+@router.post("/subscribers/provision")
+async def provision_subscriber(body: dict):
+    """Full provisioning: Create Party → Customer → Contract with base plan."""
+    results = {}
+
+    # 1. Create Party
+    party_body = {
+        "externalId": body.get("msisdn"),
+        "givenName": body.get("givenName"),
+        "familyName": body.get("familyName"),
+        "individualSpecification": {"externalId": body.get("partySpecId", "")},
+    }
+    if body.get("partyCharacteristics"):
+        party_body["characteristic"] = [
+            {"name": k, "value": v} for k, v in body["partyCharacteristics"].items() if v
+        ]
+    try:
+        results["party"] = await bae_client.call("create_party", body=party_body)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Create Party failed: {e}")
+
+    # 2. Create Customer
+    customer_body = {
+        "externalId": body.get("msisdn"),
+        "customerSpecification": {"externalId": body.get("customerSpecId", "")},
+        "relatedParty": [{"externalId": body.get("msisdn"), "role": "Owner"}],
+    }
+    if body.get("customerCharacteristics"):
+        customer_body["characteristic"] = [
+            {"name": k, "value": v} for k, v in body["customerCharacteristics"].items() if v
+        ]
+    try:
+        results["customer"] = await bae_client.call("create_customer", body=customer_body)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Create Customer failed: {e}")
+
+    # 3. Create Contract with base plan
+    contract_body = {
+        "externalId": body.get("msisdn"),
+        "contractSpecification": {"externalId": body.get("contractSpecId", "")},
+        "productOffering": {"externalId": body.get("productOfferingId", "")},
+        "communicationIdentifier": [{"communicationId": body.get("msisdn"), "communicationIdType": "E.164"}],
+    }
+    if body.get("contractCharacteristics"):
+        contract_body["characteristic"] = [
+            {"name": k, "value": v} for k, v in body["contractCharacteristics"].items() if v
+        ]
+    try:
+        results["contract"] = await bae_client.call(
+            "create_contract", params={"customerExternalId": body.get("msisdn")}, body=contract_body
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Create Contract failed: {e}")
+
+    return results
+
+
 # === Spec Upload & Parsing ===
 @router.post("/specs/upload")
 async def upload_business_config(file: UploadFile = File(...)):
