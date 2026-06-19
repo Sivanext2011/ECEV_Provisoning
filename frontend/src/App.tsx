@@ -189,7 +189,7 @@ function ProvisionWizard() {
             const chars = ps ? getPersonalizableChars(ps.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Party Characteristics</legend>
-                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.party[c.name] || formValues.party[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, party: { ...formValues.party, [c.externalId || c.name]: v } })} />)}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.party[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, party: { ...formValues.party, [c.externalId || c.id]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -199,7 +199,7 @@ function ProvisionWizard() {
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Customer Characteristics</legend>
-                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.customer[c.name] || formValues.customer[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, customer: { ...formValues.customer, [c.externalId || c.name]: v } })} />)}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.customer[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, customer: { ...formValues.customer, [c.externalId || c.id]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -209,7 +209,7 @@ function ProvisionWizard() {
             const chars = bs ? getPersonalizableChars(bs.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Billing Account Characteristics</legend>
-                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.billingAccount[c.name] || formValues.billingAccount[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, billingAccount: { ...formValues.billingAccount, [c.externalId || c.name]: v } })} />)}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.billingAccount[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, billingAccount: { ...formValues.billingAccount, [c.externalId || c.id]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -219,7 +219,7 @@ function ProvisionWizard() {
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             return chars.length > 0 && (
               <fieldset><legend>Contract Characteristics</legend>
-                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.name] || formValues.contract[c.externalId] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.name]: v } })} />)}
+                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.id]: v } })} />)}
               </fieldset>
             )
           })()}
@@ -633,11 +633,13 @@ function CharInput({ char: c, value, onChange }: { char: any; value: string; onC
   const isMust = c.valueRegulator === 'mustBePersonalized'
   const isSelection = c.valueRegulator === 'selection'
   const possibleValues = c.possibleValues || []
+  const charKey = c.externalId || c.id
 
   return (
     <label style={{ display: 'block', marginBottom: 6 }}>
-      {c.name || c.externalId} {(isMust || c.required) && <span style={{ color: 'red' }}>*</span>}
-      {c.description && <span style={{ fontSize: 11, color: '#888', marginLeft: 4 }}>({c.description})</span>}
+      {c.name || charKey} {c.required && <span style={{ color: 'red' }}>*</span>}
+      {!c.required && <span style={{ fontSize: 10, color: '#999' }}> (optional)</span>}
+      {isMust && <span style={{ fontSize: 10, color: '#c60' }}> [must personalize]</span>}
       {isSelection && possibleValues.length > 0 ? (
         <select style={{ width: '100%' }} value={value} onChange={e => onChange(e.target.value)}>
           <option value="">-- Select --</option>
@@ -646,7 +648,7 @@ function CharInput({ char: c, value, onChange }: { char: any; value: string; onC
           ))}
         </select>
       ) : (
-        <input style={{ width: '100%' }} placeholder={c.defaultValue || (c.valueFrom && c.valueTo ? `${c.valueFrom} - ${c.valueTo}` : '')} value={value} onChange={e => onChange(e.target.value)} />
+        <input style={{ width: '100%' }} placeholder={c.defaultValue || ''} value={value} onChange={e => onChange(e.target.value)} />
       )}
     </label>
   )
