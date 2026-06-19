@@ -3,22 +3,22 @@ import React, { useState } from 'react'
 const API = '/api/v1'
 
 function App() {
-  const [tab, setTab] = useState<'wizard' | 'search' | 'catalog' | 'operations' | 'settings' | 'logs'>('wizard')
+  const [tab, setTab] = useState<'wizard' | 'crm' | 'catalog' | 'operations' | 'settings' | 'logs'>('wizard')
   return (
-    <div style={{ fontFamily: 'system-ui', maxWidth: 960, margin: '0 auto', padding: 20 }}>
+    <div style={{ fontFamily: 'system-ui', maxWidth: 1100, margin: '0 auto', padding: 20 }}>
       <h1>Ericsson BAE Provisioning Tool</h1>
       <nav style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
         <button onClick={() => setTab('wizard')} style={{ fontWeight: tab === 'wizard' ? 'bold' : 'normal' }}>Provision Subscriber</button>
+        <button onClick={() => setTab('crm')} style={{ fontWeight: tab === 'crm' ? 'bold' : 'normal' }}>👤 360° View</button>
         <button onClick={() => setTab('catalog')} style={{ fontWeight: tab === 'catalog' ? 'bold' : 'normal' }}>📦 Catalog</button>
         <button onClick={() => setTab('operations')} style={{ fontWeight: tab === 'operations' ? 'bold' : 'normal' }}>🔧 Operations</button>
-        <button onClick={() => setTab('search')} style={{ fontWeight: tab === 'search' ? 'bold' : 'normal' }}>Search</button>
         <button onClick={() => setTab('settings')} style={{ fontWeight: tab === 'settings' ? 'bold' : 'normal' }}>⚙ Settings</button>
         <button onClick={() => setTab('logs')} style={{ fontWeight: tab === 'logs' ? 'bold' : 'normal' }}>📋 API Logs</button>
       </nav>
       {tab === 'wizard' && <ProvisionWizard />}
+      {tab === 'crm' && <CRMView />}
       {tab === 'catalog' && <CatalogPanel />}
       {tab === 'operations' && <OperationsPanel />}
-      {tab === 'search' && <SearchPanel />}
       {tab === 'settings' && <SettingsPanel />}
       {tab === 'logs' && <ApiLogsPanel />}
     </div>
@@ -497,29 +497,152 @@ function OperationsPanel() {
   )
 }
 
-function SearchPanel() {
-  const [msisdn, setMsisdn] = useState('')
-  const [data, setData] = useState<any>(null)
+function CRMView() {
+  const [searchType, setSearchType] = useState<'msisdn' | 'externalId' | 'id'>('msisdn')
+  const [searchValue, setSearchValue] = useState('')
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [party, setParty] = useState<any>(null)
+  const [customer, setCustomer] = useState<any>(null)
+  const [contract, setContract] = useState<any>(null)
+  const [balance, setBalance] = useState<any>(null)
+  const [expandedSection, setExpandedSection] = useState<string | null>('tree')
 
   const search = async () => {
-    setError(''); setData(null)
+    setLoading(true); setError(''); setParty(null); setCustomer(null); setContract(null); setBalance(null)
     try {
-      const r = await fetch(`${API}/subscribers/${msisdn}`)
-      if (!r.ok) throw new Error('Not found')
-      setData(await r.json())
+      // Search by MSISDN -> gets contract which has all relationships
+      if (searchType === 'msisdn') {
+        const cr = await fetch(`${API}/contract?msisdn=${encodeURIComponent(searchValue)}`)
+        if (!cr.ok) throw new Error('Contract not found for this MSISDN')
+        setContract(await cr.json())
+
+        const custr = await fetch(`${API}/customer?msisdn=${encodeURIComponent(searchValue)}`)
+        if (custr.ok) setCustomer(await custr.json())
+
+        const balr = await fetch(`${API}/balance?msisdn=${encodeURIComponent(searchValue)}`)
+        if (balr.ok) setBalance(await balr.json())
+      } else if (searchType === 'externalId') {
+        // Try party first
+        const pr = await fetch(`${API}/party?externalId=${encodeURIComponent(searchValue)}`)
+        if (pr.ok) setParty(await pr.json())
+
+        const custr = await fetch(`${API}/customer?externalId=${encodeURIComponent(searchValue)}`)
+        if (custr.ok) setCustomer(await custr.json())
+      } else {
+        // By internal ID - try customer
+        const custr = await fetch(`${API}/customer?id=${encodeURIComponent(searchValue)}`)
+        if (custr.ok) setCustomer(await custr.json())
+      }
     } catch (e: any) { setError(e.message) }
+    setLoading(false)
+  }
+
+  const Section = ({ title, icon, id, data }: { title: string; icon: string; id: string; data: any }) => (
+    <div style={{ border: '1px solid #ddd', borderRadius: 6, marginBottom: 10 }}>
+      <div style={{ padding: '8px 12px', background: '#f8f8f8', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        onClick={() => setExpandedSection(expandedSection === id ? null : id)}>
+        <span><b>{icon} {title}</b></span>
+        <span style={{ fontSize: 12, color: '#888' }}>{expandedSection === id ? '▼' : '▶'}</span>
+      </div>
+      {expandedSection === id && data && (
+        <div style={{ padding: 12 }}>
+          <pre style={{ fontSize: 11, margin: 0, maxHeight: 400, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )}
+      {expandedSection === id && !data && <p style={{ padding: 12, color: '#888', margin: 0 }}>No data loaded</p>}
+    </div>
+  )
+
+  // Build relationship tree from contract data
+  const buildTree = () => {
+    if (!contract && !customer && !party) return null
+    const c = Array.isArray(contract) ? contract[0] : contract
+    const cu = Array.isArray(customer) ? customer[0] : customer
+
+    return (
+      <div style={{ fontFamily: 'monospace', fontSize: 12, background: '#1a1a2e', color: '#e0e0e0', padding: 16, borderRadius: 8, overflow: 'auto' }}>
+        <div style={{ color: '#64ffda' }}>TMF SID Entity Relationship</div>
+        <div style={{ marginTop: 8 }}>
+          {party && <div>
+            <span style={{ color: '#ff9800' }}>📋 Party</span> [{party?.id || party?.[0]?.id || ''}]
+            <span style={{ color: '#aaa' }}> externalId={party?.externalId || party?.[0]?.externalId || ''}</span>
+          </div>}
+          {cu && <div style={{ marginLeft: 20 }}>
+            <span style={{ color: '#4fc3f7' }}>├── 👤 Customer</span> [{cu?.id || ''}]
+            <span style={{ color: '#aaa' }}> externalId={cu?.externalId || ''} spec={cu?.customerSpecification?.externalId || ''}</span>
+            {cu?.account && cu.account.map((a: any, i: number) => (
+              <div key={i} style={{ marginLeft: 20 }}>
+                <span style={{ color: '#81c784' }}>├── 💳 BillingAccount</span> [{a?.id || ''}]
+                <span style={{ color: '#aaa' }}> externalId={a?.externalId || ''}</span>
+              </div>
+            ))}
+          </div>}
+          {c && <div style={{ marginLeft: 20 }}>
+            <span style={{ color: '#ce93d8' }}>├── 📄 Contract</span> [{c?.id || ''}]
+            <span style={{ color: '#aaa' }}> externalId={c?.externalId || ''} status={c?.status?.[0]?.status || ''}</span>
+            {c?.product && c.product.map((p: any, i: number) => (
+              <div key={i} style={{ marginLeft: 20 }}>
+                <span style={{ color: '#fff176' }}>├── 📦 Product</span> [{p?.id || ''}]
+                <span style={{ color: '#aaa' }}> PO={p?.productOfferingExternalId || ''} status={p?.status?.[0]?.status || ''}</span>
+                {p?.resource && p.resource.map((r: any, j: number) => (
+                  <div key={j} style={{ marginLeft: 20 }}>
+                    <span style={{ color: '#80cbc4' }}>├── 🔗 Resource</span> [{r?.resourceNumber || r?.id || ''}]
+                    <span style={{ color: '#aaa' }}> spec={r?.resourceSpecificationExternalId || ''}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+            {c?.resource && c.resource.map((r: any, i: number) => (
+              <div key={i} style={{ marginLeft: 20 }}>
+                <span style={{ color: '#80cbc4' }}>├── 🔗 Resource</span> [{r?.resourceNumber || r?.id || ''}]
+                <span style={{ color: '#aaa' }}> spec={r?.resourceSpecificationExternalId || ''} externalId={r?.externalId || ''}</span>
+              </div>
+            ))}
+          </div>}
+        </div>
+        {balance && <div style={{ marginTop: 12, borderTop: '1px solid #333', paddingTop: 8 }}>
+          <span style={{ color: '#ffab40' }}>💰 Balance</span>
+          {Array.isArray(balance) ? balance.map((b: any, i: number) => (
+            <div key={i} style={{ marginLeft: 20, color: '#aaa' }}>
+              {b?.bucketName || b?.name || `Bucket ${i+1}`}: {b?.remainingValue ?? b?.amount ?? JSON.stringify(b)}
+            </div>
+          )) : <pre style={{ marginLeft: 20, color: '#aaa', fontSize: 11 }}>{JSON.stringify(balance, null, 2)}</pre>}
+        </div>}
+      </div>
+    )
   }
 
   return (
     <div>
-      <h2>Search Subscriber (Local DB)</h2>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <input placeholder="MSISDN" value={msisdn} onChange={e => setMsisdn(e.target.value)} />
-        <button onClick={search}>Search</button>
+      <h2>👤 360° Subscriber View</h2>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        <select value={searchType} onChange={e => setSearchType(e.target.value as any)}>
+          <option value="msisdn">MSISDN</option>
+          <option value="externalId">External ID</option>
+          <option value="id">Internal ID</option>
+        </select>
+        <input style={{ flex: 1, minWidth: 200 }} placeholder={`Enter ${searchType}...`} value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && search()} />
+        <button onClick={search} disabled={loading || !searchValue}>{loading ? 'Searching...' : 'Search'}</button>
       </div>
+
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {data && <pre style={{ background: '#f5f5f5', padding: 10 }}>{JSON.stringify(data, null, 2)}</pre>}
+
+      {(contract || customer || party) && (
+        <div>
+          <Section title="Entity Relationship Tree" icon="🌳" id="tree" data={null} />
+          {expandedSection === 'tree' && buildTree()}
+
+          <div style={{ marginTop: 16 }}>
+            {party && <Section title={`Party ${party?.externalId || party?.[0]?.externalId || ''}`} icon="📋" id="party" data={party} />}
+            {customer && <Section title={`Customer ${(Array.isArray(customer) ? customer[0] : customer)?.externalId || ''}`} icon="👤" id="customer" data={customer} />}
+            {contract && <Section title={`Contract ${(Array.isArray(contract) ? contract[0] : contract)?.externalId || ''}`} icon="📄" id="contract" data={contract} />}
+            {balance && <Section title="Balance" icon="💰" id="balance" data={balance} />}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
