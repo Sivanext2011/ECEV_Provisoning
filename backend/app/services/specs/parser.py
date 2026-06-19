@@ -4,11 +4,12 @@ import base64
 import zlib
 import io
 import logging
+import os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-SPECS_CACHE_PATH = Path(__file__).parent.parent.parent.parent.parent / "config" / "parsed_specs.json"
+SPECS_CACHE_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent.parent / "config" / "config.json")).parent / "parsed_specs.json"
 
 # In-memory cache
 _parsed_specs: dict | None = None
