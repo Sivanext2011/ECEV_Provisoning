@@ -6,7 +6,7 @@ import logging
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +180,7 @@ class BAEClient:
             "response_body": res_body[:1000]
         })
 
-    @retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
+    @retry(stop=stop_after_attempt(2), wait=wait_fixed(1), retry=retry_if_exception_type(httpx.HTTPStatusError))
     async def call(self, api_key: str, params: dict = None, body: dict = None) -> dict:
         """Execute an API call by key from config."""
         api = self.apis.get(api_key)
@@ -204,15 +204,20 @@ class BAEClient:
                 r = await self._client.put(url, json=body, headers=headers)
             else:
                 raise ValueError(f"Unsupported method: {method}")
+        except httpx.ConnectError as e:
+            self._log(method, url, "CONNECT_ERROR", body, str(e))
+            raise ConnectionError(f"Cannot connect to {url}: {e}")
+        except httpx.HTTPStatusError:
+            raise
         except Exception as e:
             self._log(method, url, "ERROR", body, str(e))
-            raise
+            raise ConnectionError(f"Request failed: {e}")
 
         self._log(method, url, r.status_code, body, r.text)
 
         # Auto-retry on 401
         if r.status_code == 401:
-            self.token_mgr.expires_at = 0  # Force refresh
+            self.token_mgr.expires_at = 0
             raise httpx.HTTPStatusError("401 Unauthorized", request=r.request, response=r)
 
         r.raise_for_status()
