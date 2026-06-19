@@ -319,7 +319,7 @@ async def provision_subscriber(body: dict):
         "account": [
             {
                 "externalId": body.get("customerBAExternalId", "extID_BAS"),
-                "billingAccountSpecExternalId": body.get("billingAccountSpecId", defaults.get("billingAccountSpecExternalId", "")),
+                "billingAccountSpecExternalId": body.get("billingAccountSpecId") or defaults.get("billingAccountSpecExternalId") or "MISSING_BA_SPEC",
                 "customerBillCycleSpecification": [
                     {
                         "externalId": body.get("customerBCSExternalId", "extID_BCS"),
