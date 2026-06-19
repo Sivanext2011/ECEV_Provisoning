@@ -133,15 +133,16 @@ function ProvisionWizard() {
         contractBody.product = [poProduct]
       }
 
-      // Resources from catalog resource specs - only send those user filled in
-      const resSpecs = specs?.resourceSpecifications || []
+      // Resources from PO's linked resource specs (PO->PS->CFSS->RFSS->LRS chain)
+      const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
+      const poResourceSpecs = po?.resourceSpecifications || []
       const resources: any[] = []
-      for (const rs of resSpecs) {
+      for (const rs of poResourceSpecs) {
         const resKey = `_res_${rs.externalId || rs.id}`
         const resNumber = formValues.contract[resKey]
         if (resNumber && resNumber.trim()) {
           resources.push({
-            externalId: `${rs.externalId || rs.id}-${resNumber}`,
+            externalId: `${rs.externalId}-${resNumber}`,
             resourceNumber: resNumber,
             resourceSpecificationExternalId: rs.externalId,
           })
@@ -254,23 +255,22 @@ function ProvisionWizard() {
             const po = poList.find((p: any) => p.externalId === selectedPO)
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             const poChars = po ? getPersonalizableChars(po.characteristics || []) : []
-            // Resource specs from catalog
-            const resSpecs = specs?.resourceSpecifications || []
-            const identificationSpecs = resSpecs.filter((rs: any) => rs.specificationType === 'IDENTIFICATION')
+            // Resource specs linked to the selected PO (via PO->PS->CFSS->RFSS->LRS chain)
+            const poResourceSpecs = po?.resourceSpecifications || []
             return (
               <fieldset><legend>Contract & Product</legend>
-                {identificationSpecs.length > 0 && <>
-                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (from catalog):</p>
-                  {identificationSpecs.map((rs: any) => (
+                {poResourceSpecs.length > 0 && <>
+                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (required by Product Offering):</p>
+                  {poResourceSpecs.map((rs: any) => (
                     <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
-                      {rs.name} ({rs.externalId || rs.id}) — Resource Number <span style={{ fontSize: 10, color: '#999' }}>(leave blank to skip)</span>
+                      {rs.name} ({rs.externalId}) <span style={{ color: 'red' }}>*</span>
                       <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
                         value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
                         onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
                     </label>
                   ))}
                 </>}
-                {identificationSpecs.length === 0 && <p style={{ fontSize: 11, color: '#888' }}>No resource specs in catalog. Re-upload BusinessConfig.</p>}
+                {selectedPO && poResourceSpecs.length === 0 && <p style={{ fontSize: 11, color: '#888' }}>No resource specs linked to this Product Offering. Re-upload BusinessConfig to refresh.</p>}
                 {poChars.length > 0 && <>
                   <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Characteristics:</p>
                   {poChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}

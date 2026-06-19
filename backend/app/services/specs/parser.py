@@ -201,6 +201,60 @@ def _extract_ba_specs(ed: dict) -> list:
 
 def _extract_product_offerings(ed: dict) -> list:
     offerings = []
+    # Build lookup maps for the chain: PO -> PS -> CFSS -> RFSS -> ResourceSpec
+    ps_map = {ps["id"]: ps for ps in ed.get("productSpecifications", [])}
+    cfss_map = {c["id"]: c for c in ed.get("customerFacingServiceSpecifications", [])}
+    rfss_map = {r["id"]: r for r in ed.get("resourceFacingServiceSpecifications", [])}
+    rs_map = {r["id"]: r for r in ed.get("resourceSpecifications", [])}
+
+    def _resolve_resource_specs_for_po(po_version: dict, po_relations_from: list) -> list:
+        """Follow PO -> PS -> CFSS -> RFSS -> ResourceSpec chain."""
+        resource_specs = []
+        seen_rs_ids = set()
+
+        # PO -> PS (via relationsTo in version)
+        ps_ids = [r["targetId"] for r in po_version.get("relationsTo", []) if r.get("targetType") == "ProductSpecification"]
+        for ps_id in ps_ids:
+            ps = ps_map.get(ps_id)
+            if not ps:
+                continue
+            ps_version = _get_active_version(ps.get("versions", []))
+            if not ps_version:
+                continue
+            # PS -> CFSS (REQUIRES)
+            cfss_ids = [r["targetId"] for r in ps_version.get("relationsTo", []) if r.get("targetType") == "CustomerFacingServiceSpecification"]
+            for cfss_id in cfss_ids:
+                cfss = cfss_map.get(cfss_id)
+                if not cfss:
+                    continue
+                cfss_version = _get_active_version(cfss.get("versions", []))
+                if not cfss_version:
+                    continue
+                # CFSS -> RFSS (REQUIRES)
+                rfss_ids = [r["targetId"] for r in cfss_version.get("relationsTo", []) if r.get("targetType") == "ResourceFacingServiceSpecification"]
+                for rfss_id in rfss_ids:
+                    rfss = rfss_map.get(rfss_id)
+                    if not rfss:
+                        continue
+                    rfss_version = _get_active_version(rfss.get("versions", []))
+                    if not rfss_version:
+                        continue
+                    # RFSS -> ResourceSpec (IDENTIFIED_BY)
+                    rs_ids = [r["targetId"] for r in rfss_version.get("relationsTo", []) if r.get("targetType") == "ResourceSpecification" and r.get("relationType") == "IDENTIFIED_BY"]
+                    for rs_id in rs_ids:
+                        if rs_id in seen_rs_ids:
+                            continue
+                        seen_rs_ids.add(rs_id)
+                        rs = rs_map.get(rs_id)
+                        if rs and rs.get("resourceType") == "LOGICAL_RESOURCE":
+                            resource_specs.append({
+                                "id": rs["id"],
+                                "name": rs.get("name", ""),
+                                "externalId": rs.get("externalId", ""),
+                                "specificationType": rs.get("specificationType", ""),
+                            })
+        return resource_specs
+
     for encoded_po in ed.get("productOfferings", []):
         try:
             po = json.loads(zlib.decompress(base64.b64decode(encoded_po)))
@@ -211,38 +265,18 @@ def _extract_product_offerings(ed: dict) -> list:
         if not version:
             continue
 
-        # Extract resource specs from product spec
-        resource_specs = []
-        product_spec = version.get("productSpecification", {})
-        for rs in product_spec.get("logicalResourceSpecifications", []):
-            resource_specs.append({
-                "id": rs.get("id", ""),
-                "name": rs.get("name", ""),
-                "externalId": rs.get("externalId", ""),
-                "resourceType": rs.get("resourceType", ""),
-            })
-        # Also check top-level resourceSpecifications
-        for rs in version.get("logicalResourceSpecifications", []):
-            resource_specs.append({
-                "id": rs.get("id", ""),
-                "name": rs.get("name", ""),
-                "externalId": rs.get("externalId", ""),
-                "resourceType": rs.get("resourceType", ""),
-            })
+        # Follow the chain to get linked resource specs
+        linked_resource_specs = _resolve_resource_specs_for_po(version, po.get("relationsFrom", []))
 
-        # Extract product characteristics
-        product_chars = _extract_characteristics(
-            product_spec.get("characteristics", []) or version.get("characteristics", [])
-        )
-
-        # Extract bucket specs
-        bucket_specs = []
-        for bs in product_spec.get("bucketSpecifications", []) or version.get("bucketSpecifications", []):
-            bucket_specs.append({
-                "id": bs.get("id", ""),
-                "name": bs.get("name", ""),
-                "externalId": bs.get("externalId", ""),
-            })
+        # Extract product characteristics from linked PS
+        product_chars = []
+        ps_ids = [r["targetId"] for r in version.get("relationsTo", []) if r.get("targetType") == "ProductSpecification"]
+        for ps_id in ps_ids:
+            ps = ps_map.get(ps_id)
+            if ps:
+                ps_version = _get_active_version(ps.get("versions", []))
+                if ps_version:
+                    product_chars = _extract_characteristics(ps_version.get("characteristics", []))
 
         offerings.append({
             "id": po["id"],
@@ -250,9 +284,8 @@ def _extract_product_offerings(ed: dict) -> list:
             "description": po.get("description", ""),
             "externalId": po.get("externalId", ""),
             "offeringTypes": po.get("offeringTypes", []),
-            "resourceSpecifications": resource_specs,
+            "resourceSpecifications": linked_resource_specs,
             "characteristics": product_chars,
-            "bucketSpecifications": bucket_specs,
         })
     return offerings
 
