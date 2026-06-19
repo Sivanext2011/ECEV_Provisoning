@@ -28,6 +28,10 @@ function App() {
 function ProvisionWizard() {
   const [specs, setSpecs] = useState<any>(null)
   const [step, setStep] = useState(0)
+  const [editMode, setEditMode] = useState(false)
+  const [partyJson, setPartyJson] = useState('')
+  const [customerJson, setCustomerJson] = useState('')
+  const [contractJson, setContractJson] = useState('')
   const [selectedPartySpec, setSelectedPartySpec] = useState('')
   const [selectedCustSpec, setSelectedCustSpec] = useState('')
   const [selectedBASpec, setSelectedBASpec] = useState('')
@@ -71,102 +75,11 @@ function ProvisionWizard() {
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
     try {
-      const partyExtId = `extID-party-${msisdn}`
-      const customerExtId = `extID-customer-${msisdn}`
-      const baExtId = `extID_BA-${msisdn}`
-      const contractExtId = `extID-contract-${msisdn}`
-
-      // Build party body
-      const partyBody: any = {
-        externalId: partyExtId,
-        givenName, familyName,
-        individualSpecification: { externalId: selectedPartySpec },
-        status: [{ status: 'PartyActive' }],
-      }
-      const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
-      if (partyChars.length) {
-        partyBody.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
-      }
-
-      // Build customer body
-      const customerBody: any = {
-        externalId: customerExtId,
-        customerSpecification: { externalId: selectedCustSpec },
-        status: [{ status: 'CustomerActive' }],
-        account: [{
-          externalId: baExtId,
-          billingAccountSpecExternalId: selectedBASpec,
-          status: [{ status: 'BillingAccountActive' }],
-        }],
-        engagedParty: { externalId: partyExtId, '@referredType': 'Individual' },
-      }
-      const custChars = Object.entries(formValues.customer).filter(([, v]) => v)
-      if (custChars.length) {
-        customerBody.characteristic = custChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
-      }
-      const baChars = Object.entries(formValues.billingAccount).filter(([, v]) => v)
-      if (baChars.length) {
-        customerBody.account[0].characteristic = baChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
-      }
-
-      // Build contract body from spec
-      const contractBody: any = {
-        externalId: contractExtId,
-        contractSpecification: { externalId: selectedContractSpec },
-        status: [{ status: 'Active' }],
-      }
-
-      // Product from selected PO
-      if (selectedPO) {
-        const poProduct: any = {
-          productOfferingExternalId: selectedPO,
-          externalId: `${selectedPO}-${msisdn}`,
-          name: selectedPO,
-          billingAccountReference: {
-            externalId: baExtId,
-          },
-        }
-        // Add PO characteristics
-        const poCharEntries = Object.entries(formValues.contract)
-          .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
-          .map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
-        if (poCharEntries.length) {
-          poProduct.characteristic = poCharEntries
-        }
-        contractBody.product = [poProduct]
-      }
-
-      // Resources from PO's linked resource specs (PO->PS->CFSS->RFSS->LRS chain)
-      const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-      const poResourceSpecs = po?.resourceSpecifications || []
-      const resources: any[] = []
-      for (const rs of poResourceSpecs) {
-        const resKey = `_res_${rs.externalId || rs.id}`
-        const resNumber = formValues.contract[resKey]
-        if (resNumber && resNumber.trim()) {
-          resources.push({
-            externalId: `${rs.externalId}-${resNumber}`,
-            resourceNumber: resNumber,
-            resourceSpecificationExternalId: rs.externalId,
-          })
-        }
-      }
-      if (resources.length) {
-        contractBody.resource = resources
-      }
-
-      // Contract characteristics (exclude _prefixed internal fields)
-      const contractChars = Object.entries(formValues.contract)
-        .filter(([k, v]) => !k.startsWith('_') && v && (v as string).trim())
-      if (contractChars.length) {
-        contractBody.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
-      }
-
       const payload = {
-        partyBody,
-        customerBody,
-        contractBody,
-        customerExternalId: customerExtId,
+        partyBody: JSON.parse(partyJson),
+        customerBody: JSON.parse(customerJson),
+        contractBody: JSON.parse(contractJson),
+        customerExternalId: JSON.parse(customerJson).externalId,
       }
       const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!r.ok) throw new Error((await r.json()).detail)
@@ -288,15 +201,108 @@ function ProvisionWizard() {
 
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => setStep(0)}>← Back</button>
-            <button disabled={!givenName || !familyName || !msisdn || loading} onClick={submit}>
-              {loading ? 'Provisioning...' : 'Provision'}
-            </button>
+            <button disabled={!givenName || !familyName || !msisdn} onClick={() => {
+              // Build JSON bodies and go to review step
+              const partyExtId = `extID-party-${msisdn}`
+              const customerExtId = `extID-customer-${msisdn}`
+              const baExtId = `extID_BA-${msisdn}`
+              const contractExtId = `extID-contract-${msisdn}`
+
+              const pb: any = {
+                externalId: partyExtId,
+                givenName, familyName,
+                individualSpecification: { externalId: selectedPartySpec },
+                status: [{ status: 'PartyActive' }],
+              }
+              const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
+              if (partyChars.length) pb.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+
+              const cb: any = {
+                externalId: customerExtId,
+                customerSpecification: { externalId: selectedCustSpec },
+                status: [{ status: 'CustomerActive' }],
+                account: [{ externalId: baExtId, billingAccountSpecExternalId: selectedBASpec, status: [{ status: 'BillingAccountActive' }] }],
+                engagedParty: { externalId: partyExtId, '@referredType': 'Individual' },
+              }
+              const custChars = Object.entries(formValues.customer).filter(([, v]) => v)
+              if (custChars.length) cb.characteristic = custChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+              const baChars = Object.entries(formValues.billingAccount).filter(([, v]) => v)
+              if (baChars.length) cb.account[0].characteristic = baChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+
+              const ctb: any = {
+                externalId: contractExtId,
+                contractSpecification: { externalId: selectedContractSpec },
+                status: [{ status: 'Active' }],
+              }
+              if (selectedPO) {
+                ctb.product = [{
+                  productOfferingExternalId: selectedPO,
+                  externalId: `${selectedPO}-${msisdn}`,
+                  name: selectedPO,
+                  billingAccountReference: { externalId: baExtId },
+                  baRefForBillCycleAlignedRecurrence: { externalId: baExtId },
+                }]
+                const poCharEntries = Object.entries(formValues.contract)
+                  .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
+                if (poCharEntries.length) {
+                  ctb.product[0].characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
+                }
+              }
+              // Resources from PO
+              const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
+              const poResourceSpecs = po?.resourceSpecifications || []
+              const resources: any[] = []
+              for (const rs of poResourceSpecs) {
+                const resNumber = formValues.contract[`_res_${rs.externalId || rs.id}`]
+                if (resNumber && resNumber.trim()) {
+                  resources.push({ externalId: `${rs.externalId}-${resNumber}`, resourceNumber: resNumber, resourceSpecificationExternalId: rs.externalId })
+                }
+              }
+              if (resources.length) ctb.resource = resources
+              // Contract chars
+              const contractChars = Object.entries(formValues.contract).filter(([k, v]) => !k.startsWith('_') && v && (v as string).trim())
+              if (contractChars.length) ctb.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
+
+              setPartyJson(JSON.stringify(pb, null, 2))
+              setCustomerJson(JSON.stringify(cb, null, 2))
+              setContractJson(JSON.stringify(ctb, null, 2))
+              setStep(2)
+            }}>Next → Review JSON</button>
           </div>
         </div>
       )}
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {result && <pre style={{ background: '#f5f5f5', padding: 10, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(result, null, 2)}</pre>}
+
+      {step === 2 && (
+        <div style={{ display: 'grid', gap: 12, maxWidth: 700 }}>
+          <h3 style={{ margin: 0 }}>Step 3: Review & Edit JSON</h3>
+          <p style={{ fontSize: 12, color: '#555', margin: 0 }}>Edit the request bodies before sending. Add Technical Product, sharingProvider, etc. as needed.</p>
+
+          <fieldset>
+            <legend><b>1. Create Party</b></legend>
+            <textarea style={{ width: '100%', fontFamily: 'monospace', fontSize: 11 }} rows={8} value={partyJson} onChange={e => setPartyJson(e.target.value)} />
+          </fieldset>
+
+          <fieldset>
+            <legend><b>2. Create Customer</b></legend>
+            <textarea style={{ width: '100%', fontFamily: 'monospace', fontSize: 11 }} rows={10} value={customerJson} onChange={e => setCustomerJson(e.target.value)} />
+          </fieldset>
+
+          <fieldset>
+            <legend><b>3. Create Contract</b></legend>
+            <textarea style={{ width: '100%', fontFamily: 'monospace', fontSize: 11 }} rows={20} value={contractJson} onChange={e => setContractJson(e.target.value)} />
+          </fieldset>
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => setStep(1)}>← Back</button>
+            <button disabled={loading} onClick={submit}>
+              {loading ? 'Provisioning...' : 'Provision'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
