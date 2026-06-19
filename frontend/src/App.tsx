@@ -513,12 +513,15 @@ function CRMView() {
     try {
       // Search by MSISDN -> gets contract which has all relationships
       if (searchType === 'msisdn') {
-        const cr = await fetch(`${API}/contract?msisdn=${encodeURIComponent(searchValue)}`)
-        if (!cr.ok) throw new Error('Contract not found for this MSISDN')
-        setContract(await cr.json())
+        // Party by derived externalId
+        const pr = await fetch(`${API}/party?externalId=${encodeURIComponent(`extID-party-${searchValue}`)}`)
+        if (pr.ok) setParty(await pr.json())
 
         const custr = await fetch(`${API}/customer?msisdn=${encodeURIComponent(searchValue)}`)
         if (custr.ok) setCustomer(await custr.json())
+
+        const cr = await fetch(`${API}/contract?msisdn=${encodeURIComponent(searchValue)}`)
+        if (cr.ok) setContract(await cr.json())
 
         const balr = await fetch(`${API}/balance?msisdn=${encodeURIComponent(searchValue)}`)
         if (balr.ok) setBalance(await balr.json())
@@ -527,8 +530,20 @@ function CRMView() {
         const pr = await fetch(`${API}/party?externalId=${encodeURIComponent(searchValue)}`)
         if (pr.ok) setParty(await pr.json())
 
-        const custr = await fetch(`${API}/customer?externalId=${encodeURIComponent(searchValue)}`)
+        // Derive customer externalId pattern
+        const msisdnFromExt = searchValue.replace('extID-party-', '').replace('extID-customer-', '').replace('extID-contract-', '')
+        const custExtId = searchValue.startsWith('extID-customer-') ? searchValue : `extID-customer-${msisdnFromExt}`
+        const custr = await fetch(`${API}/customer?externalId=${encodeURIComponent(custExtId)}`)
         if (custr.ok) setCustomer(await custr.json())
+
+        // Try contract by MSISDN (communication id) if we can derive it
+        if (msisdnFromExt) {
+          const cr = await fetch(`${API}/contract?msisdn=${encodeURIComponent(msisdnFromExt)}`)
+          if (cr.ok) setContract(await cr.json())
+
+          const balr = await fetch(`${API}/balance?msisdn=${encodeURIComponent(msisdnFromExt)}`)
+          if (balr.ok) setBalance(await balr.json())
+        }
       } else {
         // By internal ID - try customer
         const custr = await fetch(`${API}/customer?id=${encodeURIComponent(searchValue)}`)
