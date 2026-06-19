@@ -119,13 +119,24 @@ function ProvisionWizard() {
           externalId: `${selectedPO}-${msisdn}`,
           name: selectedPO,
         }],
-        resource: [{
+      }
+      // Only add resource if user provides resourceSpecExternalId
+      if (formValues.contract._resourceSpecMSISDN) {
+        contractBody.resource = [{
           externalId: `LRS_msisdn-${msisdn}`,
           resourceNumber: msisdn,
-          resourceSpecificationExternalId: 'ext_LRS_MSISDN',
-        }],
+          resourceSpecificationExternalId: formValues.contract._resourceSpecMSISDN,
+        }]
       }
-      const contractChars = Object.entries(formValues.contract).filter(([, v]) => v && (v as string).trim())
+      if (formValues.contract._resourceSpecIMSI && formValues.contract._imsi) {
+        if (!contractBody.resource) contractBody.resource = []
+        contractBody.resource.push({
+          externalId: `LRS_imsi-${formValues.contract._imsi}`,
+          resourceNumber: formValues.contract._imsi,
+          resourceSpecificationExternalId: formValues.contract._resourceSpecIMSI,
+        })
+      }
+      const contractChars = Object.entries(formValues.contract).filter(([k, v]) => v && (v as string).trim() && !k.startsWith('_'))
       if (contractChars.length) {
         contractBody.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
       }
@@ -224,9 +235,21 @@ function ProvisionWizard() {
           {(() => {
             const cs = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
-            return chars.length > 0 && (
-              <fieldset><legend>Contract Characteristics</legend>
-                {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.id]: v } })} />)}
+            return (
+              <fieldset><legend>Contract</legend>
+                <label style={{ display: 'block', marginBottom: 6 }}>MSISDN Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
+                  <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_MSISDN" value={formValues.contract._resourceSpecMSISDN || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecMSISDN: e.target.value } })} />
+                </label>
+                <label style={{ display: 'block', marginBottom: 6 }}>IMSI <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
+                  <input style={{ width: '100%' }} placeholder="e.g. 24112345678" value={formValues.contract._imsi || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _imsi: e.target.value } })} />
+                </label>
+                <label style={{ display: 'block', marginBottom: 6 }}>IMSI Resource Spec ExternalId <span style={{ fontSize: 10, color: '#999' }}>(optional)</span>
+                  <input style={{ width: '100%' }} placeholder="e.g. ext_LRS_IMSI" value={formValues.contract._resourceSpecIMSI || ''} onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, _resourceSpecIMSI: e.target.value } })} />
+                </label>
+                {chars.length > 0 && <>
+                  <hr style={{ margin: '8px 0' }} />
+                  {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.id]: v } })} />)}
+                </>}
               </fieldset>
             )
           })()}
