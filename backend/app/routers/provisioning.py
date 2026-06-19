@@ -289,13 +289,15 @@ async def upload_cert(file: UploadFile = File(...), name: str = ""):
 async def provision_subscriber(body: dict):
     """Full provisioning: Create Party → Customer → Contract with base plan."""
     results = {}
+    cfg = load_config()
+    defaults = cfg.get("defaults", {})
 
     # 1. Create Party
     party_body = {
-        "externalId": body.get("msisdn"),
+        "externalId": body.get("partyExternalId", f"extID-party-{body.get('msisdn')}"),
         "givenName": body.get("givenName"),
         "familyName": body.get("familyName"),
-        "individualSpecification": {"externalId": body.get("partySpecId", "")},
+        "individualSpecification": {"externalId": body.get("partySpecId", defaults.get("partySpecExternalId", ""))},
     }
     if body.get("partyCharacteristics"):
         party_body["characteristic"] = [
@@ -312,12 +314,12 @@ async def provision_subscriber(body: dict):
     party_external_id = body.get("partyExternalId", f"extID-party-{body.get('msisdn')}")
     customer_body = {
         "externalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}"),
-        "customerSpecification": {"externalId": body.get("customerSpecId", "")},
+        "customerSpecification": {"externalId": body.get("customerSpecId", defaults.get("customerSpecExternalId", ""))},
         "status": [{"status": "CustomerActive"}],
         "account": [
             {
                 "externalId": body.get("customerBAExternalId", "extID_BAS"),
-                "billingAccountSpecExternalId": body.get("billingAccountSpecId", ""),
+                "billingAccountSpecExternalId": body.get("billingAccountSpecId", defaults.get("billingAccountSpecExternalId", "")),
                 "customerBillCycleSpecification": [
                     {
                         "externalId": body.get("customerBCSExternalId", "extID_BCS"),
@@ -351,8 +353,8 @@ async def provision_subscriber(body: dict):
     # 3. Create Contract with base plan
     contract_body = {
         "externalId": body.get("msisdn"),
-        "contractSpecification": {"externalId": body.get("contractSpecId", "")},
-        "productOffering": {"externalId": body.get("productOfferingId", "")},
+        "contractSpecification": {"externalId": body.get("contractSpecId", defaults.get("contractSpecExternalId", ""))},
+        "productOffering": {"externalId": body.get("productOfferingId", defaults.get("basePlanProductOfferingExternalId", ""))},
         "communicationIdentifier": [{"communicationId": body.get("msisdn"), "communicationIdType": "E.164"}],
     }
     if body.get("contractCharacteristics"):

@@ -548,6 +548,15 @@ function SettingsPanel() {
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend><b>Defaults (Spec External IDs)</b></legend>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {Object.keys(config.defaults || {}).map(k => (
+              <label key={k}>{k}<input style={{ width: '100%' }} value={config.defaults?.[k] || ''} onChange={e => setConfig({ ...config, defaults: { ...config.defaults, [k]: e.target.value } })} /></label>
+            ))}
+          </div>
+        </fieldset>
+
         <button onClick={save} disabled={loading}>{loading ? 'Saving...' : 'Save Configuration'}</button>
         {msg && <p style={{ color: msg.startsWith('Error') ? 'red' : 'green' }}>{msg}</p>}
       </div>
