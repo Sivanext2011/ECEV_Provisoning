@@ -240,7 +240,6 @@ function ProvisionWizard() {
                   externalId: `${selectedPO}-${msisdn}`,
                   name: selectedPO,
                   billingAccountReference: { externalId: baExtId },
-                  baRefForBillCycleAlignedRecurrence: { externalId: baExtId },
                 }]
                 const poCharEntries = Object.entries(formValues.contract)
                   .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
