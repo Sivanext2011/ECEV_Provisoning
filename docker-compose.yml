@@ -2,8 +2,9 @@ version: "3.8"
 services:
   backend:
     build: ./backend
+    container_name: ecev-backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ./config:/app/config
       - db-data:/app/data
@@ -12,8 +13,9 @@ services:
 
   frontend:
     build: ./frontend
+    container_name: ecev-frontend
     ports:
-      - "3000:80"
+      - "3001:80"
     depends_on:
       - backend
 
