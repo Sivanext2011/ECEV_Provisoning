@@ -311,6 +311,7 @@ async def provision_subscriber(body: dict):
         "externalId": body.get("msisdn"),
         "customerSpecification": {"externalId": body.get("customerSpecId", "")},
         "relatedParty": [{"externalId": body.get("msisdn")}],
+        "partitionId": body.get("partitionId", "1"),
     }
     if body.get("customerCharacteristics"):
         customer_body["characteristic"] = [
