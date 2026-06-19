@@ -307,10 +307,37 @@ async def provision_subscriber(body: dict):
         raise HTTPException(status_code=502, detail=f"Create Party failed: {e}")
 
     # 2. Create Customer
+    # engagedParty references the party by externalId
+    # characteristic tells BAE the rating type (internal/external)
+    party_external_id = body.get("partyExternalId", f"extID-party-{body.get('msisdn')}")
     customer_body = {
-        "externalId": body.get("msisdn"),
+        "externalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}"),
         "customerSpecification": {"externalId": body.get("customerSpecId", "")},
-        "relatedParty": [{"externalId": body.get("msisdn")}],
+        "status": [{"status": "CustomerActive"}],
+        "account": [
+            {
+                "externalId": body.get("customerBAExternalId", "extID_BAS"),
+                "billingAccountSpecExternalId": body.get("billingAccountSpecId", ""),
+                "customerBillCycleSpecification": [
+                    {
+                        "externalId": body.get("customerBCSExternalId", "extID_BCS"),
+                        "billCycleSpecExternalId": body.get("billCycleSpecId", "1")
+                    }
+                ],
+                "status": [{"status": "BillingAccountActive"}]
+            }
+        ],
+        "engagedParty": {
+            "externalId": party_external_id,
+            "@referredType": "Individual"
+        },
+        "homeTimeZone": [{"timeZone": body.get("customerHTZ", "America/Los_Angeles")}],
+        "characteristic": [
+            {"charSpecExternalId": "customerType", "value": [{"value": body.get("charCustomerType", "defaultCustomerType")}]},
+            {"charSpecExternalId": "accountType", "value": [{"value": body.get("charAccountType", "defaultAccountType")}]},
+            {"charSpecExternalId": "accountSubType", "value": [{"value": body.get("charAccountSubType", "defaultAccountSubType")}]},
+            {"charSpecExternalId": "customerID", "value": [{"value": body.get("charCustomerID", "defaultCustomerID")}]}
+        ]
     }
     if body.get("customerCharacteristics"):
         customer_body["characteristic"] = [
