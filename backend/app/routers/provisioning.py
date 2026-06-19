@@ -318,15 +318,17 @@ async def provision_subscriber(body: dict):
         "status": [{"status": "CustomerActive"}],
         "account": [
             {
-                "externalId": body.get("customerBAExternalId", "extID_BAS"),
+                "externalId": body.get("customerBAExternalId", f"extID_BA-{body.get('msisdn')}"),
                 "billingAccountSpecExternalId": body.get("billingAccountSpecId") or defaults.get("billingAccountSpecExternalId") or "MISSING_BA_SPEC",
-                "customerBillCycleSpecification": [
-                    {
-                        "externalId": body.get("customerBCSExternalId", "extID_BCS"),
-                        "billCycleSpecExternalId": body.get("billCycleSpecId", "1")
-                    }
-                ],
                 "status": [{"status": "BillingAccountActive"}],
+                **({
+                    "customerBillCycleSpecification": [
+                        {
+                            "externalId": body.get("customerBCSExternalId", "extID_BCS"),
+                            "billCycleSpecExternalId": body.get("billCycleSpecId")
+                        }
+                    ]
+                } if body.get("billCycleSpecId") else {}),
                 **({
                     "characteristic": [
                         {"charSpecExternalId": k, "value": [{"value": v}]}
