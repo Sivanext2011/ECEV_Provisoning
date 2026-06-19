@@ -10,7 +10,8 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "config" / "config.json"
+import os
+CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent / "config" / "config.json"))
 
 # In-memory API call log
 api_logs: list[dict] = []
