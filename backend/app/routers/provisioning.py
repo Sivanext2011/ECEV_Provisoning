@@ -358,19 +358,33 @@ async def provision_subscriber(body: dict):
         raise HTTPException(status_code=502, detail=f"Create Customer failed: {e}")
 
     # 3. Create Contract with base plan
+    product_offering_id = body.get("productOfferingId", defaults.get("basePlanProductOfferingExternalId", ""))
     contract_body = {
-        "externalId": body.get("msisdn"),
+        "externalId": body.get("contractExternalId", f"extID-contract-{body.get('msisdn')}"),
         "contractSpecification": {"externalId": body.get("contractSpecId", defaults.get("contractSpecExternalId", ""))},
-        "productOffering": {"externalId": body.get("productOfferingId", defaults.get("basePlanProductOfferingExternalId", ""))},
-        "communicationIdentifier": [{"communicationId": body.get("msisdn"), "communicationIdType": "E.164"}],
+        "status": [{"status": "Active"}],
     }
+    if product_offering_id:
+        contract_body["product"] = [{
+            "productOfferingExternalId": product_offering_id,
+            "externalId": body.get("basePlanProductExternalId", f"{product_offering_id}-{body.get('msisdn')}"),
+            "name": product_offering_id,
+        }]
+    if body.get("msisdn"):
+        contract_body["resource"] = [{
+            "externalId": f"LRS_msisdn_extid-{body.get('msisdn')}",
+            "resourceNumber": body.get("msisdn"),
+            "resourceSpecificationExternalId": body.get("logicalResourceSpecMSISDNExternalId", defaults.get("logicalResourceSpecMSISDNExternalId", ""))
+        }]
+        if not contract_body["resource"][0]["resourceSpecificationExternalId"]:
+            del contract_body["resource"]
     if body.get("contractCharacteristics"):
         contract_body["characteristic"] = [
             {"charSpecExternalId": k, "value": [{"value": v}]} for k, v in body["contractCharacteristics"].items() if v
         ]
     try:
         results["contract"] = await bae_client.call(
-            "create_contract", params={"customerExternalId": body.get("msisdn")}, body=contract_body
+            "create_contract", params={"customerExternalId": body.get("customerExternalId", f"extID-customer-{body.get('msisdn')}")}, body=contract_body
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Create Contract failed: {e}")
