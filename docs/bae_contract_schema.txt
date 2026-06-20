@@ -1,0 +1,2113 @@
+BSSF Subscription Management REST Interface 2.31
+Table 24
+Customized Response HTTP Headers
+Header Field
+Name
+Header Field Value
+Mandatory/Op
+tional
+Description
+ERICSSON.Gener
+ic-Interface-Para
+meters
+BASE64 encoded and
+GZIP compressed
+bss.genericInterfaceP
+arameters.response.4
+.json
+Optional
+Generic Interfa
+ce Parameters
+GURID_HEADER CUSTOM_HEADER
+4.1.2.3
+Resource Representation - Request
+The following images and tables describe the elements and their structure
+contained in the resource representation request.
+4.1.2.3.1
+bss.bssfSubscriptionManagement.contract Create Request Version 2
+28
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+29
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+http://ericsson.com/bss.bssfSubscriptionManagement.contract.cre
+ateRequest.2.json#
+The representation is provided as JSON objects with the following attributes:
+Table 25
+Contract (version 2)
+Name
+Type
+Description
+Contract (version 2)
+object
+Contract.
+30
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+externalId
+string
+External identifier of the
+contract for interaction in
+external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+contractSpecificati
+on
+ContractSpecificati
+onRef (version 1)
+Reference to Contract
+specification
+paymentContext
+string
+Public identifier of the payment
+context, for example Prepaid
+or Postpaid.
+Max length: 32
+characteristic
+array of Characteris
+ticValue (version 2)
+A list of characteristic values
+for this contract.
+status
+array of bss.cmn
+.StatusExtended
+(version 1)
+Array of contract statuses.
+product
+array of Product
+(version 2)
+The products which belong to
+the contract.
+resource
+array of Resource
+(version 2)
+List of resources belonging to
+the contract.
+contactMediumAss
+ociation
+array of ContactM
+ediumAssociation
+(version 1)
+A list of contact medium
+association to the contract.
+relatedPartyIntera
+ctionRole
+array of PartyInter
+actionRole (version
+1)
+The business interaction role
+which associates a party role
+(customer) with a contract.
+Deprecated
+relatedParty
+array of Relate
+dPartyExtended
+(version 1)
+The users of the contract.
+homeTimeZone
+array of bss.cmn.Ti
+meZone (version 1)
+The list of all versions of
+the home time zone for this
+contract.
+billingAccountRefe
+rence
+BillingAccountRe
+ferenceExtended
+(version 1)
+Billing Account used to Invoice
+the charges from contract.
+taxExemption
+array of TaxExemp
+tion (version 1)
+The tax exemptions for the
+contract.
+groupContract
+array of GroupCont
+ractReferenceExte
+nded (version 1)
+The list of group contract
+references.
+31
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+ContractSpecificationRef (version 1)
+Table 26
+ContractSpecificationRef (version 1)
+Name
+Type
+Description
+ContractSpecificationR
+ef (version 1)
+object
+Contract Specification
+Reference.
+id
+string
+Unique identifier for the
+Contract specification
+reference.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+External identifier for the
+Contract specification
+reference.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+CharacteristicValue (version 2)
+Table 27
+CharacteristicValue (version 2)
+Name
+Type
+Description
+CharacteristicValue
+(version 2)
+object
+A value of a Characteristic.
+32
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+charSpecId
+string
+The ID of the characteristic
+specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+charSpecExternalI
+d
+string
+The External ID of the
+characteristic specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the
+characteristic value is valid for.
+value
+array of bss.cmn
+.ValueWithUoM
+(version 1)
+The versions of the value.
+comprisedOf
+array of Characteris
+ticValueNoValidFor
+(version 1)
+Child/Children of the
+characteristic value, if any.
+referenceValue
+array of Reference
+Value (version 1)
+The value of the referred entity
+identification.
+bss.cmn.TimePeriod (version 1)
+Table 28
+bss.cmn.TimePeriod (version 1)
+Name
+Type
+Description
+bss.cmn.TimePeriod
+(version 1)
+object
+StartDateTime must be earlier
+than EndDateTime.
+33
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+startDateTime
+string
+Start dateTime of the time
+period. The value is inclusive,
+including the starting point of
+the interval. The pattern is
+based on the definition found
+at http://www.w3.org/TR/xm
+lschema-2/#dateTime.
+Format: date-time
+Pattern: ^\d{4}-(((0[13578]|
+1[02])-(0[1-9]|[12][0-9]|3[01
+]))|(02-(0[1-9]|[12][0-9]))|((0
+[469]|11)-(0[1-9]|[12][0-9]|3
+0)))T(([01][0-9]|2[0-3]):[0-5
+][0-9]:[0-5][0-9]\.[0-9]{3}|(24
+:00:00.000))(Z|\+((0[0-9]|1[0
+-3]):[0-5][0-9]|14:00)|-((0[0-
+9]|1[0-1]):[0-5][0-9]|12:00))$
+endDateTime
+string
+End dateTime of the time
+period. The value is exclusive,
+excluding the ending point of
+the interval. The pattern is
+based on the definition found
+at http://www.w3.org/TR/xm
+lschema-2/#dateTime.
+Format: date-time
+Pattern: ^\d{4}-(((0[13578]|
+1[02])-(0[1-9]|[12][0-9]|3[01
+]))|(02-(0[1-9]|[12][0-9]))|((0
+[469]|11)-(0[1-9]|[12][0-9]|3
+0)))T(([01][0-9]|2[0-3]):[0-5
+][0-9]:[0-5][0-9]\.[0-9]{3}|(24
+:00:00.000))(Z|\+((0[0-9]|1[0
+-3]):[0-5][0-9]|14:00)|-((0[0-
+9]|1[0-1]):[0-5][0-9]|12:00))$
+bss.cmn.ValueWithUoM (version 1)
+Table 29
+bss.cmn.ValueWithUoM (version 1)
+Name
+Type
+Description
+bss.cmn.ValueWithUoM
+(version 1)
+object
+The versions of the value.
+34
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+value
+string
+The value.
+Max length: 256
+unitOfMeasure
+string
+The unit of measure of the
+value.
+Max length: 32
+CharacteristicValueNoValidFor (version 1)
+Table 30
+CharacteristicValueNoValidFor (version 1)
+Name
+Type
+Description
+CharacteristicValueNoV
+alidFor (version 1)
+object
+A value of a Characteristic.
+charSpecId
+string
+The ID of the characteristic
+specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+charSpecExternalI
+d
+string
+The External ID of the
+characteristic specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+value
+array of bss.cmn
+.ValueWithUoM
+(version 1)
+The versions of the value.
+comprisedOf
+array of Characteris
+ticValueNoValidFor
+(version 1)
+Child/Children of the
+characteristic value, if any.
+ReferenceValue (version 1)
+Table 31
+ReferenceValue (version 1)
+Name
+Type
+Description
+ReferenceValue
+(version 1)
+object
+The value of the referred entity
+identification.
+35
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+id
+string
+Unique identifier ofthereferred
+entity.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the referred entity
+in an external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+bss.cmn.StatusExtended (version 1)
+Table 32
+bss.cmn.StatusExtended (version 1)
+Name
+Type
+Description
+bss.cmn.StatusExtende
+d (version 1)
+object
+Extended status structure.
+reason
+string
+The reason for the new status
+version.
+Max length: 256
+status
+string
+The status for the given time
+period.
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+Time period where the status
+is valid.
+Product (version 2)
+Table 33
+Product (version 2)
+Name
+Type
+Description
+Product (version 2)
+object
+Product derived from a product
+offering related to a contract.
+36
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+productOfferingId
+string
+A reference to the product
+offering from which a product
+has been created.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+productOfferingExt
+ernalId
+string
+An external reference to the
+product offering from which a
+product has been created.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the product in an
+external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+correlationId
+string
+Temporary product identifier,
+only used for resolving the
+actual id, will not be saved in
+database.
+Max length: 128
+name
+string
+A word, term, or phrase by
+which the product is known
+and distinguished from other
+products. Not guaranteed to
+be unique.
+Max length: 128
+characteristic
+array of Characteris
+ticValue (version 2)
+A list of product characteristic
+values. Only if the
+characteristics need to be
+personalized.
+status
+array of bss.cmn
+.StatusExtended
+(version 1)
+A list of statuses linked to the
+product.
+priceSelectionId
+array of string
+A list of Price Ids for price
+selection for provisioned
+product.
+Max length: 128
+price
+array of Price
+(version 2)
+List of product prices.
+comprisedOf
+array of Product
+(version 2)
+References to sub-products
+in a hierarchical product
+structure.
+sharingProvider
+SharingProvider
+(version 1)
+Information of the provider
+configuration. Only applicable
+for provider products.
+sharingConsumer
+SharingConsumer
+(version 2)
+The provider whom this
+product is sharing from Only
+37
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Price (version 2)
+Table 34
+Price (version 2)
+Name
+Type
+Description
+Price (version 2)
+object
+Product price details
+corresponding to a product
+related to a contract.
+externalId
+string
+External identifier of the
+product price.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+productOfferingPri
+ceId
+string
+The product offering price
+identifier.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+Deprecated
+productOfferingPri
+ceExternalId
+string
+The product offering price
+external identifier.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+Deprecated
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the
+product price is valid for.
+comprisedOf
+array of Price
+(version 2)
+References to sub-product
+prices in a hierarchical product
+price structure.
+Deprecated
+characteristic
+array of Charact
+eristicValuePrice
+(version 2)
+A list of product price
+characteristic values. Only
+if the characteristics need to be
+personalized.
+productOfferingPri
+ce
+ProductOfferingPri
+ceRef (version 1)
+The references of product
+offering price.
+priceRow
+array of PriceRow
+(version 1)
+The price row.
+38
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+CharacteristicValuePrice (version 2)
+Table 35
+CharacteristicValuePrice (version 2)
+Name
+Type
+Description
+CharacteristicValuePric
+e (version 2)
+object
+A value of a Characteristic.
+comprisedOf
+array of Characteris
+ticValueNoValidFor
+(version 1)
+Child/Children of the
+characteristic value, if any.
+Deprecated
+charSpecId
+string
+The ID of the characteristic
+specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+charSpecExternalI
+d
+string
+The External ID of the
+characteristic specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the
+characteristic value is valid for.
+value
+array of bss.cmn
+.ValueWithUoM
+(version 1)
+The versions of the value.
+referenceValue
+array of Reference
+Value (version 1)
+The value of the referred entity
+identification.
+ProductOfferingPriceRef (version 1)
+Table 36
+ProductOfferingPriceRef (version 1)
+Name
+Type
+Description
+ProductOfferingPriceRe
+f (version 1)
+object
+The product offering price
+reference.
+39
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+id
+string
+The ID of the referenced
+product offering price.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+The external ID of the
+referenced product offering
+price.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+PriceRow (version 1)
+Table 37
+PriceRow (version 1)
+Name
+Type
+Description
+PriceRow (version 1)
+object
+Price row.
+priceAction
+array of PriceAction
+(version 1)
+The price action.
+productOfferingPri
+ceRow
+ProductOfferingPri
+ceRowRef (version
+1)
+The reference of the product
+offering price row.
+PriceAction (version 1)
+Table 38
+PriceAction (version 1)
+Name
+Type
+Description
+PriceAction (version 1)
+object
+Price action.
+action
+ActionRef (version
+1)
+The reference of the action.
+characteristic
+array of Characteris
+ticValue (version 2)
+A list of product price
+characteristic values. Only
+if the characteristics need to be
+personalized.
+actionCharacteristi
+cValue
+array of ActionCh
+aracteristicValue
+(version 1)
+A list of product price action
+characteristic values. Only if
+the characteristics need to be
+personalized.
+40
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+ActionRef (version 1)
+Table 39
+ActionRef (version 1)
+Name
+Type
+Description
+ActionRef (version 1)
+object
+Reference of the action.
+id
+string
+The ID of the referenced
+action.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+The external ID of the
+referenced action.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+ActionCharacteristicValue (version 1)
+Table 40
+ActionCharacteristicValue (version 1)
+Name
+Type
+Description
+ActionCharacteristicVal
+ue (version 1)
+object
+Action Characteristic value.
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the Action
+Characteristic value is valid for.
+value
+array of bss.cmn
+.ValueWithUoM
+(version 1)
+The Action Characteristic
+value.
+actionCharacteristi
+cSpecificationUseR
+ef
+EntitySpecRef
+(version 1)
+Action Characteristic
+Specfification Use reference.
+EntitySpecRef (version 1)
+Table 41
+EntitySpecRef (version 1)
+Name
+Type
+Description
+EntitySpecRef (version
+1)
+object
+Reference to an entity
+specification.
+41
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+id
+string
+Unique identifier of the
+specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the specification
+in an external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+ProductOfferingPriceRowRef (version 1)
+Table 42
+ProductOfferingPriceRowRef (version 1)
+Name
+Type
+Description
+ProductOfferingPriceRo
+wRef (version 1)
+object
+The product offering price row
+reference.
+id
+string
+The ID of the referenced
+product offering price row.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+The external ID of the
+referenced product offering
+price row.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+SharingProvider (version 1)
+Table 43
+SharingProvider (version 1)
+Name
+Type
+Description
+SharingProvider
+(version 1)
+object
+Information required for the
+provider specific parts of a
+sharing product.
+42
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+billingAccount
+array of BillingA
+ccountReference
+(version 1)
+List of billing accounts to
+be shared. Only applicable
+for products connected to a
+sharing provider specification
+with the characteristic must
+select BA set to true.
+consumerList
+array of ConsumerE
+ntry (version 1)
+List of consumers to share to.
+billingAccountBuck
+etDeterminationSp
+ecification
+array of BillingAcco
+untBucketDetermin
+ationSpecificationR
+ef (version 1)
+List of billing accounts and
+its Bucket Determination
+Specification to be shared.
+Only applicable for products
+connected to a sharing
+provider specification with the
+characteristic must select BA
+set to true.
+BillingAccountReference (version 1)
+Table 44
+BillingAccountReference (version 1)
+Name
+Type
+Description
+BillingAccountReferenc
+e (version 1)
+object
+Billing Account Reference.
+id
+string
+ID of the billing account.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+ExternalId of the billing
+account.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+ConsumerEntry (version 1)
+Table 45
+ConsumerEntry (version 1)
+Name
+Type
+Description
+ConsumerEntry (version
+1)
+object
+The consumer that is
+consuming the shared provider
+product.
+43
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+externalId
+string
+Unique identifier of a
+Consumer Entry in an external
+system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerCustome
+rId
+string
+The identifier of the customer
+that the consumer belongs to.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerCustomer
+ExternalId
+string
+The external identifier of the
+customer that the consumer
+belongs to.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerContractI
+d
+string
+The identifier of the consumer
+contract.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerContractE
+xternalId
+string
+The external identifier of the
+consumer contract.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the
+consumer entry is valid for.
+BillingAccountBucketDeterminationSpecificationRef (version 1)
+Table 46
+BillingAccountBucketDeterminationSpecificationRef (version 1)
+Name
+Type
+Description
+BillingAccountBucketDe
+terminationSpecificatio
+nRef (version 1)
+object
+Billing Account Bucket
+Determination Specification
+Reference.
+44
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+billingAccount
+BillingAccountRefe
+rence (version 1)
+Billing account reference.
+bucketDeterminati
+onSpecification
+BucketDeterminati
+onSpecificationRef
+(version 1)
+Bucket determination
+specification.
+BucketDeterminationSpecificationRef (version 1)
+Table 47
+BucketDeterminationSpecificationRef (version 1)
+Name
+Type
+Description
+BucketDeterminationSp
+ecificationRef (version
+1)
+object
+Bucket Determination
+Specification Reference.
+id
+string
+Unique identifier of the bucket
+determination specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the bucket
+determination specification in
+an external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+SharingConsumer (version 2)
+Table 48
+SharingConsumer (version 2)
+Name
+Type
+Description
+SharingConsumer
+(version 2)
+object
+Links the sharing provider
+that the sharing consumer is
+consuming from.
+45
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+providerCustomerI
+d
+string
+The customer idof the provider.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+providerCustomerE
+xternalId
+string
+The external customer id of the
+provider.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+providerContractId
+string
+The contract id of the provider.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+providerContractEx
+ternalId
+string
+The external contract id of the
+provider.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+providerProductId
+string
+The Sharing Provider product
+id.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+providerProductExt
+ernalId
+string
+The Sharing Provider product
+external id.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerListEntry
+Id
+string
+Unique id of a consumer entry.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+consumerListEntry
+ExternalId
+string
+External id of a consumer
+entry.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+46
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+BARefForBillCycleAlignedRecurrence (version 1)
+Table 49
+BARefForBillCycleAlignedRecurrence (version 1)
+Name
+Type
+Description
+BARefForBillCycleAlign
+edRecurrence (version
+1)
+object
+BARefFor BillCycleAligned
+Recurrence.
+externalId
+string
+Unique identifier of the billing
+account populated by external
+system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+id
+string
+Unique identifier of the billing
+account.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The start time to change the
+billing account reference.
+isProratingRequire
+d
+boolean
+This indicator define whether
+proration should happen for
+this billing account change.
+BillingAccountReferenceExtended (version 1)
+Table 50
+BillingAccountReferenceExtended (version 1)
+Name
+Type
+Description
+BillingAccountReferenc
+eExtended (version 1)
+object
+Billing Account Reference
+extended to include validFor.
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The start time to change the
+billing account reference.
+id
+string
+ID of the billing account.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+ExternalId of the billing
+account.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+47
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+CalendarEntry (version 1)
+Table 51
+CalendarEntry (version 1)
+Name
+Type
+Description
+CalendarEntry (version
+1)
+object
+Calendar Entry.
+scheduleDefinition
+ScheduleDefinition
+Ref (version 1)
+The reference of a schedule
+definition.
+productOfferingPri
+ce
+array of Product
+OfferingPriceRef
+(version 1)
+The references of product
+offering price.
+recurrenceFreq
+RecurrenceFreq
+(version 1)
+Recurrence frequency of a
+schedule definition.
+ScheduleDefinitionRef (version 1)
+Table 52
+ScheduleDefinitionRef (version 1)
+Name
+Type
+Description
+ScheduleDefinitionRef
+(version 1)
+object
+Schedule Definition Reference.
+id
+string
+Unique identifier of the
+schedule definition.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the schedule
+definition in an external
+system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+RecurrenceFreq (version 1)
+Table 53
+RecurrenceFreq (version 1)
+Name
+Type
+Description
+RecurrenceFreq
+(version 1)
+object
+Recurrence frequency of
+schedule definition.
+48
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+recurrenceCount
+integer
+Recurrence count of a schedule
+definition.
+The numeric value must be at
+least 1.
+The numeric value
+must not exceed
+9223372036854775806.
+recurrenceInterval
+integer
+Recurrence interval of a
+schedule definition.
+The numeric value must be at
+least 1.
+The numeric value
+must not exceed
+9223372036854775806.
+time
+TimePredefinedTi
+meZone (version 1)
+Time with predefined time
+zone.
+weekly
+Weekly (version 1)
+Recurrence frequency Weekly.
+monthly
+Monthly (version 1)
+Recurrence frequency monthly.
+yearly
+Yearly (version 1)
+Recurrence frequency yearly.
+TimePredefinedTimeZone (version 1)
+Table 54
+TimePredefinedTimeZone (version 1)
+Name
+Type
+Description
+TimePredefinedTimeZo
+ne (version 1)
+object
+A time with a predefined time
+zone.
+49
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+time
+string
+This type defines a time value
+based on the definition found
+at http://www.w3.org/TR/xm
+lschema-2/#time. Fractional
+seconds with three decimals
+are mandatory. Leap seconds
+are not supported. Example
+values are '14:35:05.003'.
+The latter example is the
+recommended format.
+Pattern: ^(([01][0-9]|2[0-3]):
+[0-5][0-9]:[0-5][0-9]\.[0-9]{3
+}|(24:00:00.000)?)$
+timeZone
+string
+This specifies which predefined
+time zone to be used.
+Possible values:
+HOME_TIME_ZONE
+Weekly (version 1)
+Table 55
+Weekly (version 1)
+Name
+Type
+Description
+Weekly (version 1)
+object
+Schedule definition by weekly.
+recurrenceByDay
+array of string
+Recurrence by weekdays.
+Possible values:
+MONDAY
+TUESDAY
+WEDNESDAY
+THURSDAY
+FRIDAY
+SATURDAY
+SUNDAY
+50
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Monthly (version 1)
+Table 56
+Monthly (version 1)
+Name
+Type
+Description
+Monthly (version 1)
+object
+Schedule definition by
+monthly.
+monthDayNumber
+array of MonthDay
+Number (version 1)
+Monthly schedule definition by
+month day number.
+weekdayOfMonth
+WeekdayOfMonth
+(version 1)
+Monthly schedule definition by
+weekday of month.
+MonthDayNumber (version 1)
+Table 57
+MonthDayNumber (version 1)
+Name
+Type
+Description
+MonthDayNumber
+(version 1)
+object
+List of days of month.
+offsetType
+string
+Offset to specify if day should
+count from start or end.
+Possible values:
+COUNT_FROM_START
+COUNT_FROM_END
+recurrenceByMonth
+Day
+integer
+Recurrence by month day.
+The numeric value must be at
+least 1.
+The numeric value must not
+exceed 28.
+WeekdayOfMonth (version 1)
+Table 58
+WeekdayOfMonth (version 1)
+Name
+Type
+Description
+WeekdayOfMonth
+(version 1)
+object
+Schedule definition by
+weekday of month.
+51
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+recurrenceByDay
+string
+Recurrence by weekday.
+Possible values:
+MONDAY
+TUESDAY
+WEDNESDAY
+THURSDAY
+FRIDAY
+SATURDAY
+SUNDAY
+weekNumber
+string
+Recurrence by week number of
+the month.
+Possible values:
+FIRST
+SECOND
+THIRD
+FOURTH
+LAST
+Yearly (version 1)
+Table 59
+Yearly (version 1)
+Name
+Type
+Description
+Yearly (version 1)
+object
+Recurrence frequency of
+schedule definition.
+weekdaysOfYear
+WeekdaysOfYear
+(version 1)
+Yearly schedule definition by
+weekdays of year.
+daysOfMonth
+DaysOfMonth
+(version 1)
+Yearly schedule definition by
+days of month.
+daysOfYear
+array of DaysOfYea
+r (version 1)
+Yearly schedule definition by
+days of year.
+52
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+WeekdaysOfYear (version 1)
+Table 60
+WeekdaysOfYear (version 1)
+Name
+Type
+Description
+WeekdaysOfYear
+(version 1)
+object
+Yearly schedule definition by
+weekdays of year.
+recurrenceByDay
+array of string
+Recurrence by weekdays.
+Possible values:
+MONDAY
+TUESDAY
+WEDNESDAY
+THURSDAY
+FRIDAY
+SATURDAY
+SUNDAY
+weekNumber
+array of WeekNum
+ber (version 1)
+Week number of the year.
+WeekNumber (version 1)
+Table 61
+WeekNumber (version 1)
+Name
+Type
+Description
+WeekNumber (version
+1)
+object
+List of week number of the
+year.
+offsetType
+string
+Offset to specify if day should
+count from start or end.
+Possible values:
+COUNT_FROM_START
+COUNT_FROM_END
+recurrenceByWeek
+No
+integer
+Recurrence by week number of
+the year.
+The numeric value must be at
+least 1.
+The numeric value must not
+exceed 52.
+53
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+DaysOfMonth (version 1)
+Table 62
+DaysOfMonth (version 1)
+Name
+Type
+Description
+DaysOfMonth (version
+1)
+object
+Schedule definition by days of
+month.
+monthDayNumber
+array of MonthDay
+Number (version 1)
+Recurrence by month day.
+recurrenceByMonth
+array of string
+Recurrence by months.
+Possible values:
+JANUARY
+FEBRUARY
+MARCH
+APRIL
+MAY
+JUNE
+JULY
+AUGUST
+SEPTEMBER
+OCTOBER
+NOVEMBER
+DECEMBER
+DaysOfYear (version 1)
+Table 63
+DaysOfYear (version 1)
+Name
+Type
+Description
+DaysOfYear (version 1)
+object
+Yearly schedule definition by
+days of year.
+54
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+offsetType
+string
+Offset to specify if day should
+count from start or end.
+Possible values:
+COUNT_FROM_START
+COUNT_FROM_END
+recurrenceByYearD
+ay
+integer
+Recurrence by year day.
+The numeric value must be at
+least 1.
+The numeric value must not
+exceed 366.
+Resource (version 2)
+Table 64
+Resource (version 2)
+Name
+Type
+Description
+Resource (version 2)
+object
+Structure of a logical resource
+the represent an identification.
+55
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+externalId
+string
+An external identifier of a
+logical resource.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+characteristic
+array of Characteris
+ticValue (version 2)
+A list of the logical resources
+characteristic values. Only if
+the characteristics need to be
+personalized.
+status
+array of bss.cmn.St
+atus (version 1)
+A list of all versions of statuses
+linked to the resource.
+resourceNumber
+string
+The complete number to
+identify the resource. For an
+MSISDN-DCS (GSM standard
+1800) this is CC + NDC + SN.
+For an MSISDN-PCS (GSM
+standard PCS 1900) this is
+CC + NPA + SN. For an IMSI
+this is MCC + MNC + MSIN.
+(CC = Country code, NDC =
+National destination code,
+NPA = Number planning area,
+SN = Subscriber number,
+MCC = Mobile country code,
+MNC = Mobile network code,
+MSIN = Mobile subscriber
+identification number).
+Max length: 512
+productCorrelation
+Id
+array of string
+Reference totheproduct(s) this
+resource is tied. Correlation id
+is never persisted.
+Max length: 128
+resourceSpecificati
+onId
+string
+Resource specification
+definition by ID. Found in
+RMCA by fetching the latest
+RSS of type LRSS of type
+CommunicationIdentification
+and the numberingScheme
+equal to the given
+resourceType in this payload.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+resourceSpecificati
+onExternalId
+string
+Resource specification
+definition by external ID.
+Found in RMCA by fetching the
+latest RSS of type LRSS of type
+CommunicationIdentification
+and the numberingScheme
+equal to the given
+resourceType in this payload.
+Pattern: ^(?=\s*\S) *$
+56
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+bss.cmn.Status (version 1)
+Table 65
+bss.cmn.Status (version 1)
+Name
+Type
+Description
+bss.cmn.Status (version
+1)
+object
+Structure of one status version
+element.
+reason
+string
+The reason for the new status
+version.
+Max length: 256
+status
+string
+The status for the given time
+period.
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+Time period where the status
+is valid.
+ContactMediumAssociation (version 1)
+Table 66
+ContactMediumAssociation (version 1)
+Name
+Type
+Description
+ContactMediumAssocia
+tion (version 1)
+object
+Represents an assignment of a
+contact medium to an entity.
+57
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+contactRole
+string
+Represents a contact role.
+Max length: 32
+validFor
+bss.cmn.TimePerio
+d (version 1)
+Time period where the contact
+medium association is valid.
+contactMediumId
+string
+The reference to a contact
+medium using id.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+contactMediumExt
+ernalId
+string
+The reference to a contact
+medium using external id.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+language
+string
+The language used for
+communication.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+enabled
+boolean
+The boolean flag to enable or
+disable notifications.
+enabledDateTimeP
+eriod
+array of bss.cmn.T
+imePeriod (version
+1)
+Time period where
+notifications are allowed.
+disabledDateTimeP
+eriod
+array of bss.cmn.T
+imePeriod (version
+1)
+Time period where
+notifications are not allowed.
+disabledWeekDayT
+imePeriod
+array of bss.cmn.W
+eekdayTimePeriod
+(version 1)
+Time period on a day of week
+where notifications are not
+allowed.
+disabledNotificatio
+nGroup
+array of string
+Represents a Notification
+Group used for e.g. end user
+notifications.
+Max length: 32
+Deprecated
+58
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+bss.cmn.WeekdayTimePeriod (version 1)
+Table 67
+bss.cmn.WeekdayTimePeriod (version 1)
+Name
+Type
+Description
+bss.cmn.WeekdayTime
+Period (version 1)
+object
+Common sub-data structure
+that contains a week day and
+start and end time for week
+day.
+weekday
+integer
+Number of the day of a week.
+Example is 1 for Monday.
+The numeric value must be at
+least 0.
+The numeric value must not
+exceed 6.
+start
+string
+The start time of
+weekday. Example is
+'14:35:05.003+01:00'.
+Pattern: ^(([01][0-9]|2[0-3]):
+[0-5][0-9]:[0-5][0-9]\.[0-9]{3
+}|(24:00:00.000)?)(Z|\+((0[0-
+9]|1[0-3]):[0-5][0-9]|14:00)|-
+((0[0-9]|10|11):[0-5][0-9]|12
+:00))$
+end
+string
+The end time of
+weekday. Example is
+'14:35:05.003+01:00'.
+Pattern: ^(([01][0-9]|2[0-3]):
+[0-5][0-9]:[0-5][0-9]\.[0-9]{3
+}|(24:00:00.000)?)(Z|\+((0[0-
+9]|1[0-3]):[0-5][0-9]|14:00)|-
+((0[0-9]|10|11):[0-5][0-9]|12
+:00))$
+59
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+PartyInteractionRole (version 1)
+Table 68
+PartyInteractionRole (version 1)
+Name
+Type
+Description
+PartyInteractionRole
+(version 1)
+object
+The party interaction role is a
+business interaction role which
+associates a party role with
+a contract, i.e. with respect
+to a contract, a customer can
+play a certain role (e.g. Legal
+Contract Holder). Different
+customers can be associated to
+the same contract via different
+interaction roles. From the
+contract's perspective the roles
+must be unique. Different
+contracts can be associated
+with a customer via arbitrary
+roles.
+partyRoleId
+string
+Instance ID of the party role.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+partyRoleExternalI
+d
+string
+External identifier of the party
+role.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+interactionRole
+string
+The role that a party plays with
+respect to a given contract, for
+example LegalContractHolder.
+Max length: 32
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period this entity is
+valid for.
+Deprecated
+RelatedPartyExtended (version 1)
+Table 69
+RelatedPartyExtended (version 1)
+Name
+Type
+Description
+RelatedPartyExtended
+(version 1)
+object
+Related Party Extended.
+60
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+Name
+Type
+Description
+associationExterna
+lId
+string
+Association External identifier
+for the related party.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period that the
+Related Party is valid for
+@referredType
+string
+Referred Type.
+Max length: 128
+externalId
+string
+External identifier of the party
+or party role.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+id
+string
+Unique identifier of the party
+or party role.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+bss.cmn.TimeZone (version 1)
+Table 70
+bss.cmn.TimeZone (version 1)
+Name
+Type
+Description
+bss.cmn.TimeZone
+(version 1)
+object
+Data structure containing
+time-zone and validity period.
+timeZone
+string
+The name of the time zone
+according to IANA Time
+Zone Database, for example
+Europe/Paris.
+Max length: 32
+validFor
+bss.cmn.TimePerio
+d (version 1)
+Time period the time zone is
+valid for.
+61
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+TaxExemption (version 1)
+Table 71
+TaxExemption (version 1)
+Name
+Type
+Description
+TaxExemption (version
+1)
+object
+Tax exemption.
+externalId
+string
+Identifier of the tax exemption
+in an external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+characteristic
+array of Characteris
+ticValue (version 2)
+A list of tax exemption
+characteristic values. Only if
+the characteristics need to be
+personalized.
+validFor
+bss.cmn.TimePerio
+d (version 1)
+Validity of the tax exemption.
+taxExemptionSpeci
+fication
+TaxExemptionS
+pecificationRef
+(version 1)
+Reference to thetax exemption
+specification.
+TaxExemptionSpecificationRef (version 1)
+Table 72
+TaxExemptionSpecificationRef (version 1)
+Name
+Type
+Description
+TaxExemptionSpecifica
+tionRef (version 1)
+object
+Tax Exemption Specification
+Reference.
+id
+string
+Unique identifier of the tax
+exemption specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the tax exemption
+specification in an external
+system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+62
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+Resources
+GroupContractReferenceExtended (version 1)
+Table 73
+GroupContractReferenceExtended (version 1)
+Name
+Type
+Description
+GroupContractReferenc
+eExtended (version 1)
+object
+Group Contract Reference
+Extended.
+customer
+CustomerRef
+(version 1)
+Reference to the customer.
+associationExterna
+lId
+string
+Association External identifier
+for the group contract.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+validFor
+bss.cmn.TimePerio
+d (version 1)
+The time period of association
+between the contract and
+group contract.
+tagSpecification
+TagSpecificationRe
+f (version 1)
+Reference to the tag
+specification.
+id
+string
+Identifier of a contract
+instance.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+External identifier of the
+contract for interaction in
+external system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+CustomerRef (version 1)
+Table 74
+CustomerRef (version 1)
+Name
+Type
+Description
+CustomerRef (version 1)
+object
+Customer Reference.
+63
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
+BSSF Subscription Management REST Interface 2.31
+Name
+Type
+Description
+id
+string
+ID of the customer.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+External Id of the customer.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+TagSpecificationRef (version 1)
+Table 75
+TagSpecificationRef (version 1)
+Name
+Type
+Description
+TagSpecificationRef
+(version 1)
+object
+Tag Specification Reference.
+id
+string
+Unique identifier of the tag
+specification.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+externalId
+string
+Identifier of the tag
+specification in an external
+system.
+Pattern: ^(?=\s*\S).*$
+Max length: 256
+4.1.2.4
+Resource Representation - Response
+The following images and tables describe the elements and their structure
+contained in the resource representation response.
+4.1.2.4.1
+bss.bssfSubscriptionManagement.contract Create Response Version 2
+64
+32/155 19-FAY 302 905/2 Uen B
+|
+2025-10-02
+
