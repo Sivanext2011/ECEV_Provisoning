@@ -1857,17 +1857,20 @@
         {
           "id": "a35baba8-c815-4c2b-b418-09f8a161bff1",
           "externalId": "",
-          "name": "RS - IMSI"
+          "name": "RS - IMSI",
+          "type": "LRS"
         },
         {
           "id": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
           "externalId": "",
-          "name": "RS - MSISDN"
+          "name": "RS - MSISDN",
+          "type": "LRS"
         },
         {
           "id": "74084c80-61ee-4d45-819d-19d31f2a585e",
           "externalId": "PBS_CHT_Hotspot",
-          "name": "PBS_CHT_Hotspot"
+          "name": "PBS_CHT_Hotspot",
+          "type": "PBS"
         }
       ],
       "characteristics": [
@@ -2074,17 +2077,20 @@
         {
           "id": "a35baba8-c815-4c2b-b418-09f8a161bff1",
           "externalId": "",
-          "name": "RS - IMSI"
+          "name": "RS - IMSI",
+          "type": "LRS"
         },
         {
           "id": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
           "externalId": "",
-          "name": "RS - MSISDN"
+          "name": "RS - MSISDN",
+          "type": "LRS"
         },
         {
           "id": "3366ea47-f8e5-4ac6-b726-c7ca1dfbe92e",
           "externalId": "PBS_CHT_Data_Unlimited",
-          "name": "PBS_CHT_Data_Unlimited"
+          "name": "PBS_CHT_Data_Unlimited",
+          "type": "PBS"
         }
       ],
       "characteristics": [

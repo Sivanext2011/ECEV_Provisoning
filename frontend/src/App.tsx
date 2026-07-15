@@ -209,7 +209,7 @@ function ProvisionWizard() {
             return (
               <fieldset><legend>Contract & Product</legend>
                 {(() => {
-                  const logicalRS = poResourceSpecs.filter((rs: any) => !rs.name?.startsWith('PBS'))
+                  const logicalRS = poResourceSpecs.filter((rs: any) => rs.type === 'LRS')
                   return logicalRS.length > 0 ? <>
                     <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (required by Product Offering):</p>
                     {logicalRS.map((rs: any) => (

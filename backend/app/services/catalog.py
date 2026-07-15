@@ -179,7 +179,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
     rs_map = {r.get("id"): r for r in export.get("resourceSpecifications", [])}
 
     def _resolve_resource_specs(po_obj: dict) -> list:
-        """Follow PO -> PS -> (direct RS + CFSS -> RFSS -> RS) chain."""
+        """Follow PO -> PS -> (direct RS + CFSS -> RFSS -> RS) chain. Tags type: 'LRS' or 'PBS'."""
         results = []
         seen = set()
         versions = po_obj.get("versions", [])
@@ -197,7 +197,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
                     rs = rs_map.get(rel["targetId"])
                     if rs and rs["id"] not in seen:
                         seen.add(rs["id"])
-                        results.append({"id": rs["id"], "externalId": rs.get("externalId", ""), "name": rs.get("name", "")})
+                        results.append({"id": rs["id"], "externalId": rs.get("externalId", ""), "name": rs.get("name", ""), "type": "PBS"})
                 elif rel.get("targetType") == "CustomerFacingServiceSpecification":
                     cfss = cfss_map.get(rel["targetId"])
                     if not cfss or not cfss.get("versions"):
@@ -212,7 +212,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
                                     rs = rs_map.get(rr["targetId"])
                                     if rs and rs["id"] not in seen:
                                         seen.add(rs["id"])
-                                        results.append({"id": rs["id"], "externalId": rs.get("externalId", ""), "name": rs.get("name", "")})
+                                        results.append({"id": rs["id"], "externalId": rs.get("externalId", ""), "name": rs.get("name", ""), "type": "LRS"})
         return results
 
     # Product Offerings (base64+zlib compressed)
