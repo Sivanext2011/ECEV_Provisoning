@@ -1,5 +1,6 @@
 """Parses RMCA BusinessConfig export zip files and extracts specifications."""
 import json
+import os
 import zipfile
 import io
 import base64
@@ -9,7 +10,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-CATALOG_PATH = Path(__file__).parent.parent.parent.parent / "config" / "catalog.json"
+_config_dir = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent / "config" / "config.json")).parent
+CATALOG_PATH = _config_dir / "catalog.json"
 
 _catalog: dict | None = None
 
