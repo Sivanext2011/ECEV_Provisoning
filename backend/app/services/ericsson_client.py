@@ -2,6 +2,7 @@ import httpx
 import ssl
 import json
 import re
+import os
 import asyncio
 import logging
 from datetime import datetime, timezone
@@ -9,7 +10,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "config" / "config.json"
+CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent / "config" / "config.json"))
 
 api_logs: list[dict] = []
 _config_cache: dict | None = None
