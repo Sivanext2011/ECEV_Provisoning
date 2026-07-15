@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfIndividualPartyManagement.moveIndividualParty.executeRequest.2.json#",
+  "description": "Represents an individual.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the party as an individual.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "externalId": {
+      "description": "External identifier for the party as an individual.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "partitionId": {
+      "description": "The target partition for this indivual party.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "siteName": {
+      "description": "The target site name for this indivual party.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfSpecificationEnquiry.entitySpecificationList.readResponse.1.json#",
+  "description": "Data structure for listing entity specifications in short format.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "specificationType": {
+      "description": "The type of specification",
+      "type": "string",
+      "enum": [
+        "PRODUCT_OFFERING",
+        "BILLING_ACCOUNT_SPECIFICATION",
+        "BUCKET_SPECIFICATION",
+        "PRODUCT_OFFERING_PRICE_SPECIFICATION",
+        "AGREEMENT_SPECIFICATION",
+        "AGREEMENT_ITEM_SPECIFICATION",
+        "CUSTOMER_SPECIFICATION",
+        "CONTRACT_SPECIFICATION",
+        "COMMON_DIMENSION_SPECIFICATION",
+        "COMMON_DIMENSION",
+        "COMMUNICATION_IDENTIFIER_SPECIFICATION",
+        "REFERENCE_DATA_LIST_SPECIFICATION",
+        "REFERENCE_DATA_LIST",
+        "SETTLEMENT_ACCOUNT_SPECIFICATION",
+        "PARTY_ROLE_SPECIFICATION",
+        "CHARACTERISTIC_SET_SPECIFICATION",
+        "CUSTOMER_FACING_SERVICE_SPECIFICATION",
+        "GENERIC_BUSINESS_SETTING",
+        "PRODUCT_PRIORITY_LIST",
+        "PRODUCT_SPECIFICATION",
+        "TAX_EXEMPTION_SPECIFICATION",
+        "PRICE_TAX_CATEGORY_SPECIFICATION",
+        "TAX_PACKAGE_SPECIFICATION",
+        "TAX_CODE_DETAIL_SPECIFICATION",
+        "TAX_CONFIGURATION_SPECIFICATION",
+        "TAX_RULE_TEMPLATE_SPECIFICATION",
+        "SCHEDULE_DEFINITION",
+        "SHARING_PROVIDER_SPECIFICATION",
+        "BUCKET_DETERMINATION_SPECIFICATION",
+        "CUSTOMER_LIST_SPECIFICATION",
+        "TAG_SPECIFICATION",
+        "BILLING_CYCLE_SPECIFICATION",
+        "ORGANIZATION_SPECIFICATION",
+        "INDIVIDUAL_SPECIFICATION",
+        "CONTACT_MEDIUM_SPECIFICATION"
+      ]
+    },
+    "entitySpecificationListEntry": {
+      "description": "List of specifications of the given type.",
+      "type": "array",
+      "items": {
+        "description": "EntitySpecificationListEntry structure.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Unique identifier of the specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "Identifier of the specification in an external system.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to this specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "description": {
+            "description": "Description of this specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          },
+          "type": {
+            "description": "Entity specification types, for the specification that have a type attribute. Values are defined as per respective specification.",
+            "type": "array",
+            "items": {
+              "description": "String max 128 characters.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 128
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfPurchaseChargeManagement.rateAndDeduct.executeResponse.1.json#",
+  "description": "",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "Represents the customer ID for the reservation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "Represents the external customer ID for the reservation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "Represents contract ID for the reservation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "Represents the external contract ID for the reservation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "billingAccountAdjustment": {
+      "description": "Billing account balances affected by the purchase.",
+      "type": "array",
+      "items": {
+        "description": "Perform balance adjustment.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "amount": {
+            "description": "Amount representation.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "number": {
+                "description": "Carrying value.",
+                "type": "integer",
+                "minimum": -9223372036854775807,
+                "maximum": 9223372036854775806
+              },
+              "decimalPlaces": {
+                "description": "Number of decimals in the value.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 6
+              }
+            }
+          },
+          "resultingAmountBillingAccount": {
+            "description": "A billing account balance structure.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "externalId": {
+                "description": "Unique identifier of the billing account populated by external system.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "id": {
+                "description": "Unique identifier of the billing account.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "bucket": {
+                "description": "Buckets.",
+                "type": "array",
+                "items": {
+                  "description": "Billing account bucket balance.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "bucketSpecExternalId": {
+                      "description": "Uniquely identifying the bucket using the external specification id.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "bucketSpecId": {
+                      "description": "Uniquely identifying the bucket using the specification id.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "amount": {
+                      "description": "Amount representation.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "number": {
+                          "description": "Carrying value.",
+                          "type": "integer",
+                          "minimum": -9223372036854775807,
+                          "maximum": 9223372036854775806
+                        },
+                        "decimalPlaces": {
+                          "description": "Number of decimals in the value.",
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 6
+                        }
+                      }
+                    },
+                    "unitOfMeasure": {
+                      "description": "Unit of measure for amounts.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 32
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "action": {
+            "description": "Set means to set the value of the Bucket as mentioned in the amount field. Relative means to calculate the value of the Bucket with respect to the existing/current value.",
+            "type": "string",
+            "enum": [
+              "Relative",
+              "Set"
+            ]
+          },
+          "unitOfMeasure": {
+            "description": "Unit of measure for adjustment value.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          }
+        }
+      }
+    }
+  }
+}

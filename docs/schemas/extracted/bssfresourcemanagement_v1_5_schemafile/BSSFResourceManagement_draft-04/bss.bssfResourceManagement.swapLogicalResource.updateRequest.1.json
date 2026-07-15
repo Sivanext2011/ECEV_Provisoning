@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfResourceManagement.swapLogicalResource.updateRequest.1.json#",
+  "description": "Swapping two logical resources.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "description": "The identifier of the customer.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "The external identifier of the customer.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "The identifier of the contract.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "The external identifier of the contract.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "resourceType": {
+      "description": "The type of the resource, for example E.164.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "fromResourceNumber": {
+      "description": "Resource number of the resource to swap out.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "fromResourceId": {
+      "description": "Resource id of the resource to swap out.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "fromResourceExternalId": {
+      "description": "Resource external id of the resource to swap out.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "toResourceNumber": {
+      "description": "Resource number of the resource to swap in.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "toResourceExternalId": {
+      "description": "External identifier of the resource to swap in.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    }
+  }
+}

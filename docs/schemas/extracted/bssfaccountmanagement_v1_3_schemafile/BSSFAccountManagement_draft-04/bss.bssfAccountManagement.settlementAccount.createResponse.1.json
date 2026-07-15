@@ -1,0 +1,1142 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfAccountManagement.settlementAccount.createResponse.1.json#",
+  "description": "A Party account that is used for settlement purposes, like creation of a Settlement Statement, creation of a document for the Partner to do reconciliation, or the creation of a report for reconciliation against an incoming invoice.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "settlementAccountSpecificationRef": {
+      "description": "Settlement Account Specification Reference.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "externalId": {
+          "description": "External identifier for the settlement account specification.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier for the settlement account specification.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "characteristic": {
+      "description": "Personalized characteristic values.",
+      "type": "array",
+      "items": {
+        "description": "A value of a Characteristic.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "charSpecId": {
+            "description": "The ID of the characteristic specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "charSpecExternalId": {
+            "description": "The External ID of the characteristic specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "validFor": {
+            "description": "StartDateTime must be earlier than EndDateTime.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "startDateTime": {
+                "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              },
+              "endDateTime": {
+                "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              }
+            }
+          },
+          "value": {
+            "description": "The versions of the value.",
+            "type": "array",
+            "items": {
+              "description": "The versions of the value.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "value": {
+                  "description": "The value.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "unitOfMeasure": {
+                  "description": "The unit of measure of the value.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 32
+                }
+              }
+            }
+          },
+          "comprisedOf": {
+            "description": "Child/Children of the characteristic value, if any.",
+            "type": "array",
+            "items": {
+              "description": "A value of a Characteristic.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "charSpecId": {
+                  "description": "The ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "charSpecExternalId": {
+                  "description": "The External ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "value": {
+                  "description": "The versions of the value.",
+                  "type": "array",
+                  "items": {
+                    "description": "The versions of the value.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "value": {
+                        "description": "The value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 256
+                      },
+                      "unitOfMeasure": {
+                        "description": "The unit of measure of the value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 32
+                      }
+                    }
+                  }
+                },
+                "comprisedOf": {
+                  "description": "Child/Children of the characteristic value, if any.",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/properties/characteristic/items/properties/comprisedOf/items"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "contactMediumAssociation": {
+      "description": "A list of contact medium association to a settlement account.",
+      "type": "array",
+      "items": {
+        "description": "Represents an assignment of a contact medium to an entity.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "contactRole": {
+            "description": "Represents a contact role.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          },
+          "validFor": {
+            "description": "StartDateTime must be earlier than EndDateTime.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "startDateTime": {
+                "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              },
+              "endDateTime": {
+                "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              }
+            }
+          },
+          "contactMediumId": {
+            "description": "The reference to a contact medium using id.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "contactMediumExternalId": {
+            "description": "The reference to a contact medium using external id.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "language": {
+            "description": "The language used for communication.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "name": {
+      "description": "The list of all version related to the name attribute.",
+      "type": "array",
+      "items": {
+        "description": "Name is the versioned attribute element for string values that represent proper names.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "description": "The \u0027name\u0027 attribute of name version.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "validFor": {
+            "description": "StartDateTime must be earlier than EndDateTime.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "startDateTime": {
+                "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              },
+              "endDateTime": {
+                "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "description": "The status of the account, for example active.",
+      "type": "array",
+      "items": {
+        "id": "StatusExtended.1.json#",
+        "description": "Extended status structure.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "reason": {
+            "description": "The reason for the new status version.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "status": {
+            "description": "The status for the given time period.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "validFor": {
+            "description": "StartDateTime must be earlier than EndDateTime.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "startDateTime": {
+                "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              },
+              "endDateTime": {
+                "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    "billStructure": {
+      "description": "Represents a bill structure for a billing account.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "Unique identifier for the bill structure.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "externalId": {
+          "description": "External identifier of a bill structure in an external system.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "characteristic": {
+          "description": "Characteristic values of the bill structure.",
+          "type": "array",
+          "items": {
+            "description": "A value of a Characteristic.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "charSpecId": {
+                "description": "The ID of the characteristic specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "charSpecExternalId": {
+                "description": "The External ID of the characteristic specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "validFor": {
+                "description": "StartDateTime must be earlier than EndDateTime.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "startDateTime": {
+                    "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  },
+                  "endDateTime": {
+                    "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "value": {
+                "description": "The versions of the value.",
+                "type": "array",
+                "items": {
+                  "description": "The versions of the value.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "value": {
+                      "description": "The value.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 256
+                    },
+                    "unitOfMeasure": {
+                      "description": "The unit of measure of the value.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 32
+                    }
+                  }
+                }
+              },
+              "comprisedOf": {
+                "description": "Child/Children of the characteristic value, if any.",
+                "type": "array",
+                "items": {
+                  "description": "A value of a Characteristic.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "charSpecId": {
+                      "description": "The ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "charSpecExternalId": {
+                      "description": "The External ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "value": {
+                      "description": "The versions of the value.",
+                      "type": "array",
+                      "items": {
+                        "description": "The versions of the value.",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "value": {
+                            "description": "The value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 256
+                          },
+                          "unitOfMeasure": {
+                            "description": "The unit of measure of the value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 32
+                          }
+                        }
+                      }
+                    },
+                    "comprisedOf": {
+                      "description": "Child/Children of the characteristic value, if any.",
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/properties/billStructure/properties/characteristic/items/properties/comprisedOf/items"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "billStructureSpecification": {
+          "description": "Bill Structure Specification Reference.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "description": "Unique identifier of the bill structure specification.",
+              "type": "string",
+              "pattern": "^(?\u003d\\s*\\S).*$",
+              "maxLength": 256
+            },
+            "externalId": {
+              "description": "Identifier of the bill structure specification in an external system.",
+              "type": "string",
+              "pattern": "^(?\u003d\\s*\\S).*$",
+              "maxLength": 256
+            }
+          }
+        },
+        "cycleSpecification": {
+          "description": "Settlement cycle specification. Reference to the used bill cycle specification.",
+          "type": "array",
+          "items": {
+            "description": "Data structure used to link a bill cycle to a bill specification.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "description": "Unique identifier of the account\u0027s bill cycle specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "externalId": {
+                "description": "External identifier of the account\u0027s bill cycle specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "billCycleSpecId": {
+                "description": "Unique identifier of the associated bill cycle specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "billCycleSpecExternalId": {
+                "description": "External identifier of the associated bill cycle specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "characteristic": {
+                "description": "Personalized characteristic values.",
+                "type": "array",
+                "items": {
+                  "description": "A value of a Characteristic.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "charSpecId": {
+                      "description": "The ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "charSpecExternalId": {
+                      "description": "The External ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "validFor": {
+                      "description": "StartDateTime must be earlier than EndDateTime.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "startDateTime": {
+                          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        },
+                        "endDateTime": {
+                          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "value": {
+                      "description": "The versions of the value.",
+                      "type": "array",
+                      "items": {
+                        "description": "The versions of the value.",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "value": {
+                            "description": "The value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 256
+                          },
+                          "unitOfMeasure": {
+                            "description": "The unit of measure of the value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 32
+                          }
+                        }
+                      }
+                    },
+                    "comprisedOf": {
+                      "description": "Child/Children of the characteristic value, if any.",
+                      "type": "array",
+                      "items": {
+                        "description": "A value of a Characteristic.",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "charSpecId": {
+                            "description": "The ID of the characteristic specification.",
+                            "type": "string",
+                            "pattern": "^(?\u003d\\s*\\S).*$",
+                            "maxLength": 256
+                          },
+                          "charSpecExternalId": {
+                            "description": "The External ID of the characteristic specification.",
+                            "type": "string",
+                            "pattern": "^(?\u003d\\s*\\S).*$",
+                            "maxLength": 256
+                          },
+                          "value": {
+                            "description": "The versions of the value.",
+                            "type": "array",
+                            "items": {
+                              "description": "The versions of the value.",
+                              "type": "object",
+                              "additionalProperties": true,
+                              "properties": {
+                                "value": {
+                                  "description": "The value.",
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 256
+                                },
+                                "unitOfMeasure": {
+                                  "description": "The unit of measure of the value.",
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 32
+                                }
+                              }
+                            }
+                          },
+                          "comprisedOf": {
+                            "description": "Child/Children of the characteristic value, if any.",
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/properties/billStructure/properties/cycleSpecification/items/properties/characteristic/items/properties/comprisedOf/items"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "validFor": {
+                "description": "StartDateTime must be earlier than EndDateTime.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "startDateTime": {
+                    "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  },
+                  "endDateTime": {
+                    "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "billCycleChangeType": {
+                "description": "Pro-rationing information that is used when doing a bill cycle change.",
+                "type": "string",
+                "enum": [
+                  "NO_PRORATE",
+                  "PRORATE_END_CURRENT",
+                  "PRORATE_POS_START_NEW",
+                  "PRORATE_NEG_START_NEW"
+                ]
+              }
+            }
+          }
+        },
+        "format": {
+          "description": "Bill formats of a  bill structure.",
+          "type": "array",
+          "items": {
+            "description": "Represents a bill format a bill structure.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "validFor": {
+                "description": "StartDateTime must be earlier than EndDateTime.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "startDateTime": {
+                    "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  },
+                  "endDateTime": {
+                    "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "id": {
+                "description": "Unique identifier for the bill format.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "externalId": {
+                "description": "External identifier of a bill format in an external system.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "characteristic": {
+                "description": "Characteristic values of the bill format.",
+                "type": "array",
+                "items": {
+                  "description": "A value of a Characteristic.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "charSpecId": {
+                      "description": "The ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "charSpecExternalId": {
+                      "description": "The External ID of the characteristic specification.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "validFor": {
+                      "description": "StartDateTime must be earlier than EndDateTime.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "startDateTime": {
+                          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        },
+                        "endDateTime": {
+                          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "value": {
+                      "description": "The versions of the value.",
+                      "type": "array",
+                      "items": {
+                        "description": "The versions of the value.",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "value": {
+                            "description": "The value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 256
+                          },
+                          "unitOfMeasure": {
+                            "description": "The unit of measure of the value.",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 32
+                          }
+                        }
+                      }
+                    },
+                    "comprisedOf": {
+                      "description": "Child/Children of the characteristic value, if any.",
+                      "type": "array",
+                      "items": {
+                        "description": "A value of a Characteristic.",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "charSpecId": {
+                            "description": "The ID of the characteristic specification.",
+                            "type": "string",
+                            "pattern": "^(?\u003d\\s*\\S).*$",
+                            "maxLength": 256
+                          },
+                          "charSpecExternalId": {
+                            "description": "The External ID of the characteristic specification.",
+                            "type": "string",
+                            "pattern": "^(?\u003d\\s*\\S).*$",
+                            "maxLength": 256
+                          },
+                          "value": {
+                            "description": "The versions of the value.",
+                            "type": "array",
+                            "items": {
+                              "description": "The versions of the value.",
+                              "type": "object",
+                              "additionalProperties": true,
+                              "properties": {
+                                "value": {
+                                  "description": "The value.",
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 256
+                                },
+                                "unitOfMeasure": {
+                                  "description": "The unit of measure of the value.",
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 32
+                                }
+                              }
+                            }
+                          },
+                          "comprisedOf": {
+                            "description": "Child/Children of the characteristic value, if any.",
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/properties/billStructure/properties/format/items/properties/characteristic/items/properties/comprisedOf/items"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "billFormatSpecification": {
+                "description": "Bill Format Specification Reference.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier of the bill format specification.",
+                    "type": "string",
+                    "pattern": "^(?\u003d\\s*\\S).*$",
+                    "maxLength": 256
+                  },
+                  "externalId": {
+                    "description": "Identifier of the bill format specification in an external system.",
+                    "type": "string",
+                    "pattern": "^(?\u003d\\s*\\S).*$",
+                    "maxLength": 256
+                  }
+                }
+              },
+              "presentationMedia": {
+                "description": "The list of bill presentation media for a  bill format",
+                "type": "array",
+                "items": {
+                  "description": "Represents a bill presentation media for a bill format.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "validFor": {
+                      "description": "StartDateTime must be earlier than EndDateTime.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "startDateTime": {
+                          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        },
+                        "endDateTime": {
+                          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                          "type": "string",
+                          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "id": {
+                      "description": "Unique identifier for the bill presentation media.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "externalId": {
+                      "description": "External identifier of a bill presentation media in an external system.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "billPresentationMediaSpecification": {
+                      "description": "Bill Presentation Media Specification Reference.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "description": "Unique identifier of the bill presentation media specification.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        },
+                        "externalId": {
+                          "description": "Identifier of the bill presentation media specification in an external system.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "taxExemption": {
+      "description": "The tax exemptions for the settlement account.",
+      "type": "array",
+      "items": {
+        "description": "Tax exemption.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Unique identifier of a tax exemption.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "Identifier of the tax exemption in an external system.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "characteristic": {
+            "description": "A list of tax exemption characteristic values. Only if the characteristics need to be personalized.",
+            "type": "array",
+            "items": {
+              "description": "A value of a Characteristic.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "charSpecId": {
+                  "description": "The ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "charSpecExternalId": {
+                  "description": "The External ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "validFor": {
+                  "description": "StartDateTime must be earlier than EndDateTime.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "startDateTime": {
+                      "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                      "type": "string",
+                      "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                      "format": "date-time"
+                    },
+                    "endDateTime": {
+                      "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                      "type": "string",
+                      "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "value": {
+                  "description": "The versions of the value.",
+                  "type": "array",
+                  "items": {
+                    "description": "The versions of the value.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "value": {
+                        "description": "The value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 256
+                      },
+                      "unitOfMeasure": {
+                        "description": "The unit of measure of the value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 32
+                      }
+                    }
+                  }
+                },
+                "comprisedOf": {
+                  "description": "Child/Children of the characteristic value, if any.",
+                  "type": "array",
+                  "items": {
+                    "description": "A value of a Characteristic.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "charSpecId": {
+                        "description": "The ID of the characteristic specification.",
+                        "type": "string",
+                        "pattern": "^(?\u003d\\s*\\S).*$",
+                        "maxLength": 256
+                      },
+                      "charSpecExternalId": {
+                        "description": "The External ID of the characteristic specification.",
+                        "type": "string",
+                        "pattern": "^(?\u003d\\s*\\S).*$",
+                        "maxLength": 256
+                      },
+                      "value": {
+                        "description": "The versions of the value.",
+                        "type": "array",
+                        "items": {
+                          "description": "The versions of the value.",
+                          "type": "object",
+                          "additionalProperties": true,
+                          "properties": {
+                            "value": {
+                              "description": "The value.",
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 256
+                            },
+                            "unitOfMeasure": {
+                              "description": "The unit of measure of the value.",
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 32
+                            }
+                          }
+                        }
+                      },
+                      "comprisedOf": {
+                        "description": "Child/Children of the characteristic value, if any.",
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/properties/taxExemption/items/properties/characteristic/items/properties/comprisedOf/items"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "validFor": {
+            "description": "StartDateTime must be earlier than EndDateTime.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "startDateTime": {
+                "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              },
+              "endDateTime": {
+                "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                "format": "date-time"
+              }
+            }
+          },
+          "taxExemptionSpecification": {
+            "description": "Tax Exemption Specification Reference.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "description": "Unique identifier of the tax exemption specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "externalId": {
+                "description": "Identifier of the tax exemption specification in an external system.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              }
+            }
+          }
+        }
+      }
+    },
+    "externalId": {
+      "description": "Unique identifier of the account populated by external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "id": {
+      "description": "Unique identifier of the account.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "validFor": {
+      "description": "StartDateTime must be earlier than EndDateTime.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "startDateTime": {
+          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        },
+        "endDateTime": {
+          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

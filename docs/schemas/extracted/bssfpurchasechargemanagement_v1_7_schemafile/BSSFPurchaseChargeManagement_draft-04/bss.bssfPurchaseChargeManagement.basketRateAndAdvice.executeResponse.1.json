@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfPurchaseChargeManagement.basketRateAndAdvice.executeResponse.1.json#",
+  "description": "",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "Represents the customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "Represents the external customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "Represents contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "Represents external contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "basketPrice": {
+      "description": "A list of price modification product offering IDs and the associated product offering prices.",
+      "type": "array",
+      "items": {
+        "description": "\nData type description: ",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "priceModificationProductOfferingId": {
+            "description": "A unique Product Offering of the Price Modification Product.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "priceModificationProductOfferingExternalId": {
+            "description": "An ID provided by an external system for the Product Offering of the Price Modification Product.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingId": {
+            "description": "A unique product offering ID from which a product has been created.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingExternalId": {
+            "description": "An ID provided by an external system for a product offering from which a product has been created.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingPriceId": {
+            "description": "The product offering price ID.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingPriceExternalId": {
+            "description": "The product offering price external ID.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "basePrice": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          },
+          "discountPrice": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

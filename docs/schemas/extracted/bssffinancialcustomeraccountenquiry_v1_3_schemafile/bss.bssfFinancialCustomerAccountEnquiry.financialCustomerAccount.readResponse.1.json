@@ -1,0 +1,309 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfFinancialCustomerAccountEnquiry.financialCustomerAccount.readResponse.1.json#",
+  "description": "Financial customer account enquiry provides the ability to obtain customer details for a customer.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "relatedParty": {
+      "description": "Reference to related party roles",
+      "type": "array",
+      "items": {
+        "description": "Related Party or Party Role",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "@referredType": {
+            "description": "Referred Type.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "externalId": {
+            "description": "External identifier of the party or party role.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "id": {
+            "description": "Unique identifier of the party or party role.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "financialEntrySummary": {
+      "description": "The summary of financial entries.",
+      "type": "array",
+      "items": {
+        "description": "Financial entry summary provides the financial details for a customer.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "creditAmount": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "creditDebitFlag": {
+                "description": "The flag for credit and debit monetary amount",
+                "type": "string",
+                "enum": [
+                  "CREDIT",
+                  "DEBIT"
+                ]
+              },
+              "currencyAmount": {
+                "description": "The versions of the value.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "value": {
+                    "description": "Amount representation.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "number": {
+                        "description": "Carrying a positive value.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775806
+                      },
+                      "decimalPlaces": {
+                        "description": "Number of decimals in the value.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      }
+                    }
+                  },
+                  "unitOfMeasure": {
+                    "description": "The unit of measure of the value.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 32
+                  }
+                }
+              }
+            }
+          },
+          "debitAmount": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "creditDebitFlag": {
+                "description": "The flag for credit and debit monetary amount",
+                "type": "string",
+                "enum": [
+                  "CREDIT",
+                  "DEBIT"
+                ]
+              },
+              "currencyAmount": {
+                "description": "The versions of the value.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "value": {
+                    "description": "Amount representation.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "number": {
+                        "description": "Carrying a positive value.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775806
+                      },
+                      "decimalPlaces": {
+                        "description": "Number of decimals in the value.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      }
+                    }
+                  },
+                  "unitOfMeasure": {
+                    "description": "The unit of measure of the value.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 32
+                  }
+                }
+              }
+            }
+          },
+          "duration": {
+            "description": "The duration of financial entries.",
+            "type": "string",
+            "pattern": "^(-?)P(?\u003d\\d|T\\d)(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)D)?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+(?:\\.\\d{1,3})?)S)?)?$"
+          },
+          "financialEntryType": {
+            "description": "Type of Financial entry.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          }
+        }
+      }
+    },
+    "amount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "creditDebitFlag": {
+          "description": "The flag for credit and debit monetary amount",
+          "type": "string",
+          "enum": [
+            "CREDIT",
+            "DEBIT"
+          ]
+        },
+        "currencyAmount": {
+          "description": "The versions of the value.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "value": {
+              "description": "Amount representation.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "number": {
+                  "description": "Carrying a positive value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9223372036854775806
+                },
+                "decimalPlaces": {
+                  "description": "Number of decimals in the value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              }
+            },
+            "unitOfMeasure": {
+              "description": "The unit of measure of the value.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 32
+            }
+          }
+        }
+      }
+    },
+    "openDebitAmount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "creditDebitFlag": {
+          "description": "The flag for credit and debit monetary amount",
+          "type": "string",
+          "enum": [
+            "CREDIT",
+            "DEBIT"
+          ]
+        },
+        "currencyAmount": {
+          "description": "The versions of the value.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "value": {
+              "description": "Amount representation.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "number": {
+                  "description": "Carrying a positive value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9223372036854775806
+                },
+                "decimalPlaces": {
+                  "description": "Number of decimals in the value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              }
+            },
+            "unitOfMeasure": {
+              "description": "The unit of measure of the value.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 32
+            }
+          }
+        }
+      }
+    },
+    "overdueAmount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "creditDebitFlag": {
+          "description": "The flag for credit and debit monetary amount",
+          "type": "string",
+          "enum": [
+            "CREDIT",
+            "DEBIT"
+          ]
+        },
+        "currencyAmount": {
+          "description": "The versions of the value.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "value": {
+              "description": "Amount representation.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "number": {
+                  "description": "Carrying a positive value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9223372036854775806
+                },
+                "decimalPlaces": {
+                  "description": "Number of decimals in the value.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                }
+              }
+            },
+            "unitOfMeasure": {
+              "description": "The unit of measure of the value.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 32
+            }
+          }
+        }
+      }
+    }
+  }
+}

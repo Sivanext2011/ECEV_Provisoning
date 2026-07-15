@@ -1,0 +1,481 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfProductCatalogIntegration.productOffering.createRequest.1.json#",
+  "description": "Data structure for product offering.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "productOfferingPrice": {
+      "description": "List of all productOfferingPrice linked to this productOffering.",
+      "type": "array",
+      "items": {
+        "description": "Product offering price.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "externalId": {
+            "description": "Identifier of the product offering price in an external system.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to this product offering price. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "pricingLogicAlgorithm": {
+            "description": "Represents a pricing logic algorithm.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "productOfferingPriceRow": {
+                "description": "An array of productOfferingPriceRows in the pricingLogicAlgorithm.",
+                "type": "array",
+                "items": {
+                  "description": "Product offering price row includes the actions (and possibly also conditions) for a specific row.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "description": "Name given to this product offering price row. Not guaranteed to be unique.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 256
+                    },
+                    "action": {
+                      "description": "The actions included in this product offering price row.",
+                      "type": "array",
+                      "items": {
+                        "description": "Action structure.",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "actionRef": {
+                            "description": "Reference of the action.",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "id": {
+                                "description": "The ID of the referenced action.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              },
+                              "externalId": {
+                                "description": "The external ID of the referenced action.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              }
+                            }
+                          },
+                          "actionCharacteristicSpecificationUse": {
+                            "description": "A list of product offering price specification characteristic uses.",
+                            "type": "array",
+                            "items": {
+                              "description": "Action Characteristic Specification Use structure.",
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "actionCharacteristicSpecificationUseRef": {
+                                  "description": "The action characteristic specification use reference.",
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "id": {
+                                      "description": "The ID of the referenced action characteristic specification use.",
+                                      "type": "string",
+                                      "pattern": "^(?\u003d\\s*\\S).*$",
+                                      "maxLength": 256
+                                    },
+                                    "externalId": {
+                                      "description": "The external ID of the referenced action characteristic specification use.",
+                                      "type": "string",
+                                      "pattern": "^(?\u003d\\s*\\S).*$",
+                                      "maxLength": 256
+                                    }
+                                  }
+                                },
+                                "actionCharacteristicSpecificationValueUse": {
+                                  "description": "Characteristic Specification Value Use.",
+                                  "type": "array",
+                                  "items": {
+                                    "description": "Action Characteristic Specification Value Use structure.",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "value": {
+                                        "description": "The value.",
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "maxLength": 256
+                                      },
+                                      "valueReference": {
+                                        "description": "Reference structure.",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "id": {
+                                            "description": "Unique identifier of the target.",
+                                            "type": "string",
+                                            "pattern": "^(?\u003d\\s*\\S).*$",
+                                            "maxLength": 256
+                                          },
+                                          "externalId": {
+                                            "description": "Identifier of the target in an external system.",
+                                            "type": "string",
+                                            "pattern": "^(?\u003d\\s*\\S).*$",
+                                            "maxLength": 256
+                                          },
+                                          "targetType": {
+                                            "description": "The type of the target.",
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ],
+                                            "maxLength": 256
+                                          },
+                                          "next": {
+                                            "description": "Next step in the chain.",
+                                            "$ref": "#/properties/productOfferingPrice/items/properties/pricingLogicAlgorithm/properties/productOfferingPriceRow/items/properties/action/items/properties/actionCharacteristicSpecificationUse/items/properties/actionCharacteristicSpecificationValueUse/items/properties/valueReference"
+                                          }
+                                        }
+                                      },
+                                      "unitOfMeasure": {
+                                        "description": "The Unit of unitOfMeasure.",
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "maxLength": 256
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "productOfferingPriceRowRef": {
+                      "description": "The product offering price row reference.",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "description": "The ID of the referenced product offering price row.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        },
+                        "externalId": {
+                          "description": "The external ID of the referenced product offering price row.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "productOfferingPriceRelationship": {
+            "description": "Product offering price relationship.",
+            "type": "array",
+            "items": {
+              "description": "Product offering price relationship.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "productOfferingId": {
+                  "description": "Unique identifier of the product offering.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "productOfferingExternalId": {
+                  "description": "Identifier of the product offering in an external system.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "productOfferingPriceId": {
+                  "description": "Unique identifier of the product offering price.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "productOfferingPriceExternalId": {
+                  "description": "Identifier of the product offering price in an external system.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "type": {
+                  "description": "Type of relationship.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                }
+              }
+            }
+          },
+          "partyRoleInvolvementGroupRef": {
+            "description": "Identifier of the party role involvement group in an external system.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$|^$",
+            "maxLength": 256
+          },
+          "operation": {
+            "description": "The operation type",
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE"
+            ]
+          },
+          "productOfferingPriceRef": {
+            "description": "The product offering price reference.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "description": "The ID of the referenced product offering price.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              },
+              "externalId": {
+                "description": "The external ID of the referenced product offering price.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              }
+            }
+          }
+        }
+      }
+    },
+    "productOfferingPolicyRef": {
+      "description": "List of all productOfferingPolicyRef linked to this productOffering.",
+      "type": "array",
+      "items": {
+        "description": "Product offering policy ref structure.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "priceId": {
+            "description": "The price id.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "productOfferingPriceRef": {
+            "description": "Array of references to the related product offering price within the product offering",
+            "type": "array",
+            "items": {
+              "description": "An relationship between/among specifications.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "Id of the specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "externalId": {
+                  "description": "External id of the specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "productOfferingRelationship": {
+      "description": "List of all product offerings linked to this productOffering in case of a productOffering linked to another productOffering with a relation.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "prodSpecCharValueUse": {
+      "description": "List of all product specification characteristic value uses for this productOffering.",
+      "type": "array",
+      "items": {
+        "description": "This is a SpecCharacteristicUse for the product offering.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "productSpecCharacteristicValue": {
+            "description": "An array of number or text values that are available to use for this SpecCharacteristic.",
+            "type": "array",
+            "items": {
+              "description": "A number or text that can be assigned to a SpecCharacteristic.",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "isDefault": {
+                  "description": "Indicates if the value is the default value for a characteristic.",
+                  "type": "boolean"
+                },
+                "value": {
+                  "description": "A discrete value that the characteristic can take on.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueReference": {
+                  "description": "Reference structure.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "description": "Unique identifier of the target.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "externalId": {
+                      "description": "Identifier of the target in an external system.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "targetType": {
+                      "description": "The type of the target.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 256
+                    },
+                    "next": {
+                      "description": "Next step in the chain.",
+                      "$ref": "#/properties/prodSpecCharValueUse/items/properties/productSpecCharacteristicValue/items/properties/valueReference"
+                    }
+                  }
+                },
+                "unitOfMeasure": {
+                  "description": "The unit in which the characteristicSpecValue is measured, such as KB, MB, Mins, Kgm etc.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                }
+              }
+            }
+          },
+          "productSpecificationCharacteristicValueUseRef": {
+            "description": "This is a reference for the product offering.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "externalId": {
+                "description": "ID of the applied partner settlement rate.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              }
+            }
+          }
+        }
+      }
+    },
+    "productOfferingTemplateRef": {
+      "description": "The product offering template reference.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "The ID of the referenced product offering template.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "externalId": {
+          "description": "The external ID of the referenced product offering template.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "externalId": {
+      "description": "Identifier of the specification in an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "name": {
+      "description": "Name given to this specification. Not guaranteed to be unique.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    },
+    "description": {
+      "description": "Description of this specification.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    }
+  }
+}

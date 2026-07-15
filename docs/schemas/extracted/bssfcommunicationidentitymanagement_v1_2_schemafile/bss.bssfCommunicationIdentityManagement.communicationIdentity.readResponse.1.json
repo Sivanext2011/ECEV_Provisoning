@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfCommunicationIdentityManagement.communicationIdentity.readResponse.1.json#",
+  "description": "Communication identity.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "communicationIdentity": {
+      "description": "Array of Communication ID and Type, for example MSISDN, IMSI.",
+      "type": "array",
+      "items": {
+        "description": "Represent Communication with id \u0026 type",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "idType": {
+            "description": "Communication ID type.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          },
+          "id": {
+            "description": "Communication ID value.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "primaryCommunicationId": {
+      "description": "Represent Communication with id \u0026 type",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "idType": {
+          "description": "Communication ID type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        },
+        "id": {
+          "description": "Communication ID value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        }
+      }
+    },
+    "accountExternalLocation": {
+      "description": "Account external location.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "Account external location id.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "ip": {
+          "description": "Account external location ip.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    },
+    "customerPartitionId": {
+      "description": "Customer partition.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    },
+    "siteName": {
+      "description": "Customer site name.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.BSSFSessionManagement.ChargingSession.createRequest.1.json#",
+  "description": "Data structure for policy and charging session.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "communicationIdentity": {
+      "description": "Communication ID type.",
+      "type": "array",
+      "items": {
+        "description": "Represent Communication with id \u0026 type",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "idType": {
+            "description": "Communication ID type.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          },
+          "id": {
+            "description": "Communication ID value.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "cafSbiCustomerId": {
+      "description": "Customer Id created for the given supi.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    }
+  }
+}

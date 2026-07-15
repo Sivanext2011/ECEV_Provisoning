@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfIndividualPartyManagement.moveIndividualParty.executeResponse.2.json#",
+  "description": "Represents an individual.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the party as an individual.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "externalId": {
+      "description": "External identifier for the party as an individual.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "partitionId": {
+      "description": "The target partition for this indivual party.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "siteName": {
+      "description": "The target site name for this indivual party.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "partyRole": {
+      "description": "The set of party role references.",
+      "type": "array",
+      "items": {
+        "description": "A reference to a party role.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "partyRoleType": {
+            "description": "The type of the party role.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 128
+          },
+          "partyRoleId": {
+            "description": "Identifier of the party role.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "partyRoleExternalId": {
+            "description": "External identifier of the party role.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          }
+        }
+      }
+    }
+  }
+}

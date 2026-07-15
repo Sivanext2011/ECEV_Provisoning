@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfBalanceManagement.resetBalanceTopupFraudCounter.createRequest.2.json#",
+  "description": "Information on balance top up fraud.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "description": "A unique customer ID.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "customerExternalId": {
+      "description": "A customer ID provided by an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "contractId": {
+      "description": "A unique contract ID.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "A contract ID provided by an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "communicationIdType": {
+      "description": "Value of Communication ID type.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "communicationId": {
+      "description": "Communication ID value.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "resourceFacingServiceSpecId": {
+      "description": "A unique Id for a Resource Facing Service Specification.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "resourceFacingServiceSpecExternalId": {
+      "description": "An ID provided by an external system for a Resource Facing Service Specification.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    }
+  }
+}

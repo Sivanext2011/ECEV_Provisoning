@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfPartyCommunicationManagement.generateMessage.createResponse.1.json#",
+  "description": "A communication message that can be rendered for a given party and be sent to one or more recipients.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "communicationMessageSpecId": {
+      "description": "A unique identifier of a Communication Message specification.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "communicationMessageSpecExternalId": {
+      "description": "External identifier of the communication message specification provided by an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "language": {
+      "description": "The language used for the message.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contactMediumType": {
+      "description": "The contact medium type used for the message.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "content": {
+      "description": "The rendered message contents.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    },
+    "sourceParty": {
+      "description": "The source party for the rendered communication message.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "customerId": {
+          "description": "Unique ID for a customer.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "customerExternalId": {
+          "description": "Represents the external customer ID for a customer.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "contractId": {
+          "description": "Unique identifier of a Contract.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "contractExternalId": {
+          "description": "External identifier for a contract.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "communicationIdType": {
+          "description": "Value of Communication type, for example E.164.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        },
+        "communicationId": {
+          "description": "Communication ID value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 512
+        },
+        "partyId": {
+          "description": "Unique identifier for the party.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "partyExternalId": {
+          "description": "External identifier for the party.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "receiver": {
+      "description": "A list of message receivers.",
+      "type": "array",
+      "items": {
+        "description": "Receiver message.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "customerId": {
+            "description": "Represents the customer ID for the customer for the recurrence action.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "customerExternalId": {
+            "description": "Represents the external customer ID for the customer for the recurrence action.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "communicationId": {
+            "description": "Communication ID value.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 512
+          },
+          "communicationIdType": {
+            "description": "Value of Communication type, for example E.164.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          },
+          "partyId": {
+            "description": "Unique identifier for the party.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "partyExternalId": {
+            "description": "External identifier for the party.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "contactMediumId": {
+            "description": "The reference to a contact medium using id.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "contactMediumExternalId": {
+            "description": "The reference to a contact medium using external id.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "characteristic": {
+      "description": "A list of product characteristic values. Only if the characteristics need to be personalized.",
+      "type": "array",
+      "items": {
+        "description": "A value of a Characteristic.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "charSpecId": {
+            "description": "The ID of the characteristic specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "charSpecExternalId": {
+            "description": "The External ID of the characteristic specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "value": {
+            "description": "The versions of the value.",
+            "type": "array",
+            "items": {
+              "description": "The versions of the value.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "value": {
+                  "description": "The value.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "unitOfMeasure": {
+                  "description": "The unit of measure of the value.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 32
+                }
+              }
+            }
+          },
+          "comprisedOf": {
+            "description": "Child/Children of the characteristic value, if any.",
+            "type": "array",
+            "items": {
+              "description": "A value of a Characteristic.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "charSpecId": {
+                  "description": "The ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "charSpecExternalId": {
+                  "description": "The External ID of the characteristic specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "value": {
+                  "description": "The versions of the value.",
+                  "type": "array",
+                  "items": {
+                    "description": "The versions of the value.",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "value": {
+                        "description": "The value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 256
+                      },
+                      "unitOfMeasure": {
+                        "description": "The unit of measure of the value.",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 32
+                      }
+                    }
+                  }
+                },
+                "comprisedOf": {
+                  "description": "Child/Children of the characteristic value, if any.",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/properties/characteristic/items/properties/comprisedOf/items"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

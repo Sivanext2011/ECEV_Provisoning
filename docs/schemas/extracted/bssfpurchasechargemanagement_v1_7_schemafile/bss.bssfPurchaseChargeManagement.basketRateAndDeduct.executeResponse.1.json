@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfPurchaseChargeManagement.basketRateAndDeduct.executeResponse.1.json#",
+  "description": "",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "Represents the customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "Represents the external customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "Represents contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "Represents external contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "reservationId": {
+      "description": "ID of the reservation.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    },
+    "remainingExternalMoney": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "value": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "The unit of measure of the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        }
+      }
+    },
+    "basketPrice": {
+      "description": "A list of price modification product offering IDs and the associated product offering prices.",
+      "type": "array",
+      "items": {
+        "description": "\nData type description: ",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "pricingAction": {
+            "description": "Information on price execution.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "resultCode": {
+                "description": "Result code.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 128
+              },
+              "balanceAdjustment": {
+                "description": "Balances affected by the purchase.",
+                "type": "array",
+                "items": {
+                  "description": "Perform balance adjustment.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "amount": {
+                      "description": "Amount representation.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "number": {
+                          "description": "Carrying value.",
+                          "type": "integer",
+                          "minimum": -9223372036854775807,
+                          "maximum": 9223372036854775806
+                        },
+                        "decimalPlaces": {
+                          "description": "Number of decimals in the value.",
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 6
+                        }
+                      }
+                    },
+                    "resultingAmountBillingAccount": {
+                      "description": "A billing account balance structure.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "externalId": {
+                          "description": "Unique identifier of the billing account populated by external system.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        },
+                        "id": {
+                          "description": "Unique identifier of the billing account.",
+                          "type": "string",
+                          "pattern": "^(?\u003d\\s*\\S).*$",
+                          "maxLength": 256
+                        },
+                        "bucket": {
+                          "description": "Buckets.",
+                          "type": "array",
+                          "items": {
+                            "description": "Billing account bucket balance.",
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                              "bucketSpecExternalId": {
+                                "description": "Uniquely identifying the bucket using the external specification id.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              },
+                              "bucketSpecId": {
+                                "description": "Uniquely identifying the bucket using the specification id.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              },
+                              "amount": {
+                                "description": "Amount representation.",
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "number": {
+                                    "description": "Carrying value.",
+                                    "type": "integer",
+                                    "minimum": -9223372036854775807,
+                                    "maximum": 9223372036854775806
+                                  },
+                                  "decimalPlaces": {
+                                    "description": "Number of decimals in the value.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 6
+                                  }
+                                }
+                              },
+                              "unitOfMeasure": {
+                                "description": "Unit of measure for amounts.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 32
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "productId": {
+                      "description": "Unique identifier of a product.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "productExternalId": {
+                      "description": "Identifier of the product in an external system.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "resultingAmountProductBucket": {
+                      "description": "Product Balance.",
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "bucket": {
+                          "description": "The product buckets.",
+                          "type": "array",
+                          "items": {
+                            "description": "Product Bucket balance.",
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                              "bucketSpecExternalId": {
+                                "description": "Uniquely identifying the bucket using the external specification id.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              },
+                              "bucketSpecId": {
+                                "description": "Uniquely identifying the bucket using the specification id.",
+                                "type": "string",
+                                "pattern": "^(?\u003d\\s*\\S).*$",
+                                "maxLength": 256
+                              },
+                              "amount": {
+                                "description": "Amount representation.",
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "number": {
+                                    "description": "Carrying value.",
+                                    "type": "integer",
+                                    "minimum": -9223372036854775807,
+                                    "maximum": 9223372036854775806
+                                  },
+                                  "decimalPlaces": {
+                                    "description": "Number of decimals in the value.",
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 6
+                                  }
+                                }
+                              },
+                              "unitOfMeasure": {
+                                "description": "Unit of measure for amounts.",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "maxLength": 32
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "action": {
+                      "description": "Set means to set the value of the Bucket as mentioned in the amount field. Relative means to calculate the value of the Bucket with respect to the existing/current value.",
+                      "type": "string",
+                      "enum": [
+                        "Relative",
+                        "Set"
+                      ]
+                    },
+                    "unitOfMeasure": {
+                      "description": "Unit of measure for adjustment value.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 32
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "productOfferingId": {
+            "description": "A unique product offering ID from which a product has been created.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingExternalId": {
+            "description": "An ID provided by an external system for a product offering from which a product has been created.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingPriceId": {
+            "description": "The product offering price ID.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingPriceExternalId": {
+            "description": "The product offering price external ID.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "basePrice": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          },
+          "discountPrice": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          },
+          "priceFromExternalMoney": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

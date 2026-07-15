@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfCustomerBillEnquiry.customerBillOnDemand.readResponse.1.json#",
+  "description": "Creating a customer bill on demand (off cycle).",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "billingAccount": {
+      "description": "Billing Account Reference.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "ID of the billing account.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "externalId": {
+          "description": "ExternalId of the billing account.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "customerBill": {
+      "description": "Customer Bill Reference.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "description": "ID of the customer bill.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "billNo": {
+          "description": "Bill reference known by the customer.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    },
+    "status": {
+      "description": "Status of the task.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    },
+    "errorMessage": {
+      "id": "errorMessage.2.json#",
+      "description": "Error message structure.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "code": {
+          "description": "Application related code (as defined in the API or from a common list).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "reason": {
+          "description": "Text that explains the reason for error. This can be shown to a client user.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "message": {
+          "description": "Text that provide more details and corrective actions related to the error. This can be shown to a client user.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}

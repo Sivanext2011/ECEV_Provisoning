@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfBalanceManagement.productBucketAdjustment.createResponse.2.json#",
+  "description": "Perform balance adjustment.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "Represents the customer ID for the customer for which balance adjustment is done.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "customerExternalId": {
+      "description": "Represents the external customer ID for the customer for which balance adjustment is done.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "contractId": {
+      "description": "Represents contract ID for the contract on which  product bucket is adjusted.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "Represents external contract id for the contract on which product bucket is adjusted.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "productId": {
+      "description": "Represents product id for the product bucket is adjusted.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "productExternalId": {
+      "description": "Represents external product id for the adjusted product bucket.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "bucketSpecId": {
+      "description": "Represents Spec id for the bucket, it is representing the instance but since called would not know about it and can\u0027t set their own. And we can\u0027t have two bucket instances of same bucket spec, so this it is not for the instance rather for the spec (to identify the instance on a contract).",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "bucketSpecExternalId": {
+      "description": "Represents Spec id for the bucket, it is representing the instance but since called would not know about it and can\u0027t set their own. And we can\u0027t have two bucket instances of same bucket spec, so this it is not for the instance rather for the spec (to identify the instance on a contract).",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "reason": {
+      "description": "This is free text that is passed by the caller of OCS API. And is a passthrough for OCS.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "amount": {
+      "description": "Amount representation.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "number": {
+          "description": "Carrying value.",
+          "type": "integer",
+          "minimum": -9223372036854775807,
+          "maximum": 9223372036854775806
+        },
+        "decimalPlaces": {
+          "description": "Number of decimals in the value.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      }
+    },
+    "resultingAmountProductBucket": {
+      "description": "Product Bucket balance.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "bucketSpecExternalId": {
+          "description": "Uniquely identifying the bucket using the external specification id.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "bucketSpecId": {
+          "description": "Uniquely identifying the bucket using the specification id.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "amount": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "validFor": {
+          "description": "StartDateTime must be earlier than EndDateTime.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "startDateTime": {
+              "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+              "type": "string",
+              "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+              "format": "date-time"
+            },
+            "endDateTime": {
+              "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+              "type": "string",
+              "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+              "format": "date-time"
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "Unit of measure for amounts.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        },
+        "valueContainer": {
+          "description": "Value containers.",
+          "type": "array",
+          "items": {
+            "description": "Value Container.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "amount": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "validFor": {
+                "description": "StartDateTime must be earlier than EndDateTime.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "startDateTime": {
+                    "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  },
+                  "endDateTime": {
+                    "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "validFor": {
+      "description": "StartDateTime must be earlier than EndDateTime.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "startDateTime": {
+          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        },
+        "endDateTime": {
+          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        }
+      }
+    },
+    "action": {
+      "description": "Set means to set the value of the Bucket as mentioned in the amount field. Relative means to calculate the value of the Bucket with respect to the existing/current value.",
+      "type": "string",
+      "enum": [
+        "Relative",
+        "Set"
+      ]
+    },
+    "unitOfMeasure": {
+      "description": "Unit of measure for adjustment value.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    }
+  }
+}

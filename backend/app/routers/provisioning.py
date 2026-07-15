@@ -1,19 +1,27 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from pathlib import Path
 import httpx
-from ..services.bae_client import bae_client, load_config, api_logs, CONFIG_PATH
-from ..services.specs.parser import parse_business_config, get_parsed_specs
+from ..services.ericsson_client import ericsson_client, load_config, api_logs, CONFIG_PATH
+from ..services.catalog import get_catalog, parse_business_config, reload_catalog
+
+SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
+from ..services import provisioning as prov
+from ..models.schemas import (
+    SubscriberProvision, IndividualCreate, CustomerCreate,
+    ContractCreate, BalanceTopUp, TerminateRequest, GenericApiRequest,
+)
 import json
-from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/v1", tags=["provisioning"])
 
 
-async def _safe_call(api_key: str, params: dict = None, body: dict = None):
-    """Wrapper that converts exceptions to HTTPException with detail."""
+async def _safe_call(api_key: str, path_params: dict = None, body: dict = None, query_params: dict = None):
     try:
-        return await bae_client.call(api_key, params=params, body=body)
+        return await ericsson_client.request(api_key, body=body, path_params=path_params, query_params=query_params)
     except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=f"API key not found in config: {e}")
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
@@ -21,220 +29,208 @@ async def _safe_call(api_key: str, params: dict = None, body: dict = None):
 # === Generic API Executor ===
 @router.post("/execute/{api_key}")
 async def execute_api(api_key: str, body: dict = None):
-    """Execute any configured API by key with params and body."""
-    params = body.pop("_params", {}) if body and "_params" in body else {}
-    return await _safe_call(api_key, params=params, body=body if body else None)
+    """Execute any configured API by key. Pass _pathParams/_params and _queryParams in body."""
+    path_params = {}
+    if body:
+        path_params = body.pop("_pathParams", body.pop("_params", {}))
+    query_params = body.pop("_queryParams", {}) if body and "_queryParams" in body else {}
+    return await _safe_call(api_key, path_params=path_params, body=body if body else None, query_params=query_params)
+
+
+@router.post("/execute")
+async def execute_generic(req: GenericApiRequest):
+    """Execute any configured API with structured request."""
+    return await _safe_call(req.apiKey, path_params=req.pathParams, body=req.body, query_params=req.queryParams)
+
+
+# === Full Provisioning Wizard ===
+@router.post("/subscribers/provision")
+async def provision_subscriber(body: dict):
+    """Accepts either raw JSON bodies (partyBody/customerBody/contractBody) or SubscriberProvision fields."""
+    try:
+        if "partyBody" in body:
+            # Spec-driven wizard: forward pre-built JSON bodies
+            return await prov.provision_raw(
+                body["partyBody"], body["customerBody"], body["contractBody"]
+            )
+        else:
+            # Simple provisioning with field inputs
+            return await prov.provision_subscriber(
+                body["givenName"], body["familyName"], body["msisdn"],
+                body.get("email"), body.get("productOfferingExternalId"),
+                body.get("imsi"), body.get("billCycleSpecExternalId")
+            )
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 # === Party ===
 @router.post("/party")
-async def create_party(body: dict):
-    return await bae_client.call("create_party", body=body)
+async def create_party(req: IndividualCreate):
+    try:
+        return await prov.create_party(req.givenName, req.familyName, req.msisdn, req.email)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @router.get("/party")
 async def get_party(id: str = None, externalId: str = None):
     if id:
-        return await _safe_call("get_party_by_id", params={"partyId": id})
+        return await _safe_call("get_party_by_id", path_params={"partyId": id})
     elif externalId:
-        return await _safe_call("get_party_by_external_id", params={"partyExternalId": externalId})
+        return await _safe_call("get_party_by_external_id", path_params={"partyExternalId": externalId})
     raise HTTPException(status_code=400, detail="Provide id or externalId")
-
-
-@router.patch("/party/{external_id}")
-async def update_party(external_id: str, body: dict):
-    return await bae_client.call("update_party", params={"partyExternalId": external_id}, body=body)
 
 
 @router.delete("/party/{identifier}")
 async def delete_party(identifier: str, by: str = "externalId"):
     if by == "id":
-        return await _safe_call("delete_party_by_id", params={"partyId": identifier})
-    return await _safe_call("delete_party_by_external_id", params={"partyExternalId": identifier})
+        return await _safe_call("delete_party_by_id", path_params={"partyId": identifier})
+    return await _safe_call("delete_party_by_external_id", path_params={"partyExternalId": identifier})
 
 
 # === Customer ===
 @router.post("/customer")
-async def create_customer(body: dict):
-    return await bae_client.call("create_customer", body=body)
+async def create_customer(req: CustomerCreate):
+    try:
+        return await prov.create_customer(req.partyExternalId, req.msisdn, req.billCycleSpecExternalId)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @router.get("/customer")
 async def get_customer(id: str = None, externalId: str = None, msisdn: str = None):
     if id:
-        return await bae_client.call("get_customer_by_id", params={"customerId": id})
+        return await _safe_call("get_customer_by_id", path_params={"customerId": id})
     elif externalId:
-        return await bae_client.call("get_customer_by_external_id", params={"customerExternalId": externalId})
+        return await _safe_call("get_customer_by_external_id", path_params={"customerExternalId": externalId})
     elif msisdn:
-        return await bae_client.call("get_customer_by_msisdn", params={"msisdn": msisdn})
+        return await _safe_call("get_customer_by_msisdn", path_params={"msisdn": msisdn})
     raise HTTPException(status_code=400, detail="Provide id, externalId, or msisdn")
-
-
-@router.patch("/customer/{external_id}")
-async def update_customer(external_id: str, body: dict):
-    return await bae_client.call("update_customer", params={"customerExternalId": external_id}, body=body)
 
 
 @router.delete("/customer/{identifier}")
 async def delete_customer(identifier: str, by: str = "externalId"):
     if by == "id":
-        return await bae_client.call("delete_customer_by_id", params={"customerId": identifier})
-    return await bae_client.call("delete_customer_by_external_id", params={"customerExternalId": identifier})
+        return await _safe_call("delete_customer_by_id", path_params={"customerId": identifier})
+    return await _safe_call("delete_customer_by_external_id", path_params={"customerExternalId": identifier})
 
 
-# === Contract / Subscription ===
+# === Contract ===
 @router.post("/contract")
-async def create_contract(body: dict, customerExternalId: str = None, customerId: str = None):
-    if customerExternalId:
-        return await bae_client.call("create_contract", params={"customerExternalId": customerExternalId}, body=body)
-    elif customerId:
-        return await bae_client.call("create_contract_by_id", params={"customerId": customerId}, body=body)
-    raise HTTPException(status_code=400, detail="Provide customerExternalId or customerId")
+async def create_contract(req: ContractCreate):
+    try:
+        return await prov.create_contract(req.customerExternalId, req.msisdn, req.productOfferingExternalId, req.billingAccountExternalId, req.imsi)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @router.get("/contract")
-async def get_contract(customerId: str = None, contractId: str = None, customerExternalId: str = None, contractExternalId: str = None, msisdn: str = None):
-    if customerId and contractId:
-        return await bae_client.call("get_contract_by_id", params={"customerId": customerId, "contractId": contractId})
+async def get_contract(msisdn: str = None, customerExternalId: str = None, contractExternalId: str = None):
+    if msisdn:
+        return await _safe_call("get_contract_by_msisdn", path_params={"msisdn": msisdn})
     elif customerExternalId and contractExternalId:
-        return await bae_client.call("get_contract_by_external_id", params={"customerExternalId": customerExternalId, "contractExternalId": contractExternalId})
-    elif msisdn:
-        return await bae_client.call("get_contract_by_msisdn", params={"msisdn": msisdn})
-    raise HTTPException(status_code=400, detail="Provide customerId+contractId, customerExternalId+contractExternalId, or msisdn")
-
-
-@router.patch("/contract")
-async def update_contract(body: dict, customerExternalId: str = None, contractExternalId: str = None, customerId: str = None, contractId: str = None):
-    if customerExternalId and contractExternalId:
-        return await bae_client.call("update_contract", params={"customerExternalId": customerExternalId, "contractExternalId": contractExternalId}, body=body)
-    elif customerId and contractId:
-        return await bae_client.call("update_contract_by_id", params={"customerId": customerId, "contractId": contractId}, body=body)
-    raise HTTPException(status_code=400, detail="Provide customerExternalId+contractExternalId or customerId+contractId")
+        return await _safe_call("get_contract_by_external_id", path_params={"customerExternalId": customerExternalId, "contractExternalId": contractExternalId})
+    raise HTTPException(status_code=400, detail="Provide msisdn or customerExternalId+contractExternalId")
 
 
 @router.delete("/contract")
-async def delete_contract(customerExternalId: str = None, contractExternalId: str = None, customerId: str = None, contractId: str = None, msisdn: str = None):
+async def delete_contract(msisdn: str = None, customerExternalId: str = None, contractExternalId: str = None):
     if msisdn:
-        return await bae_client.call("delete_contract_by_msisdn", params={"msisdn": msisdn})
+        return await _safe_call("delete_contract_by_msisdn", path_params={"msisdn": msisdn})
     elif customerExternalId and contractExternalId:
-        return await bae_client.call("delete_contract_by_external_id", params={"customerExternalId": customerExternalId, "contractExternalId": contractExternalId})
-    elif customerId and contractId:
-        return await bae_client.call("delete_contract_by_id", params={"customerId": customerId, "contractId": contractId})
-    raise HTTPException(status_code=400, detail="Provide identifiers")
+        return await _safe_call("delete_contract_by_external_id", path_params={"customerExternalId": customerExternalId, "contractExternalId": contractExternalId})
+    raise HTTPException(status_code=400, detail="Provide msisdn or customerExternalId+contractExternalId")
 
 
 # === Balance ===
 @router.get("/balance")
-async def balance_enquiry(customerExternalId: str = None, msisdn: str = None):
+async def balance_enquiry(msisdn: str = None, customerExternalId: str = None):
     if msisdn:
-        return await bae_client.call("balance_enquiry_msisdn", params={"msisdn": msisdn})
+        return await _safe_call("balance_enquiry_msisdn", path_params={"msisdn": msisdn})
     elif customerExternalId:
-        return await bae_client.call("balance_enquiry", params={"customerExternalId": customerExternalId})
-    raise HTTPException(status_code=400, detail="Provide customerExternalId or msisdn")
+        return await _safe_call("balance_enquiry", path_params={"customerExternalId": customerExternalId})
+    raise HTTPException(status_code=400, detail="Provide msisdn or customerExternalId")
 
 
-@router.post("/balance/adjust")
-async def balance_adjustment(body: dict):
-    return await bae_client.call("balance_adjustment", body=body)
+@router.post("/balance/topup")
+async def balance_topup(req: BalanceTopUp):
+    try:
+        return await prov.balance_topup(req.customerExternalId, req.contractExternalId, req.msisdn, req.amount, req.unit, req.decimalPlaces)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
-# === Resource Management ===
-@router.post("/resource/swap")
-async def swap_resource(body: dict):
-    return await bae_client.call("swap_logical_resource", body=body)
+# === Terminate ===
+@router.post("/terminate/party")
+async def terminate_party(req: TerminateRequest):
+    try:
+        return await prov.terminate_party(req.externalId)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
-@router.post("/product/replace")
-async def replace_product(body: dict):
-    return await bae_client.call("replace_product", body=body)
-
-
-# === User ===
-@router.post("/user")
-async def create_user(body: dict):
-    return await bae_client.call("create_user", body=body)
-
-
-@router.get("/user")
-async def get_user(externalId: str = None):
-    if externalId:
-        return await bae_client.call("get_user_by_external_id", params={"userExternalId": externalId})
-    raise HTTPException(status_code=400, detail="Provide externalId")
-
-
-@router.delete("/user/{user_id}")
-async def delete_user(user_id: str):
-    return await bae_client.call("delete_user_by_id", params={"userId": user_id})
-
-
-# === Sharing ===
-@router.get("/sharing/eligible-consumers")
-async def get_eligible_consumers(customerExternalId: str):
-    return await bae_client.call("get_eligible_consumers", params={"customerExternalId": customerExternalId})
-
-
-# === Recurrence ===
-@router.get("/recurrence")
-async def recurrence_enquiry(msisdn: str):
-    return await bae_client.call("recurrence_enquiry", params={"msisdn": msisdn})
-
-
-@router.post("/recurrence/job")
-async def create_recurrence_job(body: dict):
-    return await bae_client.call("create_recurrence_job", body=body)
+@router.post("/terminate/customer")
+async def terminate_customer_ep(req: TerminateRequest):
+    try:
+        return await prov.terminate_customer(req.externalId)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 # === Specification Enquiry ===
 @router.get("/spec/{spec_type}")
 async def get_specification(spec_type: str, externalId: str):
     key = f"spec_{spec_type}"
-    if key not in bae_client.apis:
-        raise HTTPException(status_code=400, detail=f"Unknown spec type: {spec_type}. Available: contract, product, product_offering, bucket, billing_account")
-    return await bae_client.call(key, params={"specExternalId": externalId})
-
-
-# === Auth - Token ===
-@router.post("/auth/token")
-async def get_token():
-    """Force fetch a new token from Keycloak."""
-    try:
-        bae_client.token_mgr.fetch_token()
-        return {
-            "status": "ok",
-            "expires_at": bae_client.token_mgr.expires_at,
-            "has_access_token": bool(bae_client.token_mgr.access_token),
-            "has_id_token": bool(bae_client.token_mgr.id_token),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token fetch failed: {e}")
+    return await _safe_call(key, path_params={"specExternalId": externalId})
 
 
 # === Settings ===
 @router.get("/settings")
 async def get_settings():
     cfg = load_config()
-    # Mask password
-    if cfg.get("auth", {}).get("password"):
-        cfg["auth"]["password"] = "***"
-    return cfg
+    # Mask sensitive fields
+    safe = json.loads(json.dumps(cfg))
+    if safe.get("auth", {}).get("password"):
+        safe["auth"]["password"] = "***"
+    if safe.get("tls", {}).get("client_key_path"):
+        safe["tls"]["client_key_path"] = "***"
+    return safe
 
 
 @router.put("/settings")
 async def update_settings(body: dict):
-    # If password is masked, keep existing
     existing = load_config()
+    # Restore masked fields from existing config
     if body.get("auth", {}).get("password") == "***":
         body["auth"]["password"] = existing.get("auth", {}).get("password", "")
+    if body.get("tls", {}).get("client_key_path") == "***":
+        body["tls"]["client_key_path"] = existing.get("tls", {}).get("client_key_path", "")
     with open(CONFIG_PATH, "w") as f:
         json.dump(body, f, indent=2)
-    bae_client.reload()
+    ericsson_client.reinit()
     return {"status": "ok"}
 
 
-# === Logs ===
+# === API Logs ===
 @router.get("/logs")
-async def get_api_logs():
-    return list(reversed(api_logs[-200:]))
+async def get_api_logs(limit: int = 50, offset: int = 0):
+    logs = list(reversed(api_logs))
+    return logs[offset:offset + limit]
 
 
 @router.delete("/logs/clear")
@@ -243,129 +239,89 @@ async def clear_api_logs():
     return {"status": "ok"}
 
 
-# === Debug ===
-@router.get("/debug/client")
-async def debug_client():
-    """Show current BAE client state for debugging."""
-    from pathlib import Path
-    tls = bae_client.tls_cfg
-    net = bae_client.network_cfg
-    ca = tls.get("ca_cert_path", "")
-    cert = tls.get("client_cert_path", "")
-    key = tls.get("client_key_path", "")
+# === Config: Available APIs ===
+@router.get("/config/apis")
+async def get_available_apis():
+    """List all configured API keys with their method and URL template."""
+    cfg = load_config()
+    return {k: {"method": v["method"], "url": v["url"]} for k, v in cfg.get("apis", {}).items()}
+
+
+@router.get("/config/offerings")
+async def get_offerings():
+    """Return product offerings from defaults."""
+    cfg = load_config()
+    return cfg.get("defaults", {})
+
+
+# === Catalog / Specs ===
+@router.get("/specs")
+async def get_specs():
+    """Get parsed RMCA specifications (from uploaded BusinessConfig)."""
+    catalog = reload_catalog()
+    if not any(catalog.get(k) for k in catalog):
+        return None
+    # Frontend expects 'partySpecifications' but catalog stores 'individualPartySpecifications'
     return {
-        "verify": str(bae_client._verify),
-        "client_cert": str(bae_client._client_cert),
-        "ssl_verify_config": tls.get("ssl_verify"),
-        "ca_cert_path": ca,
-        "ca_cert_exists": Path(ca).exists() if ca else False,
-        "client_cert_path": cert,
-        "client_cert_exists": Path(cert).exists() if cert else False,
-        "client_key_path": key,
-        "client_key_exists": Path(key).exists() if key else False,
-        "socks5_enabled": net.get("socks5_enabled", False),
-        "socks5_proxy": net.get("socks5_proxy", ""),
-        "timeout": net.get("timeout_seconds", 30),
-        "environment": bae_client.env,
-        "token_configured": bool(bae_client.auth_cfg.get("username") and bae_client.auth_cfg.get("password")),
+        "partySpecifications": catalog.get("individualPartySpecifications", []),
+        "customerSpecifications": catalog.get("customerSpecifications", []),
+        "contractSpecifications": catalog.get("contractSpecifications", []),
+        "billingAccountSpecifications": catalog.get("billingAccountSpecifications", []),
+        "productSpecifications": catalog.get("productSpecifications", []),
+        "productOfferings": catalog.get("productOfferings", []),
+        "resourceSpecifications": catalog.get("resourceSpecifications", []),
+        "bucketTags": catalog.get("bucketTags", []),
+        "characteristicSetSpecifications": catalog.get("characteristicSetSpecifications", []),
+        "customerFacingServiceSpecifications": catalog.get("customerFacingServiceSpecifications", []),
+        "billingCycleSpecifications": catalog.get("billingCycleSpecifications", []),
+        "scheduleDefinitions": catalog.get("scheduleDefinitions", []),
+        "contactMediumSpecifications": catalog.get("contactMediumSpecifications", []),
     }
+
+
+@router.post("/specs/upload")
+async def upload_specs(file: UploadFile = File(...)):
+    """Upload an RMCA BusinessConfig zip/json and parse specifications."""
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty file")
+    try:
+        result = parse_business_config(content)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to parse: {e}")
 
 
 # === Cert Upload ===
 @router.post("/certs/upload")
-async def upload_cert(file: UploadFile = File(...), name: str = ""):
-    from pathlib import Path
-    certs_dir = Path(CONFIG_PATH).parent / "certs"
-    certs_dir.mkdir(exist_ok=True)
-    filename = f"{name}_{file.filename}" if name else file.filename
-    dest = certs_dir / filename
+async def upload_cert(file: UploadFile = File(...), name: str = "cert"):
+    """Upload a cert/key file to config/certs/ directory."""
+    certs_dir = Path(__file__).parent.parent.parent.parent / "config" / "certs"
+    certs_dir.mkdir(parents=True, exist_ok=True)
+    dest = certs_dir / file.filename
     content = await file.read()
-    with open(dest, "wb") as f:
-        f.write(content)
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty file")
+    dest.write_bytes(content)
     return {"path": str(dest.resolve())}
 
 
-# === Full Provisioning Wizard ===
-@router.post("/subscribers/provision")
-async def provision_subscriber(body: dict):
-    """Full provisioning: Create Party → Customer → Contract.
-    Frontend builds the complete payloads based on specs.
-    Backend just orchestrates the API calls."""
-    results = {}
-
-    # 1. Create Party - frontend provides full party body
-    party_body = body.get("partyBody")
-    if party_body:
-        try:
-            results["party"] = await bae_client.call("create_party", body=party_body)
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Create Party failed: {e}")
-
-    # 2. Create Customer - frontend provides full customer body
-    customer_body = body.get("customerBody")
-    if customer_body:
-        try:
-            results["customer"] = await bae_client.call("create_customer", body=customer_body)
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Create Customer failed: {e}")
-
-    # 3. Create Contract - frontend provides full contract body and customerExternalId
-    contract_body = body.get("contractBody")
-    customer_external_id = body.get("customerExternalId", "")
-    if contract_body and customer_external_id:
-        try:
-            results["contract"] = await bae_client.call(
-                "create_contract", params={"customerExternalId": customer_external_id}, body=contract_body
-            )
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"Create Contract failed: {e}")
-
-    return results
+# === JSON Schemas ===
+@router.get("/schemas")
+async def list_schemas():
+    """List available JSON schemas."""
+    if not SCHEMAS_DIR.exists():
+        return []
+    return [f.stem for f in SCHEMAS_DIR.glob("*.json")]
 
 
-# === Spec Upload & Parsing ===
-@router.post("/specs/upload")
-async def upload_business_config(file: UploadFile = File(...)):
-    if not file.filename.endswith(".zip"):
-        raise HTTPException(status_code=400, detail="File must be a .zip")
-    content = await file.read()
-    try:
-        result = parse_business_config(content)
-        return {
-            "status": "ok",
-            "partySpecs": len(result["partySpecifications"]),
-            "customerSpecs": len(result["customerSpecifications"]),
-            "contractSpecs": len(result["contractSpecifications"]),
-            "billingAccountSpecs": len(result["billingAccountSpecifications"]),
-            "productOfferings": len(result["productOfferings"]),
-            "contactMediumSpecs": len(result["contactMediumSpecifications"]),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to parse: {e}")
-
-
-@router.get("/specs")
-async def get_specs():
-    specs = get_parsed_specs()
-    if not specs:
-        raise HTTPException(status_code=404, detail="No specs loaded. Upload a BusinessConfig zip first.")
-    return specs
-
-
-@router.get("/specs/{spec_type}")
-async def get_spec_by_type(spec_type: str):
-    specs = get_parsed_specs()
-    if not specs:
-        raise HTTPException(status_code=404, detail="No specs loaded.")
-    if spec_type not in specs:
-        raise HTTPException(status_code=400, detail=f"Unknown spec type: {spec_type}")
-    return specs[spec_type]
-
-
-# === Config Offerings (legacy compat) ===
-@router.get("/config/offerings")
-async def get_offerings():
-    specs = get_parsed_specs()
-    if specs:
-        return specs.get("productOfferings", [])
-    return []
+@router.get("/schemas/{schema_name}")
+async def get_schema(schema_name: str):
+    """Get a specific JSON schema for frontend form generation."""
+    path = SCHEMAS_DIR / f"{schema_name}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Schema not found: {schema_name}")
+    import json as _json
+    return _json.loads(path.read_text(encoding="utf-8"))

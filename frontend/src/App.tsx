@@ -38,7 +38,9 @@ function ProvisionWizard() {
   const [selectedContractSpec, setSelectedContractSpec] = useState('')
   const [selectedPO, setSelectedPO] = useState('')
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
-  const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: false, sharingProvider: false })
+  const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: true, sharingProvider: false })
+  const [billCycleSpecExtId, setBillCycleSpecExtId] = useState('')
+  const [billCycleChangeType, setBillCycleChangeType] = useState('NO_PRORATE')
   const [msisdn, setMsisdn] = useState('')
   const [givenName, setGivenName] = useState('')
   const [familyName, setFamilyName] = useState('')
@@ -92,6 +94,8 @@ function ProvisionWizard() {
   return (
     <div>
       <h2>Provision Subscriber (Spec-Driven)</h2>
+      {error && <p style={{ color: 'red', background: '#fff0f0', padding: 10, border: '1px solid #fcc', borderRadius: 4, wordBreak: 'break-all' }}>❌ {error}</p>}
+      {result && <pre style={{ background: '#f0fff0', padding: 10, border: '1px solid #cfc', borderRadius: 4, maxHeight: 300, overflow: 'auto' }}>{JSON.stringify(result, null, 2)}</pre>}
 
       {step === 0 && (
         <div style={{ display: 'grid', gap: 12, maxWidth: 500 }}>
@@ -160,8 +164,26 @@ function ProvisionWizard() {
           {(() => {
             const bs = baSpecs.find((s: any) => s.externalId === selectedBASpec)
             const chars = bs ? getPersonalizableChars(bs.characteristics) : []
-            return chars.length > 0 && (
-              <fieldset><legend>Billing Account Characteristics</legend>
+            return (
+              <fieldset><legend>Billing Account</legend>
+                <label style={{ display: 'block', marginBottom: 6 }}>Bill Cycle Spec
+                  {(specs.billingCycleSpecifications || []).length > 0 ? (
+                    <select style={{ width: '100%' }} value={billCycleSpecExtId} onChange={e => setBillCycleSpecExtId(e.target.value)}>
+                      <option value="">-- None --</option>
+                      {(specs.billingCycleSpecifications || []).map((bcs: any) => <option key={bcs.id || bcs.externalId} value={bcs.externalId}>{bcs.name} ({bcs.externalId})</option>)}
+                    </select>
+                  ) : (
+                    <input style={{ width: '100%' }} placeholder="e.g. CHT_billcycle_01 (upload BusinessConfig for dropdown)" value={billCycleSpecExtId} onChange={e => setBillCycleSpecExtId(e.target.value)} />
+                  )}
+                </label>
+                <label style={{ display: 'block', marginBottom: 6 }}>Bill Cycle Change Type
+                  <select style={{ width: '100%' }} value={billCycleChangeType} onChange={e => setBillCycleChangeType(e.target.value)}>
+                    <option value="NO_PRORATE">NO_PRORATE</option>
+                    <option value="PRORATE_END_CURRENT">PRORATE_END_CURRENT</option>
+                    <option value="PRORATE_POS_START_NEW">PRORATE_POS_START_NEW</option>
+                    <option value="PRORATE_NEG_START_NEW">PRORATE_NEG_START_NEW</option>
+                  </select>
+                </label>
                 {chars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.billingAccount[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, billingAccount: { ...formValues.billingAccount, [c.externalId || c.id]: v } })} />)}
               </fieldset>
             )
@@ -173,21 +195,33 @@ function ProvisionWizard() {
             const chars = cs ? getPersonalizableChars(cs.characteristics) : []
             const poChars = po ? getPersonalizableChars(po.characteristics || []) : []
             // Resource specs linked to the selected PO (via PO->PS->CFSS->RFSS->LRS chain)
-            const poResourceSpecs = po?.resourceSpecifications || []
+            // For bundle POs, aggregate resource specs from child offerings
+            let poResourceSpecs = [...(po?.resourceSpecifications || [])]
+            if (po?.childOfferings?.length) {
+              const seen = new Set(poResourceSpecs.map((r: any) => r.id))
+              for (const childExtId of po.childOfferings) {
+                const childPO = poList.find((p: any) => p.externalId === childExtId)
+                for (const rs of (childPO?.resourceSpecifications || [])) {
+                  if (!seen.has(rs.id)) { seen.add(rs.id); poResourceSpecs.push(rs) }
+                }
+              }
+            }
             return (
               <fieldset><legend>Contract & Product</legend>
-                {poResourceSpecs.length > 0 && <>
-                  <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (required by Product Offering):</p>
-                  {poResourceSpecs.map((rs: any) => (
-                    <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
-                      {rs.name} ({rs.externalId}) <span style={{ color: 'red' }}>*</span>
-                      <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
-                        value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
-                        onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
-                    </label>
-                  ))}
-                </>}
-                {selectedPO && poResourceSpecs.length === 0 && <p style={{ fontSize: 11, color: '#888' }}>No resource specs linked to this Product Offering. Re-upload BusinessConfig to refresh.</p>}
+                {(() => {
+                  const logicalRS = poResourceSpecs.filter((rs: any) => rs.name?.startsWith('RS'))
+                  return logicalRS.length > 0 ? <>
+                    <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (required by Product Offering):</p>
+                    {logicalRS.map((rs: any) => (
+                      <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
+                        {rs.name}{rs.externalId ? ` (${rs.externalId})` : ''} <span style={{ color: 'red' }}>*</span>
+                        <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
+                          value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
+                          onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
+                      </label>
+                    ))}
+                  </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No resource specs linked to this Product Offering. Re-upload BusinessConfig to refresh.</p> : null
+                })()}
                 {selectedPO && <>
                   <p style={{ fontSize: 12, color: '#555', margin: '8px 0 6px' }}>Product Options:</p>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
@@ -240,6 +274,13 @@ function ProvisionWizard() {
                 account: [{ externalId: baExtId, billingAccountSpecExternalId: selectedBASpec, status: [{ status: 'BillingAccountActive' }] }],
                 engagedParty: { externalId: partyExtId, '@referredType': 'Individual' },
               }
+              if (billCycleSpecExtId.trim()) {
+                cb.account[0].customerBillCycleSpecification = [{
+                  externalId: `cbcs-${msisdn}`,
+                  billCycleSpecExternalId: billCycleSpecExtId.trim(),
+                  billCycleChangeType: billCycleChangeType,
+                }]
+              }
               const custChars = Object.entries(formValues.customer).filter(([, v]) => v)
               if (custChars.length) cb.characteristic = custChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
               const baChars = Object.entries(formValues.billingAccount).filter(([, v]) => v)
@@ -248,13 +289,14 @@ function ProvisionWizard() {
               const ctb: any = {
                 externalId: contractExtId,
                 contractSpecification: { externalId: selectedContractSpec },
-                status: [{ status: 'Active' }],
+                status: [{ status: 'Created' }],
               }
               if (selectedPO) {
                 const basePlanProduct: any = {
                   productOfferingExternalId: selectedPO,
                   externalId: `${selectedPO}-${msisdn}`,
                   name: selectedPO,
+                  status: [{ status: 'ProductCreated' }],
                 }
                 if (productOptions.baRef) basePlanProduct.billingAccountReference = { externalId: baExtId }
                 if (productOptions.baRefRecurrence) basePlanProduct.baRefForBillCycleAlignedRecurrence = { externalId: baExtId }
@@ -283,7 +325,7 @@ function ProvisionWizard() {
                       providerProductExternalId: `extID_tech-${msisdn}`,
                       consumerListEntryExternalId: `Consumer_List_${msisdn}`,
                     },
-                    status: [{ status: 'ProductActive' }],
+
                   }
                   ctb.product = [techProduct, basePlanProduct]
                 } else {
@@ -292,12 +334,25 @@ function ProvisionWizard() {
               }
               // Resources from PO
               const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-              const poResourceSpecs = po?.resourceSpecifications || []
+              let poResourceSpecs2 = [...(po?.resourceSpecifications || [])]
+              if (po?.childOfferings?.length) {
+                const seen = new Set(poResourceSpecs2.map((r: any) => r.id))
+                for (const childExtId of po.childOfferings) {
+                  const childPO = specs?.productOfferings?.find((p: any) => p.externalId === childExtId)
+                  for (const rs of (childPO?.resourceSpecifications || [])) {
+                    if (!seen.has(rs.id)) { seen.add(rs.id); poResourceSpecs2.push(rs) }
+                  }
+                }
+              }
               const resources: any[] = []
-              for (const rs of poResourceSpecs) {
+              for (const rs of poResourceSpecs2) {
                 const resNumber = formValues.contract[`_res_${rs.externalId || rs.id}`]
                 if (resNumber && resNumber.trim()) {
-                  resources.push({ externalId: `${rs.externalId}-${resNumber}`, resourceNumber: resNumber, resourceSpecificationExternalId: rs.externalId })
+                  const rsLabel = (rs.externalId || rs.name || rs.id).replace(/^RS\s*-\s*/, '').replace(/[^a-zA-Z0-9_-]/g, '')
+                  const resEntry: any = { externalId: `${rsLabel}-${resNumber}`, resourceNumber: resNumber }
+                  if (rs.externalId) resEntry.resourceSpecificationExternalId = rs.externalId
+                  else if (rs.id) resEntry.resourceSpecificationId = rs.id
+                  resources.push(resEntry)
                 }
               }
               if (resources.length) ctb.resource = resources
@@ -314,13 +369,12 @@ function ProvisionWizard() {
         </div>
       )}
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {result && <pre style={{ background: '#f5f5f5', padding: 10, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(result, null, 2)}</pre>}
-
       {step === 2 && (
         <div style={{ display: 'grid', gap: 12, maxWidth: 700 }}>
           <h3 style={{ margin: 0 }}>Step 3: Review & Edit JSON</h3>
           <p style={{ fontSize: 12, color: '#555', margin: 0 }}>Edit the request bodies before sending. Add Technical Product, sharingProvider, etc. as needed.</p>
+
+
 
           <fieldset>
             <legend><b>1. Create Party</b></legend>
@@ -480,6 +534,8 @@ function OperationsPanel() {
     terminate_party: { label: 'Terminate Party Cascade', method: 'POST', path: '/execute/terminate_party_cascade', fields: [] },
     terminate_customer: { label: 'Terminate Customer Cascade', method: 'POST', path: '/execute/terminate_customer_cascade', fields: [] },
     terminate_contract: { label: 'Terminate Contract Cascade', method: 'POST', path: '/execute/terminate_contract_cascade', fields: [] },
+    // Activate
+    activate_contract: { label: 'Activate Contract', method: 'POST', path: '/execute/activate_contract', fields: ['customerExternalId', 'contractExternalId'] },
     // IMSI lookups
     read_customer_imsi: { label: 'Get Customer - IMSI', method: 'GET', path: '/execute/get_customer_by_imsi', fields: ['imsi'] },
     read_contract_imsi: { label: 'Get Contract - IMSI', method: 'GET', path: '/execute/get_contract_by_imsi', fields: ['imsi'] },
@@ -590,6 +646,15 @@ function CRMView() {
   const [contract, setContract] = useState<any>(null)
   const [balance, setBalance] = useState<any>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>('tree')
+  const [actionMsg, setActionMsg] = useState('')
+  const [actionErr, setActionErr] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
+  const [newPO, setNewPO] = useState('')
+  const [specs, setSpecs] = useState<any>(null)
+
+  React.useEffect(() => {
+    fetch(`${API}/specs`).then(r => r.ok ? r.json() : null).then(setSpecs).catch(() => {})
+  }, [])
 
   const search = async () => {
     setLoading(true); setError(''); setParty(null); setCustomer(null); setContract(null); setBalance(null)
@@ -678,11 +743,11 @@ function CRMView() {
           </div>}
           {c && <div style={{ marginLeft: 20 }}>
             <span style={{ color: '#ce93d8' }}>├── 📄 Contract</span> [{c?.id || ''}]
-            <span style={{ color: '#aaa' }}> externalId={c?.externalId || ''} status={c?.status?.[0]?.status || ''}</span>
+            <span style={{ color: '#aaa' }}> externalId={c?.externalId || ''} status={c?.status?.slice(-1)[0]?.status || ''}</span>
             {c?.product && c.product.map((p: any, i: number) => (
               <div key={i} style={{ marginLeft: 20 }}>
                 <span style={{ color: '#fff176' }}>├── 📦 Product</span> [{p?.id || ''}]
-                <span style={{ color: '#aaa' }}> PO={p?.productOfferingExternalId || ''} status={p?.status?.[0]?.status || ''}</span>
+                <span style={{ color: '#aaa' }}> PO={p?.productOfferingExternalId || ''} status={p?.status?.slice(-1)[0]?.status || ''}</span>
                 {p?.resource && p.resource.map((r: any, j: number) => (
                   <div key={j} style={{ marginLeft: 20 }}>
                     <span style={{ color: '#80cbc4' }}>├── 🔗 Resource</span> [{r?.resourceNumber || r?.id || ''}]
@@ -739,6 +804,96 @@ function CRMView() {
             {contract && <Section title={`Contract ${(Array.isArray(contract) ? contract[0] : contract)?.externalId || ''}`} icon="📄" id="contract" data={contract} />}
             {balance && <Section title="Balance" icon="💰" id="balance" data={balance} />}
           </div>
+
+          {/* Actions Panel */}
+          {contract && (() => {
+            const c = Array.isArray(contract) ? contract[0] : contract
+            const cu = Array.isArray(customer) ? customer[0] : customer
+            const custExtId = cu?.externalId || ''
+            const contractExtId = c?.externalId || ''
+            const baExtId = cu?.account?.[0]?.externalId || ''
+            const contractStatus = c?.status?.slice(-1)[0]?.status || ''
+            const products = c?.product || []
+            const poList2 = specs?.productOfferings || []
+
+            const patchContract = async (body: any) => {
+              setActionLoading(true); setActionMsg(''); setActionErr('')
+              try {
+                const r = await fetch(`${API}/execute/update_contract`, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ ...body, _params: { customerExternalId: custExtId, contractExternalId: contractExtId } })
+                })
+                if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
+                setActionMsg('✓ Success'); search()
+              } catch (e: any) { setActionErr(e.message) }
+              setActionLoading(false)
+            }
+
+            const changeContractStatus = (status: string) => patchContract({ status: [{ status }] })
+
+            const changeProductStatus = (productExtId: string, status: string) => patchContract({
+              product: [{ externalId: productExtId, status: [{ status }] }]
+            })
+
+            const purchaseProduct = (poExtId: string) => {
+              if (!poExtId) return
+              const ts = Date.now().toString(36)
+              patchContract({
+                product: [{
+                  productOfferingExternalId: poExtId,
+                  externalId: `${poExtId}-${ts}`,
+                  name: poExtId,
+                  status: [{ status: 'ProductCreated' }],
+                  billingAccountReference: { externalId: baExtId },
+                  baRefForBillCycleAlignedRecurrence: { externalId: baExtId },
+                }]
+              })
+            }
+
+            return (
+              <div style={{ marginTop: 16 }}>
+                <h3 style={{ margin: '0 0 10px' }}>⚡ Actions</h3>
+                {actionMsg && <p style={{ color: 'green', fontSize: 12 }}>{actionMsg}</p>}
+                {actionErr && <p style={{ color: 'red', fontSize: 12, wordBreak: 'break-all' }}>{actionErr}</p>}
+
+                <fieldset style={{ marginBottom: 12 }}>
+                  <legend><b>Contract Status</b> <span style={{ fontSize: 11, color: '#888' }}>current: {contractStatus}</span></legend>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <button disabled={actionLoading || contractStatus === 'Active'} onClick={() => changeContractStatus('Active')}>Activate</button>
+                    <button disabled={actionLoading || contractStatus === 'Halt'} onClick={() => changeContractStatus('Halt')}>Halt</button>
+                    <button disabled={actionLoading || contractStatus === 'Active'} onClick={() => changeContractStatus('Active')}>Resume</button>
+                    <button disabled={actionLoading || contractStatus === 'Terminated'} onClick={() => changeContractStatus('Terminated')} style={{ color: 'red' }}>Terminate</button>
+                  </div>
+                </fieldset>
+
+                {products.length > 0 && (
+                  <fieldset style={{ marginBottom: 12 }}>
+                    <legend><b>Product Status</b></legend>
+                    {products.map((p: any) => (
+                      <div key={p.id || p.externalId} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 12, minWidth: 180 }}>{p.productOfferingExternalId || p.name} <span style={{ color: '#888' }}>({p.status?.slice(-1)[0]?.status})</span></span>
+                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductActive')} style={{ fontSize: 11 }}>Activate</button>
+                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductHalt')} style={{ fontSize: 11 }}>Halt</button>
+                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductActive')} style={{ fontSize: 11 }}>Resume</button>
+                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductTerminated')} style={{ fontSize: 11, color: 'red' }}>Terminate</button>
+                      </div>
+                    ))}
+                  </fieldset>
+                )}
+
+                <fieldset>
+                  <legend><b>Purchase New Product</b></legend>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <select style={{ flex: 1 }} value={newPO} onChange={e => setNewPO(e.target.value)}>
+                      <option value="">-- Select Product Offering --</option>
+                      {poList2.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
+                    </select>
+                    <button disabled={actionLoading || !newPO} onClick={() => purchaseProduct(newPO)}>Purchase</button>
+                  </div>
+                </fieldset>
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>

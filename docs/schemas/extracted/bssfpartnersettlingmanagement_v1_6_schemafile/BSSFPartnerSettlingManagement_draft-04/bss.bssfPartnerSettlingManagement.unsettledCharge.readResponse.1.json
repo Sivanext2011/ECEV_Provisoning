@@ -1,0 +1,457 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfPartnerSettlingManagement.unsettledCharge.readResponse.1.json#",
+  "description": "The so far unsettled charges.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "settlementAccount": {
+      "description": "Settlement Account Reference.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "externalId": {
+          "description": "External identifier of the settlement account.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the settlement account.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "contractViewIndicator": {
+      "description": "Contract view indicator if the contract view can be read for the settlement account.",
+      "type": "boolean"
+    },
+    "amount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "value": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "The unit of measure of the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        }
+      }
+    },
+    "amountType": {
+      "description": "Indicator if the unsettled amount is in Gross or Net.",
+      "type": "string",
+      "enum": [
+        "GROSS",
+        "NET"
+      ]
+    },
+    "taxAmount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "value": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "The unit of measure of the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        }
+      }
+    },
+    "taxExemptionAmount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "value": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "The unit of measure of the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        }
+      }
+    },
+    "taxOnTaxAmount": {
+      "description": "The versions of the value.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "value": {
+          "description": "Amount representation.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "description": "Carrying value.",
+              "type": "integer",
+              "minimum": -9223372036854775807,
+              "maximum": 9223372036854775806
+            },
+            "decimalPlaces": {
+              "description": "Number of decimals in the value.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          }
+        },
+        "unitOfMeasure": {
+          "description": "The unit of measure of the value.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 32
+        }
+      }
+    },
+    "unsettledChargePeriod": {
+      "description": "StartDateTime must be earlier than EndDateTime.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "startDateTime": {
+          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        },
+        "endDateTime": {
+          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        }
+      }
+    },
+    "taxItem": {
+      "description": "The tax items for the unsettled charge.",
+      "type": "array",
+      "items": {
+        "description": "The structure for tax items.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "description": "The name.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "settlementNoteStructureTaxItemSpecification": {
+            "description": "The settlement note structure tax item specification reference.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "description": "The ID of the referenced settlement note structure tax item specification.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              }
+            }
+          },
+          "taxItemCriterion": {
+            "description": "The criterion for tax items.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "priceTaxCategorySpecification": {
+                "description": "The price tax category specification reference.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "description": "The ID of the referenced price tax category specification.",
+                    "type": "string",
+                    "pattern": "^(?\u003d\\s*\\S).*$",
+                    "maxLength": 256
+                  },
+                  "externalId": {
+                    "description": "The external ID of the referenced price tax category specification.",
+                    "type": "string",
+                    "pattern": "^(?\u003d\\s*\\S).*$",
+                    "maxLength": 256
+                  }
+                }
+              },
+              "taxCode": {
+                "description": "The tax code.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "country": {
+                    "description": "The country of the tax code.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 32
+                  },
+                  "name": {
+                    "description": "The name of the tax code.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 256
+                  }
+                }
+              },
+              "taxType": {
+                "description": "The tax type.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "country": {
+                    "description": "The country of the tax type.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 32
+                  },
+                  "name": {
+                    "description": "The name of the tax type.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 256
+                  }
+                }
+              },
+              "jurisdictionType": {
+                "description": "The jurisdiction type.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "country": {
+                    "description": "The country of the jurisdiction type.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 32
+                  },
+                  "name": {
+                    "description": "The name of the jurisdiction type.",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 256
+                  }
+                }
+              }
+            }
+          },
+          "taxOnTax": {
+            "description": "The tax applied upon this tax, if any.",
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/taxItem/items"
+            }
+          },
+          "id": {
+            "description": "The ID of the entity.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "taxAmount": {
+            "description": "The versions of the value.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "value": {
+                "description": "Amount representation.",
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "number": {
+                    "description": "Carrying value.",
+                    "type": "integer",
+                    "minimum": -9223372036854775807,
+                    "maximum": 9223372036854775806
+                  },
+                  "decimalPlaces": {
+                    "description": "Number of decimals in the value.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                }
+              },
+              "unitOfMeasure": {
+                "description": "The unit of measure of the value.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          },
+          "parent": {
+            "description": "Tax item reference.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "description": "ID of the tax item.",
+                "type": "string",
+                "pattern": "^(?\u003d\\s*\\S).*$",
+                "maxLength": 256
+              }
+            }
+          },
+          "child": {
+            "description": "The children of this tax item, this is reference to the lower aggregation level.",
+            "type": "array",
+            "items": {
+              "description": "Tax item reference.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "description": "ID of the tax item.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "summaryView": {
+      "description": "The list of summary view.",
+      "type": "array",
+      "items": {
+        "description": "The settlement note view specification reference.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "The ID of the referenced settlement note structure view specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "The external id of the referenced settlement note structure view specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "The name of the referenced settlement note structure view specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    }
+  }
+}

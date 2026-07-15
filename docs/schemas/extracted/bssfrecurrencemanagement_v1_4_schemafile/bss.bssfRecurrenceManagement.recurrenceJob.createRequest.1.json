@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfRecurrenceManagement.recurrenceJob.createRequest.1.json#",
+  "description": "Recurrence information for recurring events for products.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "description": "A unique customer ID for the customer to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "A customer ID provided by an external system for the customer to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "A unique contract ID for the contract to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "A contract ID provided by an external system for the contract to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "communicationIdType": {
+      "description": "Value of Communication type, for example E.164.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "communicationId": {
+      "description": "Communication ID value.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "productId": {
+      "description": "A unique product id for the product to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "productExternalId": {
+      "description": "A product ID product by an external system for the product to use for the recurrence action.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "price": {
+      "description": "Recurrence prices to be applied.",
+      "type": "array",
+      "items": {
+        "description": "Product price details corresponding to a product related to a contract.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "productOfferingPriceId": {
+            "description": "The product offering price identifier.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "productOfferingPriceExternalId": {
+            "description": "The product offering price external identifier.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          }
+        }
+      }
+    }
+  }
+}

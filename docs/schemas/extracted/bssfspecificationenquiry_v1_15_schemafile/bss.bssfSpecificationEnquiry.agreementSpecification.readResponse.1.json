@@ -1,0 +1,693 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfSpecificationEnquiry.agreementSpecification.readResponse.1.json#",
+  "description": "Data structure for agreement specification.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "type": {
+      "description": "The type of agreement specification.",
+      "type": "string",
+      "enum": [
+        "BUSINESS_RELATIONSHIP",
+        "PRODUCT_AREA",
+        "PRODUCT_AREA_ADDON",
+        "PRODUCT_OFFERING"
+      ]
+    },
+    "useAllEntitiesFromParents": {
+      "description": "An indicator to control which entities can be used from the parents.",
+      "type": "boolean"
+    },
+    "billingAccountSpecification": {
+      "description": "The billing account specifications connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "contractSpecification": {
+      "description": "The contract specifications connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "customerSpecification": {
+      "description": "The customer specifications connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "productOffering": {
+      "description": "The product offerings connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "agreementSpecification": {
+      "description": "Other agreement specifications connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "agreementItemSpecification": {
+      "description": "The agreement item specifications connected to this agreement specification.",
+      "type": "array",
+      "items": {
+        "description": "An relationship between/among specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "External id of the target specification.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to the target specification. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "type": {
+            "description": "Type of relationship.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "targetType": {
+            "description": "The type of target specification.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "id": {
+      "description": "Unique identifier of the specification.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "externalId": {
+      "description": "Identifier of the specification in an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "name": {
+      "description": "Name given to this specification. Not guaranteed to be unique.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 256
+    },
+    "description": {
+      "description": "Description of this specification.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "version": {
+      "description": "Entity specification version.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "validFor": {
+      "description": "StartDateTime must be earlier than EndDateTime.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "startDateTime": {
+          "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        },
+        "endDateTime": {
+          "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+          "type": "string",
+          "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+          "format": "date-time"
+        }
+      }
+    },
+    "lastUpdate": {
+      "description": "Date and time of the last update of this specification.",
+      "type": "string",
+      "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+      "format": "date-time"
+    },
+    "lifecycleStatus": {
+      "description": "Used to indicate the current lifecycle status of this specification.",
+      "type": "string",
+      "enum": [
+        "ACTIVE"
+      ]
+    },
+    "specCharacteristic": {
+      "description": "A characteristic quality or distinctive feature of an EntitySpecification. The characteristic can be take on a discrete value, such as color, can take on a range of values, (for example, sensitivity of 100-240 mV).",
+      "type": "array",
+      "items": {
+        "description": "SpecCharacteristic is a structure for characteristic specifications.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "Unique identifier of this SpecCharacteristic.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "externalId": {
+            "description": "Identifier of the SpecCharacteristic in an external system.",
+            "type": "string",
+            "pattern": "^(?\u003d\\s*\\S).*$",
+            "maxLength": 256
+          },
+          "name": {
+            "description": "Name given to this SpecCharacteristic. Not guaranteed to be unique.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "description": {
+            "description": "A narrative that explains in detail what the specCharacteristic is.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "valueType": {
+            "description": "A kind of value that the characteristic can take on, such as numeric, text and so forth.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "minCardinality": {
+            "description": "The minimum number of instances a CharacteristicValue can take on.",
+            "type": "integer",
+            "minimum": -9223372036854775807,
+            "maximum": 9223372036854775806
+          },
+          "maxCardinality": {
+            "description": "The maximum number of instances a CharacteristicValue can take on.",
+            "type": "integer",
+            "minimum": -9223372036854775807,
+            "maximum": 9223372036854775806
+          },
+          "valueRegulator": {
+            "description": "The valueRegulator.",
+            "type": "string",
+            "enum": [
+              "MUST_BE_PERSONALIZED",
+              "SELECTION",
+              "CAN_BE_PERSONALIZED",
+              "NO_PERSONALIZATION",
+              "MUST_BE_ENRICHED"
+            ]
+          },
+          "purpose": {
+            "description": "The purpose of this characteristic, for example used for MINVALUE or MAXVALUE of bucket etc.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "measure": {
+            "description": "This is used to set the measure of the characteristic values, such as Data or weight or length etc. The UnitOfMeasure at characteristicValue then has actual UOM such as KB, MB or MG, KG, etc.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "sensitiveInfo": {
+            "description": "The specification for sensitiveInfo",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "decryptionMode": {
+                "description": "decryptionMode",
+                "type": "string",
+                "enum": [
+                  "ON_DEMAND"
+                ]
+              },
+              "sensitiveType": {
+                "description": "The value for the Decryption sensitiveType",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 256
+              }
+            }
+          },
+          "specCharacteristicValue": {
+            "description": "The spec characteristic values.",
+            "type": "array",
+            "items": {
+              "description": "A number or text that can be assigned to a SpecCharacteristic.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "description": "Unique identifier of this SpecCharacteristic.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "externalId": {
+                  "description": "Identifier of the SpecCharacteristic in an external system.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "name": {
+                  "description": "Name given to this SpecCharacteristic. Not guaranteed to be unique.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "description": {
+                  "description": "A narrative that explains in detail what the SpecCharacteristicValue is.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueType": {
+                  "description": "The kind of value the characteristic can take on, for example, Duration, KiloGrams, Data, Volume etc.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "isDefault": {
+                  "description": "Indicates if the value is the default value for a characteristic.",
+                  "type": "boolean"
+                },
+                "value": {
+                  "description": "A discrete value that the characteristic can take on.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueReference": {
+                  "description": "Reference structure.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "id": {
+                      "description": "Unique identifier of the target.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "externalId": {
+                      "description": "Identifier of the target in an external system.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "targetType": {
+                      "description": "The type of the target.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 256
+                    },
+                    "next": {
+                      "description": "Next step in the chain.",
+                      "$ref": "#/properties/specCharacteristic/items/properties/specCharacteristicValue/items/properties/valueReference"
+                    }
+                  }
+                },
+                "unitOfMeasure": {
+                  "description": "The unit in which the characteristicSpecValue is measured, such as KB, MB, Mins, Kgm etc.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueFrom": {
+                  "description": "The low range value that a characteristic can take on.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueTo": {
+                  "description": "The upper range value a characteristic that can take on.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "valueRangeReference": {
+                  "description": "Reference structure.",
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "id": {
+                      "description": "Unique identifier of the target.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "externalId": {
+                      "description": "Identifier of the target in an external system.",
+                      "type": "string",
+                      "pattern": "^(?\u003d\\s*\\S).*$",
+                      "maxLength": 256
+                    },
+                    "targetType": {
+                      "description": "The type of the target.",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 256
+                    },
+                    "next": {
+                      "description": "Next step in the chain.",
+                      "$ref": "#/properties/specCharacteristic/items/properties/specCharacteristicValue/items/properties/valueRangeReference"
+                    }
+                  }
+                },
+                "rangeInterval": {
+                  "description": "An indicator that specifies the inclusion or exclusion of the valueFrom and valueTo attributes. Only possible value is CLOSED.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                }
+              }
+            }
+          },
+          "specCharRelationship": {
+            "description": "Relationships between/among specCharacteristics or entity specification.",
+            "type": "array",
+            "items": {
+              "description": "An relationship between/among specCharacteristics or entity specification.",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "description": "Unique identifier of the target SpecCharacteristic or entity specification.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "externalId": {
+                  "description": "Identifier of the target SpecCharacteristic or entity specification in an external system.",
+                  "type": "string",
+                  "pattern": "^(?\u003d\\s*\\S).*$",
+                  "maxLength": 256
+                },
+                "name": {
+                  "description": "Name given to the target SpecCharacteristic or entity specification. Not guaranteed to be unique.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "type": {
+                  "description": "Type of relationship.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "targetType": {
+                  "description": "The type of target specification.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 256
+                },
+                "nextRelation": {
+                  "description": "The next relation in the chain.",
+                  "$ref": "#/properties/specCharacteristic/items/properties/specCharRelationship/items"
+                }
+              }
+            }
+          },
+          "inheritanceAction": {
+            "description": "Inheritance action for the specification characteristic",
+            "type": "string",
+            "enum": [
+              "COMBINE",
+              "SINGLE"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

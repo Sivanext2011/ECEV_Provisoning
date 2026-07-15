@@ -1,26 +1,26 @@
 {
   "environment": {
-    "ROOT_BAE": "https://bss-trf.ecevns-trf-haber031.ews.gic.ericsson.se",
-    "ROOT_SEC": "https://sec-access-trf.ecevns-trf-haber031.ews.gic.ericsson.se",
+    "ROOT_BAE": "https://bss-trf.2l3ccaf.ocs.cht.com.tw",
+    "ROOT_SEC": "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw",
     "ROOT_CPM": "",
     "ROOT_CPM_INTERNAL": "",
     "ROOT_CPM_BATCH": "",
-    "ROOT_RMCA": "",
+    "ROOT_RMCA": "https://bss-trf.2l3ccaf.ocs.cht.com.tw",
     "SITE": ""
   },
   "auth": {
-    "username": "superuser",
-    "password": "Superuser@12345",
+    "username": "bssadmin",
+    "password": "BssAdmin@CHT2026!",
     "client_id": "AuthorizationClient",
-    "token_endpoint": "https://sec-access-trf.ecevns-trf-haber031.ews.gic.ericsson.se/auth/realms/master/protocol/openid-connect/token",
+    "token_endpoint": "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw/auth/realms/master/protocol/openid-connect/token",
     "scope": "openid",
     "grant_type": "password"
   },
   "tls": {
-    "ssl_verify": true,
-    "ca_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\trf.crt",
-    "client_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\ca.crt",
-    "client_key_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\ca.key"
+    "ssl_verify": false,
+    "ca_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\beamCA.crt",
+    "client_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\bae-client.crt",
+    "client_key_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\bae-client.key"
   },
   "network": {
     "socks5_proxy": "socks5://127.0.0.1:1234",
@@ -201,6 +201,10 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingAccountSpecification?billingAccountSpecificationExternalId={{specExternalId}}"
     },
+    "spec_bill_cycle": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingCycleSpecification?billingCycleSpecificationExternalId={{specExternalId}}"
+    },
     "terminate_party_cascade": {
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfIndividualPartyManagement/v1/individualPartyExternalId/{{partyExternalId}}"
@@ -208,6 +212,11 @@
     "terminate_customer_cascade": {
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfCustomerManagement/v1/customerExternalId/{{customerExternalId}}"
+    },
+    "activate_contract": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId/{{contractExternalId}}",
+      "defaultBody": {"status": [{"status": "Active"}], "product": [{"status": [{"status": "ProductActive"}]}]}
     },
     "terminate_contract_cascade": {
       "method": "PATCH",
@@ -344,11 +353,18 @@
   },
   "defaults": {
     "partitionId": "1",
-    "partySpecExternalId": "EXT-PartySpec-Postpaid",
-    "customerSpecExternalId": "EXT-CustSpec-Postpaid",
-    "contractSpecExternalId": "EXT-CS-Postpaid",
-    "billingAccountSpecExternalId": "EXT_BAS_Postpaid",
-    "basePlanProductOfferingExternalId": "HINTMTE_TEST",
+    "partySpecExternalId": "Party_Individual_CHT",
+    "customerSpecExternalId": "CHT_Customer_Postpaid",
+    "contractSpecExternalId": "CHT_Contract_Postpaid",
+    "billingAccountSpecExternalId": "BAS_CHT_Postpaid",
+    "billCycleSpecExternalId": "CHT_billcycle_01",
+    "basePlanProductOfferingExternalId": "PO_HOTSPOT_CHT",
+    "paymentContext": "Postpaid",
+    "homeTimeZone": "Europe/Stockholm",
+    "msisdnResourceSpecExternalId": "",
+    "msisdnResourceSpecId": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
+    "imsiResourceSpecExternalId": "",
+    "imsiResourceSpecId": "a35baba8-c815-4c2b-b418-09f8a161bff1",
     "SMS_contactMediumSpecExternalId": "",
     "REST_contactMediumSpecExternalId": "",
     "EMAIL_contactMediumSpecExternalId": ""

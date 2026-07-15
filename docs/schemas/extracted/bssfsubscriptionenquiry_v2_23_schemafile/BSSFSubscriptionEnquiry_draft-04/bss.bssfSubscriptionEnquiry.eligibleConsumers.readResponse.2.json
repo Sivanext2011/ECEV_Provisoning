@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfSubscriptionEnquiry.eligibleConsumers.readResponse.2.json#",
+  "description": "A eligible consumer array representing consumers that is eligible for sharing provider product.",
+  "type": "array",
+  "items": {
+    "description": "The consumer that is eligible for sharing provider product.",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "consumerCustomerId": {
+        "description": "The identifier of the customer that the consumer belongs to.",
+        "type": "string",
+        "pattern": "^(?\u003d\\s*\\S).*$",
+        "maxLength": 256
+      },
+      "consumerCustomerExternalId": {
+        "description": "The external identifier of the customer that the consumer belongs to.",
+        "type": "string",
+        "pattern": "^(?\u003d\\s*\\S).*$",
+        "maxLength": 256
+      },
+      "consumerContractId": {
+        "description": "The identifier of the consumer contract.",
+        "type": "string",
+        "pattern": "^(?\u003d\\s*\\S).*$",
+        "maxLength": 256
+      },
+      "consumerContractExternalId": {
+        "description": "The external identifier of the consumer contract.",
+        "type": "string",
+        "pattern": "^(?\u003d\\s*\\S).*$",
+        "maxLength": 256
+      }
+    }
+  }
+}

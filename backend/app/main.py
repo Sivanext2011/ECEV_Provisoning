@@ -3,19 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .routers.provisioning import router
 from .services.database import init_db
-from .services.bae_client import bae_client
+from .services.ericsson_client import ericsson_client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     yield
-    await bae_client.close()
+    await ericsson_client.close()
 
 
 app = FastAPI(
-    title="Ericsson BAE/BSSF Provisioning Tool",
-    description="Manual provisioning tool for Ericsson BAE/BSSF",
+    title="Ericsson BSSF Provisioning Tool",
+    description="Schema-driven provisioning tool for Ericsson BSSF/CPM/RMCA",
     version="2.0.0",
     lifespan=lifespan,
 )
@@ -33,3 +33,13 @@ app.include_router(router)
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/health/bssf")
+async def health_bssf():
+    """Check BSSF connectivity by verifying token fetch."""
+    try:
+        token = await ericsson_client._get_token()
+        return {"status": "ok" if token else "no_token", "has_token": bool(token)}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}

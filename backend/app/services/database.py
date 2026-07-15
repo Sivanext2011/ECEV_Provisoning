@@ -13,7 +13,7 @@ async def init_db():
                 party_id TEXT,
                 customer_id TEXT,
                 billing_account_id TEXT,
-                agreement_id TEXT,
+                contract_id TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS products (
@@ -44,7 +44,13 @@ async def init_db():
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
         """)
+        # Migrate: rename agreement_id -> contract_id if old schema exists
+        cursor = await db.execute("PRAGMA table_info(subscribers)")
+        columns = [row[1] for row in await cursor.fetchall()]
+        if "agreement_id" in columns and "contract_id" not in columns:
+            await db.execute("ALTER TABLE subscribers RENAME COLUMN agreement_id TO contract_id")
+            await db.commit()
 
 
-async def get_db():
+async def get_db() -> aiosqlite.Connection:
     return await aiosqlite.connect(DB_PATH)

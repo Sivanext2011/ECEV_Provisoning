@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfOrganizationPartyManagement.changeStatusCascading.updateRequest.1.json#",
+  "description": "Perform cascading status changes for entity type belonging to a party role in an organization.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "organization": {
+      "description": "Organization Reference.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "externalId": {
+          "description": "External identifier for the party as an organization.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier for the party as an organization.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "qualifyingEntityType": {
+      "description": "Qualifying entity type",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "qualifyingPartyRole": {
+      "description": "Qualifying party role",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "qualifyingEntityStatus": {
+      "description": "Array of qualifying entity type statuses.",
+      "type": "array",
+      "items": {
+        "description": "Structure of one status version element.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "description": "The reason for the new status version.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "status": {
+            "description": "The status for the given time period.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "wantedEntityStatus": {
+      "description": "Structure of one status version element.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "description": "The reason for the new status version.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "status": {
+          "description": "The status for the given time period.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}

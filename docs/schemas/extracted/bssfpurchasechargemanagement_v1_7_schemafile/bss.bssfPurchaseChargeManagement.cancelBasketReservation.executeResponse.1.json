@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfPurchaseChargeManagement.cancelBasketReservation.executeResponse.1.json#",
+  "description": "",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "Represents the customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "Represents the external customer ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "Represents contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "Represents external contract ID for the basket reservation operation.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "reservationId": {
+      "description": "ID of the reservation.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+}

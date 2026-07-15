@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.errorMessage.response.1.json#",
+  "description": "Error message.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "messages": {
+      "description": "Error messages.",
+      "type": "array",
+      "items": {
+        "description": "Error message.",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "action": {
+            "description": "The action.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "code": {
+            "description": "The code.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "details": {
+            "description": "The details.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "message": {
+            "description": "The message.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          },
+          "source": {
+            "description": "The source.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 256
+          }
+        }
+      }
+    }
+  }
+}

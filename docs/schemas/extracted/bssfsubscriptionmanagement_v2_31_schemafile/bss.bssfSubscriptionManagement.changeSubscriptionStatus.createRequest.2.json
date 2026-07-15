@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfSubscriptionManagement.changeSubscriptionStatus.createRequest.2.json#",
+  "description": "Perform a subscription status change by changing contract status.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "description": "A unique customer ID for the customer for which subscription status change is done.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerExternalId": {
+      "description": "A customer ID provided by an external system for the customer for which subscription status change is done.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractId": {
+      "description": "A unique contract ID for the contract for which subscription status change is done",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "A contract ID provided by an external system for the contract for which subscription status change is done",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "communicationIdType": {
+      "description": "Value of Communication type, for example E.164.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 32
+    },
+    "communicationId": {
+      "description": "Communication ID value.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "contract": {
+      "description": "Contract.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "description": "Array of contract statuses.",
+          "type": "array",
+          "items": {
+            "id": "StatusExtended.1.json#",
+            "description": "Extended status structure.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "description": "The reason for the new status version.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 256
+              },
+              "status": {
+                "description": "The status for the given time period.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 256
+              },
+              "validFor": {
+                "description": "StartDateTime must be earlier than EndDateTime.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "startDateTime": {
+                    "description": "Start dateTime of the time period. The value is inclusive, including the starting point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  },
+                  "endDateTime": {
+                    "description": "End dateTime of the time period. The value is exclusive, excluding the ending point of the interval. The pattern is based on the definition found at http://www.w3.org/TR/xmlschema-2/#dateTime.",
+                    "type": "string",
+                    "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}|(24:00:00.000))(Z|\\+((0[0-9]|1[0-3]):[0-5][0-9]|14:00)|-((0[0-9]|1[0-1]):[0-5][0-9]|12:00))$",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

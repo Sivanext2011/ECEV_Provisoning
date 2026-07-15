@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfBalanceManagement.resetBalanceTopupFraudCounter.createResponse.2.json#",
+  "description": "Information on balance top up fraud.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "customerId": {
+      "description": "A unique customer ID.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "customerExternalId": {
+      "description": "A customer ID provided by an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256,
+      "deprecated": true
+    },
+    "relatedParty": {
+      "description": "Related Party or Party Role",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@referredType": {
+          "description": "Referred Type.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "externalId": {
+          "description": "External identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier of the party or party role.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "contractId": {
+      "description": "A unique contract ID.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "contractExternalId": {
+      "description": "A contract ID provided by an external system.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "details": {
+      "description": "Balance topup details.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "fraudAttempts": {
+          "description": "Number of detected fraud attempts.",
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "fraudThreshold": {
+          "description": "Fraud attempts Threshold.",
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "resourceFacingServiceSpecId": {
+          "description": "A unique reference to the Resource Facing Service Specification.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "resourceFacingServiceSpecExternalId": {
+          "description": "An external reference to the Resource Facing Service Specification.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    }
+  }
+}

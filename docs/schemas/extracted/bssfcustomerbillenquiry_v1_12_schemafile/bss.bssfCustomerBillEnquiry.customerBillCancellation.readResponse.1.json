@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfCustomerBillEnquiry.customerBillCancellation.readResponse.1.json#",
+  "description": "A customer bill cancellation array representing multiple CustomerBillCancellation tasks.",
+  "type": "array",
+  "items": {
+    "description": "Customer bill cancellation task of an earlier invoice.",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {}
+  }
+}

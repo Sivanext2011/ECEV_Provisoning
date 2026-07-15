@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfCustomerManagement.customerList.createResponse.1.json#",
+  "description": "Customer List containing the array of customer list entry of type customer list specification.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the customer list.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "externalId": {
+      "description": "External identifier for the customer list.",
+      "type": "string",
+      "pattern": "^(?\u003d\\s*\\S).*$",
+      "maxLength": 256
+    },
+    "customerListSpecificationRef": {
+      "description": "Customer List Specification Reference.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "externalId": {
+          "description": "External identifier for the Customer list specification reference.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        },
+        "id": {
+          "description": "Unique identifier for the Customer list specification reference.",
+          "type": "string",
+          "pattern": "^(?\u003d\\s*\\S).*$",
+          "maxLength": 256
+        }
+      }
+    },
+    "customerListEntry": {
+      "description": "To store the customer list entries.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "numberElement": {
+          "description": "The list of number element.",
+          "type": "array",
+          "items": {
+            "description": "To store the customer list entries.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "valueFrom": {
+                "description": "Range from value of a number element.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 256
+              },
+              "valueTo": {
+                "description": "Range to value of a number element.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        "dateElement": {
+          "description": "The list of date element.",
+          "type": "array",
+          "items": {
+            "description": "To store the customer list entries.",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "dateElement": {
+                "description": "The date element to store the list of date as a customer list entries.",
+                "type": "string",
+                "pattern": "^\\d{4}-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|(02-(0[1-9]|[12][0-9]))|((0[469]|11)-(0[1-9]|[12][0-9]|30)))$",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

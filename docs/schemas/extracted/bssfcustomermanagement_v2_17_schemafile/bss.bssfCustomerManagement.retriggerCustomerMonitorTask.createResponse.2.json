@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "bss.bssfCustomerManagement.retriggerCustomerMonitorTask.createResponse.2.json#",
+  "description": "Customer monitor to monitor asynchronize operations with status 202.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {}
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "bss.bssfCustomerBillEnquiry.customerBillRebilling.readResponse.1.json#",
+  "description": "A customer bill re-billing array representing multiple CustomerBillRebilling tasks.",
+  "type": "array",
+  "items": {
+    "description": "Customer bill re-billing task of an earlier cancelled invoice.",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {}
+  }
+}
