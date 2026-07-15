@@ -1,0 +1,45 @@
+replicaCount: 1
+
+backend:
+  image:
+    repository: ecev-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 8000
+
+frontend:
+  image:
+    repository: ecev-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 80
+
+service:
+  type: NodePort
+  uiPort: 3000
+  apiPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  host: ecev.local
+  annotations: {}
+
+config:
+  # Ericsson BSSF connection settings
+  rootBae: "https://bss-trf.2l3ccaf.ocs.cht.com.tw"
+  rootSec: "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw"
+  rootRmca: "https://bss-trf.2l3ccaf.ocs.cht.com.tw"
+  rootCpm: ""
+  rootCpmInternal: ""
+  rootCpmBatch: ""
+  sslVerify: false
+
+auth:
+  # These will be stored in a Secret
+  username: ""
+  password: ""
+  clientId: "AuthorizationClient"
+  tokenEndpoint: ""
+
+imagePullSecrets: []

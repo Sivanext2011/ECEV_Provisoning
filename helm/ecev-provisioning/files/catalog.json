@@ -1,0 +1,2516 @@
+{
+  "individualPartySpecifications": [
+    {
+      "id": "c7862a46-12c9-4b2f-8ca0-2f50aee74251",
+      "externalId": "Party_Individual_CHT",
+      "name": "Party_Individual_CHT",
+      "characteristics": [
+        {
+          "id": "e95a96f13bd1748ed8e1b4f1107f1a66",
+          "externalId": "",
+          "name": "Party Termination grace period",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Number of days in INACTIVE state",
+              "value": "12",
+              "default": true
+            },
+            {
+              "name": "Possible value range for party termination grace period",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "d1b116589814544528aa9fdcb51248ae",
+          "externalId": "",
+          "name": "Party Removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Number of days in TERMINATED state",
+              "value": "12",
+              "default": true
+            },
+            {
+              "name": "Possible value range for party removal grace period",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f132397aaf15e4ece89018d9df3a7aa6",
+          "externalId": "",
+          "name": "Party Removal start time",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Start time for scheduling terminated removal",
+              "value": "1",
+              "default": true
+            },
+            {
+              "name": "Range for party removal start time",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f6a22e68ef901481a8e4fb69d4e4a1c8",
+          "externalId": "",
+          "name": "Party Removal end time",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End time for scheduling terminated removal",
+              "value": "5",
+              "default": true
+            },
+            {
+              "name": "Range for party removal end time",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "customerSpecifications": [
+    {
+      "id": "06ce0153-525e-4b5f-b883-5f5ab4bba021",
+      "externalId": "CHT_Customer_Postpaid",
+      "name": "CHT_Customer_Postpaid",
+      "characteristics": [
+        {
+          "id": "activePeriodExpirationNotifId",
+          "externalId": "",
+          "name": "Active period expiration notification id",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "maxNumberOfNotifications",
+          "externalId": "",
+          "name": "Maximum number of notifications",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default max number of notifications",
+              "value": "10",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "customerDeletionPeriod",
+          "externalId": "",
+          "name": "customerDeletionPeriod",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "customerDeletionPeriodValue",
+              "value": "10",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "customerTerminationGracePeriod",
+          "externalId": "",
+          "name": "customerTerminationGracePeriod",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "customerTerminationGracePeriodDiscreteValue",
+              "value": "10",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "billingAccountTerminationPeriod",
+          "externalId": "",
+          "name": "billingAccountTerminationGracePeriod",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "billingAccountTerminationGracePeriodValue",
+              "value": "9",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "customerRole",
+          "externalId": "",
+          "name": "customerRole",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "customerRoleValue",
+              "value": "SC-OWNER",
+              "default": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "contractSpecifications": [
+    {
+      "id": "5e266d65-6143-4c42-800a-65c4181b4ef2",
+      "externalId": "CHT_Contract_Postpaid",
+      "name": "CHT_Contract_Postpaid",
+      "paymentContext": "POSTPAID",
+      "characteristics": [
+        {
+          "id": "cd9660fae5e944adf9195e4cee2f4e30",
+          "externalId": "",
+          "name": "Contract removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default contract removal grace period",
+              "value": "8",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bbd62923c787849559cc17745b918330",
+          "externalId": "",
+          "name": "Product removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for product removal grace period",
+              "value": "7",
+              "default": true
+            },
+            {
+              "name": "Range for product removal grace period",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "d658e46234cb947f8b63b41d3af85ef5",
+          "externalId": "",
+          "name": "Product removal start time",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for product removal start time",
+              "value": "1",
+              "default": true
+            },
+            {
+              "name": "Range for product removal start time",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bb78c184db39942e59edd48187db84e4",
+          "externalId": "",
+          "name": "Product removal endtime",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for product removal endtime",
+              "value": "5",
+              "default": true
+            },
+            {
+              "name": "Range for product removal endtime",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "db74c154e81d746b48bcfc7f6137f906",
+          "externalId": "",
+          "name": "Product termination grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for product termination grace period",
+              "value": "7",
+              "default": true
+            },
+            {
+              "name": "baseconfig_customers_csv_27B03F5",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ee9f8fe977be24c16837db2b1e3b72f6",
+          "externalId": "",
+          "name": "Value container removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for value container removal grace period",
+              "value": "7",
+              "default": true
+            },
+            {
+              "name": "Range for value container removal grace period",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c41c64471c1a145c8ac494560f5d3323",
+          "externalId": "",
+          "name": "AmountType",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "NET",
+              "value": "net",
+              "default": false
+            },
+            {
+              "name": "GROSS",
+              "value": "gross",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "entityLifeCycleAlignedHaltResume",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "fd0786ebfcf9d42849f0277e8d33851f",
+          "externalId": "",
+          "name": "Contract initial activation date",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Range for contract initial activation date",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "acb8f89aab37e45c8a653ef00356f8eb",
+          "externalId": "",
+          "name": "Grace period for contract termination",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Default value for grace period for contract termination",
+              "value": "30",
+              "default": true
+            },
+            {
+              "name": "Possible value for grace period for contract termination",
+              "value": "5",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "cd50e3f594f734d85b677f592456805e",
+          "externalId": "",
+          "name": "Has pending purchase",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Default value for has pending purchase",
+              "value": "false",
+              "default": true
+            },
+            {
+              "name": "Possible value for has pending purchase",
+              "value": "true",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b7efa6ce8beb54f4c9a415bc03fb260b",
+          "externalId": "",
+          "name": "Use SC links",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Default value for use SC links",
+              "value": "true",
+              "default": true
+            },
+            {
+              "name": "Possible value for use SC links",
+              "value": "false",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "taxJurisdictionCode",
+          "externalId": "",
+          "name": "Tax Jurisdiction Code",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "taxCategory",
+          "externalId": "",
+          "name": "Tax Category",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "billingAccountSpecifications": [
+    {
+      "id": "16979eae-1753-406a-87d6-e26e2285b69f",
+      "externalId": "BAS_CHT_Postpaid",
+      "name": "BAS_CHT_Postpaid",
+      "paymentContext": "POSTPAID",
+      "characteristics": [
+        {
+          "id": "c588e1720165c4f3d8fafcfa37329f0a",
+          "externalId": "",
+          "name": "AmountType",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "NET",
+              "value": "net",
+              "default": false
+            },
+            {
+              "name": "GROSS",
+              "value": "gross",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "entityLifeCycleAlignedHaltResume",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0889105b-a6b3-4cc4-b855-055121db9b16",
+      "externalId": "",
+      "name": "Prepaid",
+      "paymentContext": "PREPAID",
+      "characteristics": [
+        {
+          "id": "a4094f41473f74c0f912c886be727af9",
+          "externalId": "customerTaxCategory",
+          "name": "Customer Tax Category",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "fd5a4bdcf47e348e3a7331a60eaabd98",
+          "externalId": "taxJurisdictionCode",
+          "name": "Tax Jurisdiction Code",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f20932046e3464f77b465a2bfcaa488e",
+          "externalId": "amountType",
+          "name": "AmountType",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "GROSS",
+              "value": "gross",
+              "default": true
+            },
+            {
+              "name": "NET",
+              "value": "net",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "productSpecifications": [
+    {
+      "id": "8cbd5ecb-8610-4f72-a005-d7662700306e",
+      "externalId": "PS_HOTSPOT_ALLOWANCE_CHT",
+      "name": "PS_HOTSPOT_ALLOWANCE_CHT",
+      "characteristics": [
+        {
+          "id": "e250d9ab99e6947dcec1653087f7bae1",
+          "externalId": "",
+          "name": "ActivePeriodActivatedNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b31f7b98696b1935a6156bcae392f910",
+          "externalId": "",
+          "name": "ActivePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a353fa256a18018f71a2710cc3061724",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b84d06744280c2072f0070963d22771a",
+          "externalId": "",
+          "name": "ActivePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ec793e51cd302ce3d24d919c6a05e115",
+          "externalId": "",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bf2ef2438789ab6e646b2cb0636e2ab9",
+          "externalId": "",
+          "name": "ActivePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e4d1e17399b9ca22517b9d8cbec767ac",
+          "externalId": "",
+          "name": "ActiveTriggerMethod",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "trafficIndependent",
+              "value": "Traffic Independent",
+              "default": true
+            },
+            {
+              "name": "firstTraffic",
+              "value": "First Traffic Event",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b70df9ed795215ba87392f1f1cde7134",
+          "externalId": "",
+          "name": "AvailablePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a9bf089e0579ab11633989ab93201417",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a5efdaa6ba0db0fafee9757a4d0e00aa",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b70ab4a31c9478517506d5c29c093819",
+          "externalId": "",
+          "name": "AvailablePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "relativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e308847e2af957e5330a1d667e25af24",
+          "externalId": "",
+          "name": "AvailablePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f6e002e9941cf44c719f301a467dc8e3",
+          "externalId": "",
+          "name": "TerminationNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e4ed71161de8b3e82408b9eaa04e5587",
+          "externalId": "",
+          "name": "TerminationWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f8e1203e3ecbcd33fbc84f7a96232e39",
+          "externalId": "",
+          "name": "TerminationWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bd008f4654bdd142309c42b997f193c4",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "aea7cab354684247d0953e5957cdc13f",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a336165a07e7303278dd0d2a25111644",
+          "externalId": "",
+          "name": "AvailablePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a7f59c227691eb6c6018878e2af7be5a",
+          "externalId": "",
+          "name": "ActivePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f8fe475c5e0936fca40883bee9336155",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "bundleOnly",
+              "value": "true",
+              "default": false
+            },
+            {
+              "name": "notBundleOnly",
+              "value": "false",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "ae202003e2624d700c642130f5ff63ad",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "edff45351c1840c2a0f5b4a57e4b1a8d",
+          "externalId": "",
+          "name": "Threshold 1",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ed039a78f3fd4dc6aa8d58dfebb62ef9",
+          "externalId": "",
+          "name": "FUP",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c6275d716a31417e811373f9ccbb0707",
+          "externalId": "",
+          "name": "Initial",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c0d6db84c0484ab5af62ddf7e7d7b9b6",
+          "externalId": "",
+          "name": "Min",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae23e3e32a7c45048e9b34618559da2f",
+          "externalId": "",
+          "name": "Max",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ce0d0a70-8911-42e4-94b9-2b843f4a1f3a",
+      "externalId": "PS_DATA_UNLIMITED_CHT",
+      "name": "PS_DATA_UNLIMITED_CHT",
+      "characteristics": [
+        {
+          "id": "e5510436a25bb8eaa87c61035f8ac196",
+          "externalId": "",
+          "name": "ActivePeriodActivatedNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ecd086676c3e5f9f29f8e636d59ae9f5",
+          "externalId": "",
+          "name": "ActivePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bb555fbbc734344e6011c7ffd01826b6",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ea9cab878977e038372f94fd19403235",
+          "externalId": "",
+          "name": "ActivePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f1e5f6442e01ee180e75afe6600a6772",
+          "externalId": "",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e82868b06fefd91c590eb8ec3beb8db2",
+          "externalId": "",
+          "name": "ActivePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f4c83a63757e4adbab2e2ebca2586add",
+          "externalId": "",
+          "name": "ActiveTriggerMethod",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "trafficIndependent",
+              "value": "Traffic Independent",
+              "default": true
+            },
+            {
+              "name": "firstTraffic",
+              "value": "First Traffic Event",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ee45d28582b5cfc2360a8d5cd47c29a0",
+          "externalId": "",
+          "name": "AvailablePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f66dfb5d7feee2d14ba549d7191823fe",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f431168a9cd0f0de46403216eec7ed40",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "adbedf6f7639bb98949ce1fe17616d34",
+          "externalId": "",
+          "name": "AvailablePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "relativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a8f0823da97c8589cdc3489438204365",
+          "externalId": "",
+          "name": "AvailablePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a0f9480cc7d12c00e47348882bee85eb",
+          "externalId": "",
+          "name": "TerminationNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e1ec7e8b33933fac74f856f7aebd870a",
+          "externalId": "",
+          "name": "TerminationWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ed119d943c07687ff9923835148c067d",
+          "externalId": "",
+          "name": "TerminationWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bbdfb34570f97ad62cb5033805adc4e0",
+          "externalId": "",
+          "name": "AvailablePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "abcc58d02ec7d60f14a489432a7eadd8",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b1c65ef711c24888fe5ea7b523822f14",
+          "externalId": "",
+          "name": "AvailablePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "fe5807baa03aa6519ea97ccf90a7fc34",
+          "externalId": "",
+          "name": "ActivePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e3b2efdd14cb0aad20ede3f6d4e5dfce",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "bundleOnly",
+              "value": "true",
+              "default": false
+            },
+            {
+              "name": "notBundleOnly",
+              "value": "false",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "bf39f273bbf64f9166daa0e028604bb1",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "e64149936084487db6a85f46f6327b08",
+          "externalId": "",
+          "name": "Threshold 1",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "aa5cdbfd56c94462a5c94d0b7a43a834",
+          "externalId": "",
+          "name": "FUP",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a6bb8b2829f343e394280ebe7d8fe74f",
+          "externalId": "",
+          "name": "Initial",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a8bd878368884a42aec04f69dbc54e84",
+          "externalId": "",
+          "name": "Min",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae50675d540f48caa3e8897b9b01dce2",
+          "externalId": "",
+          "name": "Max",
+          "valueType": "DECIMAL",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e56a0d5a-888b-4173-b349-3b04c717dc7c",
+      "externalId": "",
+      "name": "PS - Provide and Consume all PBS and BABS",
+      "characteristics": [
+        {
+          "id": "aa281803c73254161a38210f8c4fd5e6",
+          "externalId": "numericPriority",
+          "name": "NumericPriority",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "DefaultPriority",
+              "value": "200000",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c01948c86123e4b2f9ed8ccb3d35d04a",
+          "externalId": "activePeriodStartDate",
+          "name": "ActivePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "aee4395521b704031abe62d9b7d8700f",
+          "externalId": "availablePeriodStartDate",
+          "name": "AvailablePeriodStartDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c8a4d69b40d8a427f938ab57b6827231",
+          "externalId": "availablePeriodExpiredNotificationId",
+          "name": "AvailablePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "fa24b9ded677c48e48413f373a6fc34f",
+          "externalId": "availablePeriodExpiryWarningTimeInAdvance",
+          "name": "AvailablePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ab876c39e2d8148d690943e0d2498161",
+          "externalId": "availablePeriodFormationTechnique",
+          "name": "AvailablePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "relativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e081e57b2093d4a37a762acee60bd2ab",
+          "externalId": "activePeriodExpiryWarningTimeInAdvance",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e823104d2b11b4c228ba0f3de98b11dd",
+          "externalId": "activePeriodLength",
+          "name": "ActivePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b925b06486a224740b417e989005c067",
+          "externalId": "activePeriodExpiredNotificationId",
+          "name": "ActivePeriodExpiredNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e9921083cb52042b19ad42b61ca70fdd",
+          "externalId": "activePeriodExpiryDate",
+          "name": "ActivePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a2c5d13a28c754e93bd2e78cee8b0d9c",
+          "externalId": "activePeriodActivatedNotificationId",
+          "name": "ActivePeriodActivatedNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a5dfd995735f5415c9d04e3739437e43",
+          "externalId": "activeTriggerMethod",
+          "name": "ActiveTriggerMethod",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "trafficIndependent",
+              "value": "Traffic Independent",
+              "default": true
+            },
+            {
+              "name": "firstTraffic",
+              "value": "First Traffic Event",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b64a32e8884c24c54b276446eb34b2ae",
+          "externalId": "bundleOnly",
+          "name": "BundleOnly",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "bundleOnly",
+              "value": "true",
+              "default": false
+            },
+            {
+              "name": "notBundleOnly",
+              "value": "false",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "a4cd9ec802dbd4a1cb20923b84145f46",
+          "externalId": "availablePeriodLength",
+          "name": "AvailablePeriodLength",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b826021f3d65249cebb6a26cd6dd3a54",
+          "externalId": "availablePeriodExpiryWarningNotificationId",
+          "name": "AvailablePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ee1a5d0e41ca44965ad4b3e2e7349716",
+          "externalId": "activePeriodFormationTechnique",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "d29b6865a5c184e5a8b9362090731303",
+          "externalId": "activePeriodExpiryWarningNotificationId",
+          "name": "ActivePeriodExpiryWarningNotificationId",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "b6f9938ce61e14aa2bb031d78e065940",
+          "externalId": "availablePeriodExpiryDate",
+          "name": "AvailablePeriodExpiryDate",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "eb707629181537096be08bbedc83e0c2",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "99388b72-aabb-46d9-bd77-29aa05c9589b",
+      "externalId": "BPS_Premium_5G",
+      "name": "BPS_Premium_5G",
+      "characteristics": [
+        {
+          "id": "f58a6bdc6dd9cb3e88105ba5c1a0203d",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "bundleOnly",
+              "value": "true",
+              "default": false
+            },
+            {
+              "name": "notBundleOnly",
+              "value": "false",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "e60d6294ec3db9b87421f42832341ec3",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "End of Day shift",
+              "value": "1",
+              "default": false
+            },
+            {
+              "name": "Absolute time shift",
+              "value": "0",
+              "default": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "productOfferings": [
+    {
+      "id": "f56b28eb-79b5-4e43-b06f-6df5d3b442ce",
+      "externalId": "PO_HOTSPOT_CHT",
+      "name": "PO_HOTSPOT_CHT",
+      "offeringTypes": [
+        "BASE"
+      ],
+      "resourceSpecifications": [
+        {
+          "id": "a35baba8-c815-4c2b-b418-09f8a161bff1",
+          "externalId": "",
+          "name": "RS - IMSI"
+        },
+        {
+          "id": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
+          "externalId": "",
+          "name": "RS - MSISDN"
+        },
+        {
+          "id": "74084c80-61ee-4d45-819d-19d31f2a585e",
+          "externalId": "PBS_CHT_Hotspot",
+          "name": "PBS_CHT_Hotspot"
+        }
+      ],
+      "characteristics": [
+        {
+          "id": "f8fe475c5e0936fca40883bee9336155",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "notBundleOnly",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "e4d1e17399b9ca22517b9d8cbec767ac",
+          "externalId": "",
+          "name": "ActiveTriggerMethod",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "trafficIndependent",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "ec793e51cd302ce3d24d919c6a05e115",
+          "externalId": "",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae202003e2624d700c642130f5ff63ad",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Absolute time shift",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "aea7cab354684247d0953e5957cdc13f",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "f8e1203e3ecbcd33fbc84f7a96232e39",
+          "externalId": "",
+          "name": "TerminationWarningTimeInAdvance",
+          "valueType": "",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "edff45351c1840c2a0f5b4a57e4b1a8d",
+          "externalId": "",
+          "name": "Threshold 1",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ed039a78f3fd4dc6aa8d58dfebb62ef9",
+          "externalId": "",
+          "name": "FUP",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c6275d716a31417e811373f9ccbb0707",
+          "externalId": "",
+          "name": "Initial",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "c0d6db84c0484ab5af62ddf7e7d7b9b6",
+          "externalId": "",
+          "name": "Min",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae23e3e32a7c45048e9b34618559da2f",
+          "externalId": "",
+          "name": "Max",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dfbc3f12-b1c2-453b-9f1c-caad5287f894",
+      "externalId": "PO_DATA_UNLIMITED_CHT",
+      "name": "PO_DATA_UNLIMITED_CHT",
+      "offeringTypes": [
+        "BASE"
+      ],
+      "resourceSpecifications": [
+        {
+          "id": "a35baba8-c815-4c2b-b418-09f8a161bff1",
+          "externalId": "",
+          "name": "RS - IMSI"
+        },
+        {
+          "id": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
+          "externalId": "",
+          "name": "RS - MSISDN"
+        },
+        {
+          "id": "3366ea47-f8e5-4ac6-b726-c7ca1dfbe92e",
+          "externalId": "PBS_CHT_Data_Unlimited",
+          "name": "PBS_CHT_Data_Unlimited"
+        }
+      ],
+      "characteristics": [
+        {
+          "id": "e3b2efdd14cb0aad20ede3f6d4e5dfce",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "notBundleOnly",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "f4c83a63757e4adbab2e2ebca2586add",
+          "externalId": "",
+          "name": "ActiveTriggerMethod",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "trafficIndependent",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "f1e5f6442e01ee180e75afe6600a6772",
+          "externalId": "",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "",
+          "valueRegulator": "selection",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "bf39f273bbf64f9166daa0e028604bb1",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Absolute time shift",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "abcc58d02ec7d60f14a489432a7eadd8",
+          "externalId": "",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ed119d943c07687ff9923835148c067d",
+          "externalId": "",
+          "name": "TerminationWarningTimeInAdvance",
+          "valueType": "",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "e64149936084487db6a85f46f6327b08",
+          "externalId": "",
+          "name": "Threshold 1",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "aa5cdbfd56c94462a5c94d0b7a43a834",
+          "externalId": "",
+          "name": "FUP",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueDiscrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "CharacteristicSpecificationValue-idCsvPossibleValueRange",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a6bb8b2829f343e394280ebe7d8fe74f",
+          "externalId": "",
+          "name": "Initial",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "a8bd878368884a42aec04f69dbc54e84",
+          "externalId": "",
+          "name": "Min",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value discrete",
+              "value": "",
+              "default": true
+            },
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae50675d540f48caa3e8897b9b01dce2",
+          "externalId": "",
+          "name": "Max",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "Possible value range",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7ce256ad-7290-48a6-817e-bad3f3fdb208",
+      "externalId": "BPO_Premium_5G",
+      "name": "BPO_Premium_5G",
+      "offeringTypes": [
+        "BUNDLE"
+      ],
+      "resourceSpecifications": [],
+      "characteristics": [
+        {
+          "id": "f58a6bdc6dd9cb3e88105ba5c1a0203d",
+          "externalId": "",
+          "name": "BundleOnly",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "notBundleOnly",
+              "value": "",
+              "default": true
+            }
+          ]
+        },
+        {
+          "id": "e60d6294ec3db9b87421f42832341ec3",
+          "externalId": "",
+          "name": "EntityLifeCycleAlignedForHaltResume",
+          "valueType": "",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "possibleValues": [
+            {
+              "name": "Absolute time shift",
+              "value": "",
+              "default": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "resourceSpecifications": [
+    {
+      "id": "324ce77e-1e7c-4d97-9d75-f2c8e3cc564e",
+      "externalId": "",
+      "name": "BABS"
+    },
+    {
+      "id": "8aabb378-affe-4bda-8ba6-55a53ccf4549",
+      "externalId": "",
+      "name": "RS - MSISDN"
+    },
+    {
+      "id": "d08e2b96-f317-4d9d-a604-962010163dd9",
+      "externalId": "",
+      "name": "Physical RS - SIM"
+    },
+    {
+      "id": "74084c80-61ee-4d45-819d-19d31f2a585e",
+      "externalId": "PBS_CHT_Hotspot",
+      "name": "PBS_CHT_Hotspot"
+    },
+    {
+      "id": "7a2ede0a-47b3-430c-8043-aa019e9183e1",
+      "externalId": "",
+      "name": "Phone"
+    },
+    {
+      "id": "48baa0f3-4a6d-4377-a8d8-c642c6774f36",
+      "externalId": "",
+      "name": "Accessory"
+    },
+    {
+      "id": "3366ea47-f8e5-4ac6-b726-c7ca1dfbe92e",
+      "externalId": "PBS_CHT_Data_Unlimited",
+      "name": "PBS_CHT_Data_Unlimited"
+    },
+    {
+      "id": "a35baba8-c815-4c2b-b418-09f8a161bff1",
+      "externalId": "",
+      "name": "RS - IMSI"
+    },
+    {
+      "id": "1ed408dd-7620-4038-9947-f3e2fa87d8c3",
+      "externalId": "",
+      "name": "Starter Kit"
+    },
+    {
+      "id": "d7056b75-d3f0-4645-8e4d-fb385a1347fe",
+      "externalId": "",
+      "name": "RS - Tracking"
+    },
+    {
+      "id": "950ebbf7-ef35-427c-9c70-e02ef1c1a4b7",
+      "externalId": "CHT_BAB",
+      "name": "CHT_BAB"
+    }
+  ],
+  "bucketTags": [
+    {
+      "id": "4a22622a-d47b-4c14-813a-e163e67f3cfb",
+      "externalId": "PBT_CHT_Data_Unlimited",
+      "name": "PBT_CHT_Data_Unlimited",
+      "type": "COUNTER"
+    },
+    {
+      "id": "ded283fa-3873-4a4f-90dc-6bfadce84932",
+      "externalId": "CHT_BAB",
+      "name": "CHT_BAB",
+      "type": "COMMON"
+    },
+    {
+      "id": "68d43c28-de93-4b0e-af49-f975f88c78fd",
+      "externalId": "PBT_CHT_Hotspot  ",
+      "name": "PBT_CHT_Hotspot  ",
+      "type": "COUNTER"
+    }
+  ],
+  "characteristicSetSpecifications": [
+    {
+      "id": "d90097ad-026b-4f6d-b25c-c70f539571a4",
+      "externalId": "",
+      "name": "Shipping CSS",
+      "forEntityType": "ResourceFacingServiceSpecification",
+      "characteristics": [
+        {
+          "id": "a6bf1c171ba54deb88ca5355ade89a07",
+          "externalId": "STATE",
+          "name": "State",
+          "valueType": "STRING",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "CobaStateList",
+              "value": "",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ae1c43a28ccd45579a262a40eaa48773",
+          "externalId": "COD_REQUESTED",
+          "name": "COD Requested",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "CODRequestedFalse",
+              "value": "false",
+              "default": false
+            },
+            {
+              "name": "CODRequestedTrue",
+              "value": "true",
+              "default": false
+            }
+          ]
+        },
+        {
+          "id": "ab388455b1d14fabbde3dad4b791dbaa",
+          "externalId": "DELIVERY_OPTION",
+          "name": "Delivery Option",
+          "valueType": "STRING",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "possibleValues": [
+            {
+              "name": "pickup",
+              "value": "pickup",
+              "default": false
+            },
+            {
+              "name": "priority",
+              "value": "priority",
+              "default": false
+            },
+            {
+              "name": "sameDay",
+              "value": "sameDay",
+              "default": false
+            },
+            {
+              "name": "standard",
+              "value": "standard",
+              "default": false
+            },
+            {
+              "name": "CobaDeliveryOptionList",
+              "value": "",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "customerFacingServiceSpecifications": [
+    {
+      "id": "86aa364a-20fa-41f1-a938-6e5039fe6185",
+      "externalId": "CFSS_Data",
+      "name": "CFSS_Data",
+      "type": "BASE",
+      "subType": "DATA"
+    }
+  ],
+  "scheduleDefinitions": [
+    {
+      "id": "00cda975-9181-444f-afb7-fab66af036ac",
+      "externalId": "CHT_Monthly_01",
+      "name": "Monthly: 1st day of every month. No end date"
+    },
+    {
+      "id": "9335b5b3-2a49-405b-bf31-ca255d4a4f49",
+      "externalId": "",
+      "name": "Billing Cycle Aligned Schedule Definition"
+    },
+    {
+      "id": "d43d5b97-20f5-4271-9b83-d6f3b2c286c3",
+      "externalId": "CHT_Monthly_11",
+      "name": "Monthly: 11th day of every month. No end date"
+    }
+  ],
+  "billingCycleSpecifications": [
+    {
+      "id": "26864837-1923-4845-8c6b-ed6dd33bd6f6",
+      "externalId": "CHT_billcycle_01",
+      "name": "CHT_billcycle_01",
+      "scheduleDefinitionExternalId": ""
+    }
+  ]
+}
