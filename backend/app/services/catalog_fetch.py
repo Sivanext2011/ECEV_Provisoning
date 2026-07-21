@@ -1,48 +1,74 @@
-"""Fetch catalog data from live BSSF Specification Enquiry API."""
+"""Fetch catalog data from live BSSF Specification Enquiry API.
+
+Two-step approach (required by BSSF API design):
+  1. GET entitySpecificationList?specificationType=X  -> list of {id, externalId, name}
+  2. GET <specEndpoint>?<specType>ExternalId=X        -> full spec with characteristics
+"""
 import logging
 import app.services.catalog as cat_mod
 from .ericsson_client import ericsson_client
 
 logger = logging.getLogger(__name__)
 
-# (api_key, response_list_key, catalog_key)
-_SPEC_FETCH_MAP = [
-    ("spec_individual",               "individualSpecification",              "individualPartySpecifications"),
-    ("spec_customer",                 "customerSpecification",                "customerSpecifications"),
-    ("spec_organization",             "organizationSpecification",            "organizationSpecifications"),
-    ("spec_contract",                 "contractSpecification",                "contractSpecifications"),
-    ("spec_billing_account",          "billingAccountSpecification",          "billingAccountSpecifications"),
-    ("spec_product",                  "productSpecification",                 "productSpecifications"),
-    ("spec_product_offering",         "productOffering",                      "productOfferings"),
-    ("spec_contact_medium",           "contactMediumSpecification",           "contactMediumSpecifications"),
-    ("spec_billing_cycle",            "billingCycleSpecification",            "billingCycleSpecifications"),
-    ("spec_schedule_definition",      "scheduleDefinition",                   "scheduleDefinitions"),
-    ("spec_bucket",                   "bucketSpecification",                  "bucketTags"),
-    ("spec_characteristic_set",       "characteristicSetSpecification",       "characteristicSetSpecifications"),
-    ("spec_customer_facing_service",  "customerFacingServiceSpecification",   "customerFacingServiceSpecifications"),
-    ("spec_agreement",                "agreementSpecification",               "agreementSpecifications"),
-    ("spec_agreement_item",           "agreementItemSpecification",           "agreementItemSpecifications"),
-    ("spec_party_role",               "partyRoleSpecification",               "partyRoleSpecifications"),
-    ("spec_settlement_account",       "settlementAccountSpecification",       "settlementAccountSpecifications"),
-    ("spec_sharing_provider",         "sharingProviderSpecification",         "sharingProviderSpecifications"),
-    ("spec_communication_identifier", "communicationIdentifierSpecification", "communicationIdentifierSpecifications"),
-    ("spec_customer_list",            "customerListSpecification",            "customerListSpecifications"),
-    ("spec_reference_data_list",      "referenceDataListSpecification",       "referenceDataListSpecifications"),
-    ("spec_bucket_determination",     "bucketDeterminationSpecification",     "bucketDeterminationSpecifications"),
-    ("spec_tag",                      "tagSpecification",                     "tagSpecifications"),
+# Maps: specificationType -> (api_key, externalId_param, catalog_key)
+_SPEC_TYPE_MAP = [
+    ("CONTRACT_SPECIFICATION",              "spec_contract",          "contractSpecificationExternalId",              "contractSpecifications"),
+    ("BILLING_ACCOUNT_SPECIFICATION",       "spec_billing_account",   "billingAccountSpecificationExternalId",        "billingAccountSpecifications"),
+    ("PRODUCT_SPECIFICATION",               "spec_product",           "productSpecificationExternalId",               "productSpecifications"),
+    ("PRODUCT_OFFERING",                    "spec_product_offering",  "productOfferingExternalId",                    "productOfferings"),
+    ("CUSTOMER_SPECIFICATION",              "spec_customer",          "customerSpecificationExternalId",              "customerSpecifications"),
+    ("ORGANIZATION_SPECIFICATION",          "spec_organization",      "organizationSpecificationExternalId",          "organizationSpecifications"),
+    ("AGREEMENT_SPECIFICATION",             "spec_agreement",         "agreementSpecificationExternalId",             "agreementSpecifications"),
+    ("AGREEMENT_ITEM_SPECIFICATION",        "spec_agreement_item",    "agreementItemSpecificationExternalId",         "agreementItemSpecifications"),
+    ("BILLING_CYCLE_SPECIFICATION",         "spec_billing_cycle",     "billingCycleSpecificationExternalId",          "billingCycleSpecifications"),
+    ("BUCKET_SPECIFICATION",                "spec_bucket",            "bucketSpecificationExternalId",                "bucketTags"),
+    ("CHARACTERISTIC_SET_SPECIFICATION",    "spec_characteristic_set","characteristicSetSpecificationExternalId",     "characteristicSetSpecifications"),
+    ("CUSTOMER_FACING_SERVICE_SPECIFICATION","spec_customer_facing_service","customerFacingServiceSpecificationExternalId","customerFacingServiceSpecifications"),
+    ("PARTY_ROLE_SPECIFICATION",            "spec_party_role",        "partyRoleSpecificationExternalId",             "partyRoleSpecifications"),
+    ("SETTLEMENT_ACCOUNT_SPECIFICATION",    "spec_settlement_account","settlementAccountSpecificationExternalId",     "settlementAccountSpecifications"),
+    ("SHARING_PROVIDER_SPECIFICATION",      "spec_sharing_provider",  "sharingProviderSpecificationExternalId",       "sharingProviderSpecifications"),
+    ("COMMUNICATION_IDENTIFIER_SPECIFICATION","spec_communication_identifier","communicationIdentifierSpecificationExternalId","communicationIdentifierSpecifications"),
+    ("CUSTOMER_LIST_SPECIFICATION",         "spec_customer_list",     "customerListSpecificationExternalId",          "customerListSpecifications"),
+    ("REFERENCE_DATA_LIST_SPECIFICATION",   "spec_reference_data_list","referenceDataListSpecificationExternalId",   "referenceDataListSpecifications"),
+    ("BUCKET_DETERMINATION_SPECIFICATION",  "spec_bucket_determination","bucketDeterminationSpecificationExternalId", "bucketDeterminationSpecifications"),
+    ("TAG_SPECIFICATION",                   "spec_tag",               "tagSpecificationExternalId",                   "tagSpecifications"),
+    ("SCHEDULE_DEFINITION",                 "spec_schedule_definition","scheduleDefinitionExternalId",                "scheduleDefinitions"),
 ]
+
+# valueRegulator values from live BSSF API (uppercase_underscore)
+_USER_REGULATORS = {"CAN_BE_PERSONALIZED", "MUST_BE_PERSONALIZED", "SELECTION",
+                    "canBePersonalized", "mustBePersonalized", "selection"}
+_INTERNAL_REGULATORS = {"NO_PERSONALIZATION", "noPersonalization", "FIXED", "fixed"}
+
+# Normalize live API valueRegulator to camelCase used by frontend
+_REG_NORMALIZE = {
+    "CAN_BE_PERSONALIZED":  "canBePersonalized",
+    "MUST_BE_PERSONALIZED": "mustBePersonalized",
+    "NO_PERSONALIZATION":   "noPersonalization",
+    "FIXED":                "fixed",
+    "SELECTION":            "selection",
+}
+
+
+def _normalize_reg(reg: str) -> str:
+    return _REG_NORMALIZE.get(reg, reg)
 
 
 def _extract_chars(char_list: list) -> list:
+    """Parse specCharacteristic list from live BSSF response."""
     result = []
     for c in (char_list or []):
+        reg_raw = c.get("valueRegulator", "")
+        reg = _normalize_reg(reg_raw)
         ext_id = (c.get("externalId") or "").strip()
-        reg = c.get("valueRegulator", "")
-        if reg in ("NO_PERSONALIZATION", "noPersonalization") and not ext_id:
+
+        # Skip purely internal chars with no externalId
+        if reg in ("noPersonalization", "fixed") and not ext_id:
             continue
+
         char = {
             "id": c.get("id", ""),
-            "externalId": ext_id,
+            "externalId": ext_id or (c.get("name") or "").strip(),
             "name": c.get("name", ""),
             "valueType": c.get("valueType", ""),
             "valueRegulator": reg,
@@ -51,52 +77,56 @@ def _extract_chars(char_list: list) -> list:
             "possibleValues": [],
             "unitOfMeasure": c.get("unitOfMeasure") or c.get("measure") or "",
         }
-        for pv in (c.get("possibleValues") or c.get("specCharacteristicValue") or c.get("characteristicValueSpecification") or []):
-            val = pv.get("value") or pv.get("valueFrom") or ""
-            entry = {
-                "name": pv.get("name", ""),
-                "value": str(val) if val is not None else "",
-                "default": bool(pv.get("isDefault") or pv.get("default", False)),
-            }
-            char["possibleValues"].append(entry)
-            if entry["default"] and not char["defaultValue"]:
-                char["defaultValue"] = entry["value"]
+
+        # Parse specCharacteristicValue entries
+        for pv in (c.get("specCharacteristicValue") or c.get("possibleValues") or []):
+            is_default = bool(pv.get("isDefault") or pv.get("default", False))
+
+            if "valueFrom" in pv or "valueTo" in pv:
+                # Range constraint — store on char, not as enum option
+                char["valueFrom"] = str(pv.get("valueFrom", ""))
+                char["valueTo"] = str(pv.get("valueTo", ""))
+                if pv.get("unitOfMeasure") and not char["unitOfMeasure"]:
+                    char["unitOfMeasure"] = pv["unitOfMeasure"]
+            elif pv.get("value") is not None:
+                # Enum / default value entry
+                val = str(pv["value"])
+                entry = {
+                    "name": pv.get("name", ""),
+                    "value": val,
+                    "default": is_default,
+                }
+                if pv.get("unitOfMeasure") and not char["unitOfMeasure"]:
+                    char["unitOfMeasure"] = pv["unitOfMeasure"]
+                # Only add as enum option if it's not just a default-value label
+                # (single PV whose value == default with a range also present — label, not enum)
+                char["possibleValues"].append(entry)
+                if is_default and not char["defaultValue"]:
+                    char["defaultValue"] = val
+
+        # Drop possibleValues that are just default-value description labels
+        # (same logic as catalog.py: range present + all PVs equal defaultValue)
+        if char.get("valueFrom") is not None and char["possibleValues"]:
+            if all(pv["value"] == char["defaultValue"] for pv in char["possibleValues"]):
+                char["possibleValues"] = []
+
         result.append(char)
     return result
 
 
-def _get_chars(item: dict) -> list:
-    """Extract characteristics from any of the known field names."""
-    raw = (
-        item.get("specCharacteristic") or
-        item.get("prodSpecCharValueUse") or
-        item.get("characteristic") or
-        item.get("characteristicSpecification") or
-        []
-    )
-    return _extract_chars(raw)
-
-
 def _normalize(item: dict, catalog_key: str) -> dict:
+    """Normalize a raw BSSF spec response into catalog format."""
+    chars = _extract_chars(item.get("specCharacteristic") or item.get("characteristic") or [])
+
     base = {
         "id": item.get("id", ""),
         "externalId": item.get("externalId", ""),
         "name": item.get("name", ""),
+        "characteristics": chars,
     }
-    chars = _get_chars(item)
-
-    if catalog_key in ("individualPartySpecifications", "customerSpecifications",
-                       "organizationSpecifications", "productSpecifications",
-                       "agreementSpecifications", "agreementItemSpecifications",
-                       "partyRoleSpecifications", "settlementAccountSpecifications",
-                       "sharingProviderSpecifications", "communicationIdentifierSpecifications",
-                       "customerListSpecifications", "referenceDataListSpecifications",
-                       "characteristicSetSpecifications"):
-        base["characteristics"] = chars
 
     if catalog_key in ("contractSpecifications", "billingAccountSpecifications"):
         base["paymentContext"] = item.get("paymentContext", "")
-        base["characteristics"] = chars
 
     elif catalog_key == "billingCycleSpecifications":
         base["scheduleDefinitionExternalId"] = item.get("scheduleDefinitionExternalId", "")
@@ -104,7 +134,6 @@ def _normalize(item: dict, catalog_key: str) -> dict:
     elif catalog_key == "bucketTags":
         base["type"] = item.get("type", "")
         base["measure"] = item.get("measure", "")
-        base["persistencyBehavior"] = item.get("persistencyBehavior", "")
 
     elif catalog_key == "customerFacingServiceSpecifications":
         base["type"] = item.get("customerFacingServiceSpecificationType", "")
@@ -114,7 +143,6 @@ def _normalize(item: dict, catalog_key: str) -> dict:
         base["forEntityType"] = item.get("forEntityType", "")
 
     elif catalog_key == "contactMediumSpecifications":
-        base["characteristics"] = chars
         comm_id_key = channel_type_key = ""
         for c in chars:
             name_lower = (c.get("name") or "").lower()
@@ -132,100 +160,91 @@ def _normalize(item: dict, catalog_key: str) -> dict:
 
     elif catalog_key == "productOfferings":
         base["offeringTypes"] = item.get("type") or item.get("offeringTypes") or []
-        base["characteristics"] = chars
-        # Inline linked productSpecification refs
         base["productSpecifications"] = [
             {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
             for r in (item.get("productSpecification") or [])
         ]
-        # Inline linked child productOffering refs (bundles)
-        base["bundledOfferings"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""), "type": r.get("type", "")}
-            for r in (item.get("productOffering") or [])
-        ]
 
     elif catalog_key == "productSpecifications":
-        base["characteristics"] = chars
         base["resourceSpecifications"] = [
             {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
             for r in (item.get("resourceSpecification") or [])
-        ]
-        base["customerFacingServiceSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("customerFacingServiceSpecification") or [])
-        ]
-        base["sharingProviderSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("sharingProviderSpecification") or [])
-        ]
-
-    elif catalog_key == "bucketDeterminationSpecifications":
-        base["type"] = item.get("bucketDeterminationSpecificationType", "")
-        base["characteristics"] = chars
-        base["resourceSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("resourceSpecification") or [])
-        ]
-
-    elif catalog_key == "tagSpecifications":
-        base["characteristics"] = chars
-        base["billingAccountSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("billingAccountSpecification") or [])
-        ]
-        base["contractSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("contractSpecification") or [])
-        ]
-        base["productOfferings"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("productOffering") or [])
-        ]
-        base["customerFacingServiceSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("customerFacingServiceSpecification") or [])
         ]
 
     return base
 
 
-def _extract_items(data, resp_key: str) -> list:
-    if isinstance(data, list):
+async def _list_spec_ids(spec_type: str) -> list[dict]:
+    """Step 1: Get all {id, externalId, name} for a given specificationType."""
+    try:
+        data = await ericsson_client.request("spec_entity_list", query_params={"specificationType": spec_type})
+        entries = data.get("entitySpecificationListEntry") or []
+        return [e for e in entries if e.get("externalId") or e.get("id")]
+    except Exception as e:
+        logger.warning(f"entitySpecificationList failed for {spec_type}: {e}")
+        return []
+
+
+async def _fetch_spec(api_key: str, ext_id_param: str, ext_id: str, spec_id: str) -> dict | None:
+    """Step 2: Fetch full spec by externalId (fallback to id)."""
+    try:
+        if ext_id:
+            data = await ericsson_client.request(api_key, query_params={ext_id_param: ext_id})
+        else:
+            # Use id-based param (replace ExternalId suffix with Id)
+            id_param = ext_id_param.replace("ExternalId", "Id")
+            data = await ericsson_client.request(api_key, query_params={id_param: spec_id})
+        # Response may be a dict (single item) or list
+        if isinstance(data, list):
+            return data[0] if data else None
         return data
-    if isinstance(data, dict):
-        items = data.get(resp_key) or []
-        if not items:
-            # fallback: first list value in response
-            for v in data.values():
-                if isinstance(v, list):
-                    return v
-        return items
-    return []
+    except Exception as e:
+        logger.warning(f"Failed to fetch {api_key} externalId={ext_id}: {e}")
+        return None
 
 
 async def fetch_catalog_from_bssf() -> dict:
-    """Call all BSSF spec enquiry endpoints and populate the catalog."""
+    """Fetch all specs from BSSF using two-step: list IDs then fetch each individually.
+    individualPartySpecifications and contactMediumSpecifications are not listable via
+    entitySpecificationList — preserve them from the last loaded dump.
+    """
+    # Preserve dump-only types before resetting catalog
+    existing = cat_mod._load_catalog()
+    preserved = {
+        "individualPartySpecifications": existing.get("individualPartySpecifications", []),
+        "contactMediumSpecifications":   existing.get("contactMediumSpecifications", []),
+    }
+
     cat_mod._catalog = cat_mod._empty_catalog()
     catalog = cat_mod._catalog
+
+    # Restore preserved types
+    catalog["individualPartySpecifications"] = preserved["individualPartySpecifications"]
+    catalog["contactMediumSpecifications"]   = preserved["contactMediumSpecifications"]
     counts = {}
     errors = {}
 
-    # BSSF Spec Enquiry requires at least one query param — use offset/limit for list queries
-    _LIST_PARAMS = {"offset": "0", "limit": "1000"}
+    for spec_type, api_key, ext_id_param, catalog_key in _SPEC_TYPE_MAP:
+        entries = await _list_spec_ids(spec_type)
+        if not entries:
+            counts[catalog_key] = 0
+            continue
 
-    for api_key, resp_key, catalog_key in _SPEC_FETCH_MAP:
-        try:
-            data = await ericsson_client.request(api_key, query_params=_LIST_PARAMS)
-            items = _extract_items(data, resp_key)
-            for item in items:
+        fetched = 0
+        for entry in entries:
+            ext_id = entry.get("externalId", "")
+            spec_id = entry.get("id", "")
+            item = await _fetch_spec(api_key, ext_id_param, ext_id, spec_id)
+            if item:
                 catalog[catalog_key].append(_normalize(item, catalog_key))
-            counts[catalog_key] = len(catalog[catalog_key])
-            logger.info(f"Fetched {counts[catalog_key]} {catalog_key}")
-        except Exception as e:
-            logger.warning(f"Failed to fetch {api_key}: {e}")
-            errors[api_key] = str(e)
+                fetched += 1
 
-    # resourceSpecifications are not a standalone endpoint — extract from productSpecifications
+        counts[catalog_key] = fetched
+        logger.info(f"Fetched {fetched}/{len(entries)} {catalog_key}")
+        if fetched < len(entries):
+            errors[catalog_key] = f"{len(entries) - fetched} of {len(entries)} failed"
+
+    # Extract resourceSpecifications from productSpecifications
     seen_rs = set()
     for ps in catalog.get("productSpecifications", []):
         for rs in (ps.get("resourceSpecifications") or []):
