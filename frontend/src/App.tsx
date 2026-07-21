@@ -607,7 +607,7 @@ function POPublishPanel() {
     setTemplatesLoading(true); setTemplatesError('')
     try {
       // Use BSSF entitySpecificationList to list all product offerings
-      const r = await fetch(`${API}/spec/entityList?specificationType=PRODUCT_OFFERING`)
+      const r = await fetch(`${API}/spec/entityList?specificationType=PRODUCT_OFFERING_TEMPLATE`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
       const list = data?.entitySpecificationListEntry || (Array.isArray(data) ? data : [])
@@ -664,11 +664,11 @@ function POPublishPanel() {
   return (
     <div>
       <h2>📤 PO Publish (POT)</h2>
-      <p style={{ fontSize: 13, color: '#666', margin: '0 0 16px' }}>Fetch a Product Offering Template from RMCA and publish it to BAE via the Product Catalog Integration API.</p>
+      <p style={{ fontSize: 13, color: '#666', margin: '0 0 16px' }}>Fetch a Product Offering Template from BSSF and publish it to BAE via the Product Catalog Integration API.</p>
 
       <fieldset style={{ marginBottom: 16 }}>
-        <legend><b>1. Load Templates from RMCA</b></legend>
-        <button onClick={fetchTemplates} disabled={templatesLoading}>{templatesLoading ? '⏳ Fetching...' : '🔄 Fetch POT List from RMCA'}</button>
+        <legend><b>1. Load Templates from BSSF</b></legend>
+        <button onClick={fetchTemplates} disabled={templatesLoading}>{templatesLoading ? '⏳ Fetching...' : '🔄 Fetch POT List from BSSF'}</button>
         {templatesError && <p style={{ color: 'red', fontSize: 12, margin: '6px 0 0' }}>{templatesError}</p>}
         {templates.length > 0 && <p style={{ fontSize: 12, color: '#0a7', margin: '6px 0 0' }}>✓ {templates.length} templates loaded</p>}
       </fieldset>

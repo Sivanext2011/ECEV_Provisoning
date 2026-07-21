@@ -161,6 +161,9 @@ class EricssonClient:
             for k, v in path_params.items():
                 url = url.replace(f"{{{{{k}}}}}", v)
 
+        # Strip any leftover {{queryString}} placeholder — query_params are passed via httpx params=
+        url = re.sub(r"[?&]?\{\{queryString\}\}", "", url)
+
         return url, method
 
     def _log(self, method: str, url: str, status: int, req_body=None, resp_text=""):
