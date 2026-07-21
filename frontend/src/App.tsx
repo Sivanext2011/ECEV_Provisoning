@@ -607,7 +607,7 @@ function POPublishPanel() {
     setTemplatesLoading(true); setTemplatesError('')
     try {
       // Use BSSF entitySpecificationList to list all product offerings
-      const r = await fetch(`${API}/spec/entityList?specificationType=PRODUCT_OFFERING_TEMPLATE`)
+      const r = await fetch(`${API}/spec/entityList?specificationType=PRODUCT_OFFERING`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
       const list = data?.entitySpecificationListEntry || (Array.isArray(data) ? data : [])

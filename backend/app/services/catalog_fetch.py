@@ -33,6 +33,8 @@ _SPEC_TYPE_MAP = [
     ("BUCKET_DETERMINATION_SPECIFICATION",  "spec_bucket_determination","bucketDeterminationSpecificationExternalId", "bucketDeterminationSpecifications"),
     ("TAG_SPECIFICATION",                   "spec_tag",               "tagSpecificationExternalId",                   "tagSpecifications"),
     ("SCHEDULE_DEFINITION",                 "spec_schedule_definition","scheduleDefinitionExternalId",                "scheduleDefinitions"),
+    ("INDIVIDUAL_SPECIFICATION",            "spec_individual",        "individualSpecificationExternalId",            "individualPartySpecifications"),
+    ("CONTACT_MEDIUM_SPECIFICATION",        "spec_contact_medium",    "contactMediumSpecificationExternalId",         "contactMediumSpecifications"),
 ]
 
 # valueRegulator values from live BSSF API (uppercase_underscore)
@@ -204,23 +206,9 @@ async def _fetch_spec(api_key: str, ext_id_param: str, ext_id: str, spec_id: str
 
 
 async def fetch_catalog_from_bssf() -> dict:
-    """Fetch all specs from BSSF using two-step: list IDs then fetch each individually.
-    individualPartySpecifications and contactMediumSpecifications are not listable via
-    entitySpecificationList — preserve them from the last loaded dump.
-    """
-    # Preserve dump-only types before resetting catalog
-    existing = cat_mod._load_catalog()
-    preserved = {
-        "individualPartySpecifications": existing.get("individualPartySpecifications", []),
-        "contactMediumSpecifications":   existing.get("contactMediumSpecifications", []),
-    }
-
+    """Fetch all specs from BSSF using two-step: list IDs then fetch each individually."""
     cat_mod._catalog = cat_mod._empty_catalog()
     catalog = cat_mod._catalog
-
-    # Restore preserved types
-    catalog["individualPartySpecifications"] = preserved["individualPartySpecifications"]
-    catalog["contactMediumSpecifications"]   = preserved["contactMediumSpecifications"]
     counts = {}
     errors = {}
 
