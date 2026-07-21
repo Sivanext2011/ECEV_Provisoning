@@ -210,9 +210,12 @@ async def fetch_catalog_from_bssf() -> dict:
     counts = {}
     errors = {}
 
+    # BSSF Spec Enquiry requires at least one query param — use offset/limit for list queries
+    _LIST_PARAMS = {"offset": "0", "limit": "1000"}
+
     for api_key, resp_key, catalog_key in _SPEC_FETCH_MAP:
         try:
-            data = await ericsson_client.request(api_key)
+            data = await ericsson_client.request(api_key, query_params=_LIST_PARAMS)
             items = _extract_items(data, resp_key)
             for item in items:
                 catalog[catalog_key].append(_normalize(item, catalog_key))
