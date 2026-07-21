@@ -585,7 +585,7 @@
 
     "catalog_get_product_offering": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering?{{queryString}}"
+      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering"
     },
     "catalog_create_product_offering": {
       "method": "POST",
@@ -692,7 +692,7 @@
     },
     "spec_entity_list": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/entitySpecificationList?{{queryString}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/entitySpecificationList"
     },
     "spec_generic_business_setting": {
       "method": "GET",
