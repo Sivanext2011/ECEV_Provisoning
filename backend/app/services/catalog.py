@@ -15,11 +15,17 @@ CATALOG_PATH = _config_dir / "catalog.json"
 
 _catalog: dict | None = None
 
+# valueRegulators that require or allow user input
+_USER_REGULATORS = {"canBePersonalized", "mustBePersonalized", "selection"}
+# valueRegulators that are purely internal — never shown to user
+_INTERNAL_REGULATORS = {"noPersonalization"}
+
 
 def _empty_catalog() -> dict:
     return {
         "individualPartySpecifications": [],
         "customerSpecifications": [],
+        "organizationSpecifications": [],
         "contractSpecifications": [],
         "billingAccountSpecifications": [],
         "productSpecifications": [],
@@ -30,6 +36,17 @@ def _empty_catalog() -> dict:
         "customerFacingServiceSpecifications": [],
         "scheduleDefinitions": [],
         "billingCycleSpecifications": [],
+        "contactMediumSpecifications": [],
+        "agreementSpecifications": [],
+        "agreementItemSpecifications": [],
+        "partyRoleSpecifications": [],
+        "settlementAccountSpecifications": [],
+        "sharingProviderSpecifications": [],
+        "communicationIdentifierSpecifications": [],
+        "customerListSpecifications": [],
+        "referenceDataListSpecifications": [],
+        "bucketDeterminationSpecifications": [],
+        "tagSpecifications": [],
     }
 
 
@@ -48,7 +65,6 @@ def _load_catalog() -> dict:
 
 
 def reload_catalog():
-    """Force reload catalog from disk."""
     global _catalog
     _catalog = None
     return _load_catalog()
@@ -62,36 +78,143 @@ def _save_catalog():
     CATALOG_PATH.write_text(json.dumps(_catalog, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def _extract_chars(versions: list) -> list:
-    """Extract characteristics from the latest version of a spec."""
+_BUCKET_PV_NAMES = {"possible value discrete", "possible value range",
+                    "characteristicspecificationvalue-idcsvpossiblevaluediscrete",
+                    "characteristicspecificationvalue-idcsvpossiblevaluerange"}
+
+
+def _is_bucket_char(cs: dict) -> bool:
+    """noPersonalization chars that are actually user-configurable bucket params.
+    Detected by having a PV named 'Possible value discrete/range' with a unitOfMeasure."""
+    for pv in cs.get("possibleValues", []):
+        if (pv.get("name", "").lower() in _BUCKET_PV_NAMES
+                and pv.get("unitOfMeasure")):
+            return True
+    return False
+
+
+def _extract_char(cs: dict) -> dict | None:
+    """
+    Extract a single characteristic.
+    Returns None for purely internal chars (noPersonalization with no externalId).
+    """
+    ext_id = (cs.get("externalId") or "").strip()
+    reg = cs.get("valueRegulator", "")
+
+    # noPersonalization chars that are bucket params (Initial/Min/Max/FUP etc.)
+    # are user-configurable despite the regulator — promote to canBePersonalized
+    if reg in _INTERNAL_REGULATORS and _is_bucket_char(cs):
+        reg = "canBePersonalized"
+
+    # Fall back to name as externalId for user-facing chars that lack an externalId
+    if not ext_id and reg in _USER_REGULATORS:
+        ext_id = (cs.get("name") or "").strip()
+
+    # Skip internal system chars that have no externalId and are noPersonalization
+    if reg in _INTERNAL_REGULATORS and not ext_id:
+        return None
+
+    char = {
+        "id": cs.get("id", ""),
+        "externalId": ext_id,
+        "name": cs.get("name", ""),
+        "valueType": cs.get("valueType", ""),
+        "valueRegulator": reg,
+        "required": cs.get("minCardinality", 0) >= 1,
+        "defaultValue": "",
+        "possibleValues": [],
+        # For bucket chars (promoted from noPersonalization), PV-level unitOfMeasure
+        # is more accurate than the char-level one (which may say "Data" generically)
+        "unitOfMeasure": "" if _is_bucket_char(cs) else (cs.get("unitOfMeasure", "") or cs.get("measure", "")),
+    }
+
+    for pv in cs.get("possibleValues", []):
+        # Skip "Full range" sentinel — means free-text input, no constraint
+        if pv.get("externalId") == "Full_range" or pv.get("name") == "Full range":
+            continue
+        pv_name_lower = pv.get("name", "").lower()
+        if "valueFrom" in pv or "valueTo" in pv:
+            # Range constraint — store on char, not as a selectable value
+            char["valueFrom"] = str(pv.get("valueFrom", ""))
+            char["valueTo"] = str(pv.get("valueTo", ""))
+            if pv.get("unitOfMeasure") and not char["unitOfMeasure"]:
+                char["unitOfMeasure"] = pv["unitOfMeasure"]
+        elif "value" in pv:
+            # Explicit enum value
+            val = pv["value"]
+            if val is None:
+                val = ""
+            entry = {
+                "name": pv.get("name", ""),
+                "value": str(val),
+                "default": bool(pv.get("default", False)),
+            }
+            char["possibleValues"].append(entry)
+            if pv.get("default") and not char["defaultValue"]:
+                char["defaultValue"] = str(val)
+        elif pv_name_lower in _BUCKET_PV_NAMES or "discrete" in pv_name_lower or "range" in pv_name_lower:
+            # Bucket sentinel (Possible value discrete / Possible value range / idCsvPossible*)
+            # — free numeric input; capture unitOfMeasure from the "discrete" (default) PV first
+            if pv.get("unitOfMeasure"):
+                if not char["unitOfMeasure"] or ("discrete" in pv_name_lower and char["unitOfMeasure"]):
+                    char["unitOfMeasure"] = pv["unitOfMeasure"]
+        elif "id" in pv and pv.get("name") and pv.get("name") != "Possible value range":
+            # id-keyed enum (no explicit value field) — use id as the value
+            entry = {
+                "name": pv.get("name", ""),
+                "value": pv["id"],
+                "default": bool(pv.get("default", False)),
+            }
+            char["possibleValues"].append(entry)
+            if pv.get("default") and not char["defaultValue"]:
+                char["defaultValue"] = pv["id"]
+        elif pv.get("name") == "Possible value range" and pv.get("unitOfMeasure"):
+            # Range sentinel with only unitOfMeasure — free numeric input
+            if not char["unitOfMeasure"]:
+                char["unitOfMeasure"] = pv["unitOfMeasure"]
+
+    # If the char has a range constraint AND all possibleValues are just the default
+    # value (RMCA uses a single PV as a description label, not a real enum choice),
+    # drop them — the field should render as a free numeric/text input with the range.
+    if char.get("valueFrom") is not None and char["possibleValues"]:
+        all_are_default_label = all(
+            pv["value"] == char["defaultValue"] for pv in char["possibleValues"]
+        )
+        if all_are_default_label:
+            char["possibleValues"] = []
+
+    return char
+
+
+def _extract_chars(versions: list, user_facing_only: bool = False) -> list:
+    """
+    Extract characteristics from the latest version of a spec.
+    If user_facing_only=True, only return chars with externalId set OR mustBePersonalized/canBePersonalized.
+    """
     if not versions:
         return []
     latest = versions[-1]
     chars = []
     for cs in latest.get("characteristics", []):
-        char = {
-            "id": cs.get("id", ""),
-            "externalId": cs.get("externalId", ""),
-            "name": cs.get("name", ""),
-            "valueType": cs.get("valueType", ""),
-            "valueRegulator": cs.get("valueRegulator", ""),
-            "required": cs.get("minCardinality", 0) >= 1,
-            "possibleValues": [],
-        }
-        for pv in cs.get("possibleValues", []):
-            char["possibleValues"].append({
-                "name": pv.get("name", ""),
-                "value": pv.get("value", ""),
-                "default": pv.get("default", False),
-            })
+        char = _extract_char(cs)
+        if char is None:
+            continue
+        if user_facing_only:
+            reg = char["valueRegulator"]
+            has_ext = bool(char["externalId"])
+            # Include if: has externalId, OR is mustBePersonalized/canBePersonalized/selection
+            if not has_ext and reg not in _USER_REGULATORS:
+                continue
         chars.append(char)
     return chars
 
 
 def _decode_compressed(item: str) -> dict | None:
-    """Decode base64+zlib compressed JSON string."""
+    """Decode base64+zlib compressed JSON string (RMCA product offering format)."""
     try:
-        return json.loads(zlib.decompress(base64.b64decode(item)))
+        # Add padding to handle base64 strings not padded to 4-byte boundary
+        padded = item + '==' 
+        return json.loads(zlib.decompress(base64.b64decode(padded)))
     except Exception:
         return None
 
@@ -105,6 +228,24 @@ def _find_rmca_json(zf: zipfile.ZipFile) -> dict | None:
             except (json.JSONDecodeError, UnicodeDecodeError):
                 continue
     return None
+
+
+def _merge_chars(po_chars: list, ps_chars: list) -> list:
+    """
+    Merge PO-level and PS-level characteristics.
+    PO chars override PS chars with same externalId.
+    Only include chars that have an externalId (user-facing).
+    """
+    merged: dict[str, dict] = {}
+    # PS chars first (lower priority)
+    for c in ps_chars:
+        if c["externalId"]:
+            merged[c["externalId"]] = c
+    # PO chars override
+    for c in po_chars:
+        if c["externalId"]:
+            merged[c["externalId"]] = c
+    return list(merged.values())
 
 
 def parse_business_config(zip_bytes: bytes) -> dict:
@@ -127,54 +268,56 @@ def parse_business_config(zip_bytes: bytes) -> dict:
 
     export = rmca_data.get("exportData", rmca_data)
 
-    # Individual Party Specifications
+    # --- Individual Party Specifications ---
     for item in export.get("individualPartySpecifications", []):
         _catalog["individualPartySpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId", ""),
             "name": item.get("name", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            # Party specs: show canBePersonalized + mustBePersonalized chars
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Customer Specifications
+    # --- Customer Specifications ---
     for item in export.get("customerSpecifications", []):
         _catalog["customerSpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId", ""),
             "name": item.get("name", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Contract Specifications
+    # --- Contract Specifications ---
     for item in export.get("contractSpecifications", []):
         _catalog["contractSpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId") or item.get("name", ""),
             "name": item.get("name", ""),
             "paymentContext": item.get("paymentContext", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Billing Account Specifications
+    # --- Billing Account Specifications ---
     for item in export.get("billingAccountSpecifications", []):
         _catalog["billingAccountSpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId", ""),
             "name": item.get("name", ""),
             "paymentContext": item.get("paymentContext", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Product Specifications
+    # --- Product Specifications ---
     for item in export.get("productSpecifications", []):
         _catalog["productSpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId", ""),
             "name": item.get("name", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            # PS chars: only those with externalId (user-facing)
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Build lookup maps for relation traversal
+    # --- Build lookup maps for relation traversal ---
     ps_map = {ps.get("id"): ps for ps in export.get("productSpecifications", [])}
     cfss_map = {c.get("id"): c for c in export.get("customerFacingServiceSpecifications", [])}
     rfss_map = {r.get("id"): r for r in export.get("resourceFacingServiceSpecifications", [])}
@@ -217,7 +360,29 @@ def parse_business_config(zip_bytes: bytes) -> dict:
                                         results.append({"id": rs["id"], "externalId": rs.get("externalId", ""), "name": rs.get("name", ""), "type": "LRS"})
         return results
 
-    # Product Offerings (base64+zlib compressed)
+    def _resolve_po_chars(po_obj: dict) -> list:
+        """
+        Collect user-facing characteristics for a product offering:
+        1. PO-level chars with externalId
+        2. Linked PS chars with externalId
+        Merged with PO taking priority.
+        """
+        versions = po_obj.get("versions", [])
+        po_chars = _extract_chars(versions, user_facing_only=True)
+
+        # Collect PS chars
+        ps_chars: list = []
+        if versions:
+            po_rt = versions[-1].get("relationsTo", [])
+            ps_ids = [r["targetId"] for r in po_rt if r.get("targetType") == "ProductSpecification"]
+            for ps_id in ps_ids:
+                ps = ps_map.get(ps_id)
+                if ps:
+                    ps_chars.extend(_extract_chars(ps.get("versions", []), user_facing_only=True))
+
+        return _merge_chars(po_chars, ps_chars)
+
+    # --- Product Offerings (base64+zlib compressed) ---
     for item in export.get("productOfferings", []):
         if isinstance(item, str):
             obj = _decode_compressed(item)
@@ -231,10 +396,10 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "name": obj.get("name", ""),
             "offeringTypes": obj.get("offeringTypes", []),
             "resourceSpecifications": _resolve_resource_specs(obj),
-            "characteristics": _extract_chars(obj.get("versions", [])),
+            "characteristics": _resolve_po_chars(obj),
         })
 
-    # Resource Specifications
+    # --- Resource Specifications ---
     for item in export.get("resourceSpecifications", []):
         _catalog["resourceSpecifications"].append({
             "id": item.get("id", ""),
@@ -242,7 +407,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "name": item.get("name", ""),
         })
 
-    # Bucket Tags
+    # --- Bucket Tags ---
     for item in export.get("bucketTags", []):
         _catalog["bucketTags"].append({
             "id": item.get("id", ""),
@@ -251,17 +416,17 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "type": item.get("versions", [{}])[-1].get("type", "") if item.get("versions") else "",
         })
 
-    # Characteristic Set Specifications
+    # --- Characteristic Set Specifications ---
     for item in export.get("characteristicSetSpecifications", []):
         _catalog["characteristicSetSpecifications"].append({
             "id": item.get("id", ""),
             "externalId": item.get("externalId", ""),
             "name": item.get("name", ""),
             "forEntityType": item.get("forEntityType", ""),
-            "characteristics": _extract_chars(item.get("versions", [])),
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
         })
 
-    # Customer Facing Service Specifications
+    # --- Customer Facing Service Specifications ---
     for item in export.get("customerFacingServiceSpecifications", []):
         _catalog["customerFacingServiceSpecifications"].append({
             "id": item.get("id", ""),
@@ -271,7 +436,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "subType": item.get("customerFacingServiceSpecificationSubType", ""),
         })
 
-    # Schedule Definitions (billing cycles)
+    # --- Schedule Definitions ---
     for item in export.get("scheduleDefinitions", []):
         _catalog["scheduleDefinitions"].append({
             "id": item.get("id", ""),
@@ -279,7 +444,7 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "name": item.get("name", ""),
         })
 
-    # Billing Cycle Specifications
+    # --- Billing Cycle Specifications ---
     for item in export.get("billingCycleSpecifications", []):
         _catalog["billingCycleSpecifications"].append({
             "id": item.get("id", ""),
@@ -288,13 +453,51 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "scheduleDefinitionExternalId": item.get("scheduleDefinitionExternalId", ""),
         })
 
-    # If no billingCycleSpecifications in export, preserve from existing catalog on disk
+    # Preserve billingCycleSpecifications from existing catalog if not in export
     if not _catalog["billingCycleSpecifications"] and CATALOG_PATH.exists():
         try:
             existing = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
             _catalog["billingCycleSpecifications"] = existing.get("billingCycleSpecifications", [])
         except Exception:
             pass
+
+    # --- Communication Identifier Specifications ---
+    for item in export.get("communicationIdentifierSpecifications", []):
+        _catalog["communicationIdentifierSpecifications"].append({
+            "id": item.get("id", ""),
+            "externalId": item.get("externalId", ""),
+            "name": item.get("name", ""),
+            "characteristics": _extract_chars(item.get("versions", []), user_facing_only=True),
+        })
+
+    # --- Contact Medium Specifications ---
+    for item in export.get("contactMediumSpecifications", []):
+        # Extract ALL chars for CMS — both mustBePersonalized ones are user-facing
+        chars = _extract_chars(item.get("versions", []), user_facing_only=False)
+        # Identify communicationId and channelType char externalIds by name heuristic
+        comm_id_key = ""
+        channel_type_key = ""
+        for c in chars:
+            name_lower = (c.get("name") or "").lower()
+            ext = c.get("externalId") or ""
+            if not ext:
+                continue
+            if "communication" in name_lower or "phone" in name_lower or "email" in name_lower or "address" in name_lower:
+                if not comm_id_key:
+                    comm_id_key = ext
+            if "channel" in name_lower or "type" in name_lower:
+                if not channel_type_key:
+                    channel_type_key = ext
+
+        _catalog["contactMediumSpecifications"].append({
+            "id": item.get("id", ""),
+            "externalId": item.get("externalId", ""),
+            "name": item.get("name", ""),
+            "characteristics": chars,
+            # Pre-resolved keys for provisioning.py _build_contact_mediums()
+            "commIdCharKey": comm_id_key,
+            "channelTypeCharKey": channel_type_key,
+        })
 
     _save_catalog()
 
@@ -310,4 +513,6 @@ def parse_business_config(zip_bytes: bytes) -> dict:
         "charSetSpecs": len(_catalog["characteristicSetSpecifications"]),
         "cfssSpecs": len(_catalog["customerFacingServiceSpecifications"]),
         "scheduleDefinitions": len(_catalog["scheduleDefinitions"]),
+        "contactMediumSpecs": len(_catalog["contactMediumSpecs"] if "contactMediumSpecs" in _catalog else _catalog["contactMediumSpecifications"]),
+        "communicationIdentifierSpecs": len(_catalog["communicationIdentifierSpecifications"]),
     }

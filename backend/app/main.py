@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .routers.provisioning import router
+from .routers.bssf_apis import router as bssf_router
 from .services.database import init_db
 from .services.ericsson_client import ericsson_client
 
@@ -28,6 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(bssf_router)
 
 
 @app.get("/health")

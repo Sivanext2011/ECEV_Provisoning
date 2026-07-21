@@ -183,23 +183,23 @@
     },
     "spec_contract": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/contractSpecification?contractSpecificationExternalId={{specExternalId}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/contractSpecification"
     },
     "spec_product": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productSpecification?productSpecificationExternalId={{specExternalId}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productSpecification"
     },
     "spec_product_offering": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOffering?productOfferingExternalId={{specExternalId}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOffering"
     },
     "spec_bucket": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/bucketSpecification?bucketSpecificationExternalId={{specExternalId}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/bucketSpecification"
     },
     "spec_billing_account": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingAccountSpecification?billingAccountSpecificationExternalId={{specExternalId}}"
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingAccountSpecification"
     },
     "spec_bill_cycle": {
       "method": "GET",
@@ -346,19 +346,477 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataListSpecification?referenceDataListSpecificationId={{listSpecId}}"
     },
+    "spec_reference_data_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataListSpecification"
+    },
     "spec_global_list_data": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataList?referenceDataListId={{listId}}"
+    },
+
+    "get_settlement_account": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfAccountEnquiry/v1/settlementAccount?{{queryString}}"
+    },
+    "create_settlement_account": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfAccountManagement/v1/settlementAccount"
+    },
+    "update_settlement_account_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfAccountManagement/v1/relatedParty/{{relatedPartyId}}/relatedPartyReferredType/{{relatedPartyReferredType}}/settlementAccount/{{id}}"
+    },
+    "update_settlement_account_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfAccountManagement/v1/relatedPartyExternalId/{{relatedPartyExternalId}}/relatedPartyReferredType/{{relatedPartyReferredType}}/settlementAccountExternalId/{{externalId}}"
+    },
+
+    "get_agreement": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementEnquiry/v1/agreement?{{queryString}}"
+    },
+    "create_agreement_by_party_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/party/{{partyId}}/agreement"
+    },
+    "create_agreement_by_party_external_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/partyExternalId/{{partyExternalId}}/agreement"
+    },
+    "update_agreement_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/party/{{partyId}}/agreement/{{agreementId}}"
+    },
+    "delete_agreement_by_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/party/{{partyId}}/agreement/{{agreementId}}"
+    },
+    "update_agreement_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/partyExternalId/{{partyExternalId}}/agreementExternalId/{{agreementExternalId}}"
+    },
+    "delete_agreement_by_external_id": {
+      "method": "DELETE",
+      "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/partyExternalId/{{partyExternalId}}/agreementExternalId/{{agreementExternalId}}"
+    },
+
+    "get_balance_topup_details": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balanceTopUpDetails?{{queryString}}"
+    },
+    "balance_topup": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/balanceTopUp"
+    },
+    "reset_balance_topup_fraud_counter": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/resetBalanceTopUpFraudCounter"
+    },
+    "billing_account_bucket_adjustment": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/billingAccountBucketAdjustment/adjust"
+    },
+    "product_bucket_adjustment": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/productBucketAdjustment/adjust"
+    },
+    "settlement_account_bucket_adjustment": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/settlementAccountBucketAdjustment/adjust"
+    },
+
+    "get_communication_identity": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCommunicationIdentityManagement/v1/communicationIdentity?{{queryString}}"
+    },
+
+    "get_applied_customer_billing_rate": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/appliedCustomerBillingRate?{{queryString}}"
+    },
+    "get_customer_bill": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/customerBill?{{queryString}}"
+    },
+    "get_customer_bill_contract_view": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/contractView?{{queryString}}"
+    },
+    "get_customer_bill_on_demand": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/customerBillOnDemand?{{queryString}}"
+    },
+    "get_customer_bill_summary": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/summaryView?{{queryString}}"
+    },
+    "get_unbilled_charge": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/unbilledCharge?{{queryString}}"
+    },
+
+    "get_financial_customer_account": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfFinancialCustomerAccountEnquiry/v1/financialCustomerAccount?{{queryString}}"
+    },
+
+    "get_financial_header": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionEnquiry/v1/financialHeader?{{queryString}}"
+    },
+    "get_financial_transaction": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionEnquiry/v1/financialTransaction?{{queryString}}"
+    },
+    "get_payment_instruction": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionEnquiry/v1/paymentInstruction?{{queryString}}"
+    },
+    "create_financial_task": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionManagement/v1/financialTask"
+    },
+
+    "get_organization_party": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyEnquiry/v1/organizationParty?{{queryString}}"
+    },
+    "create_organization_party": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyManagement/v1/organizationParty"
+    },
+    "update_organization_party_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyManagement/v1/organizationParty/{{organizationPartyId}}"
+    },
+    "update_organization_party_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyManagement/v1/organizationPartyExternalId/{{organizationPartyExternalId}}"
+    },
+    "change_status_cascading": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyManagement/v1/changeStatusCascading"
+    },
+
+    "get_partner_contract": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/contract?{{queryString}}"
+    },
+    "create_partner_contract_by_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRole/{{partyRoleId}}/contract"
+    },
+    "create_partner_contract_by_external_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleExternalId/{{partyRoleExternalId}}/contractExternalId"
+    },
+    "update_partner_contract_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRole/{{partyRoleId}}/contract/{{contractId}}"
+    },
+    "update_partner_contract_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleExternalId/{{partyRoleExternalId}}/contractExternalId/{{contractExternalId}}"
+    },
+    "get_party_role_involvement_group": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleInvolvementGroup?{{queryString}}"
+    },
+    "create_party_role_involvement_group": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleInvolvementGroup"
+    },
+    "update_party_role_involvement_group": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleInvolvementGroup/{{partyRoleInvolvementGroupRef}}"
+    },
+
+    "get_applied_partner_settlement_rate": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/appliedPartnerSettlementRate?{{queryString}}"
+    },
+    "get_partner_settlement_note": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/partnerSettlementNote?{{queryString}}"
+    },
+    "get_partner_settlement_note_on_demand": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/partnerSettlementNoteOnDemand?{{queryString}}"
+    },
+    "create_partner_settlement_note_on_demand": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/partnerSettlementNoteOnDemand"
+    },
+    "get_unsettled_charge": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/unsettledCharge?{{queryString}}"
+    },
+    "get_settlement_note_contract_view": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/contractView?{{queryString}}"
+    },
+    "get_settlement_note_summary": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/summaryView?{{queryString}}"
+    },
+
+    "send_communication_message": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartyCommunicationManagement/v1/communicationMessage/send"
+    },
+
+    "get_party_role": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfPartyRoleEnquiry/v1/partyRole?{{queryString}}"
+    },
+    "create_party_role": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPartyRoleManagement/v1/partyRole"
+    },
+    "update_party_role_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfPartyRoleManagement/v1/partyRole/{{partyRoleId}}"
+    },
+    "update_party_role_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfPartyRoleManagement/v1/partyRoleExternalId/{{partyRoleExternalId}}"
+    },
+
+    "catalog_get_product_offering": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering?{{queryString}}"
+    },
+    "catalog_create_product_offering": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering"
+    },
+    "catalog_update_product_offering_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering/{{id}}/version/{{version}}"
+    },
+    "catalog_update_product_offering_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOfferingExternalId/{{externalId}}/version/{{version}}"
+    },
+
+    "purchase_cancel_reservation": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/cancelReservation"
+    },
+    "purchase_rate_and_deduct": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/rateAndDeduct"
+    },
+    "purchase_rate_and_reserve": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/rateAndReserve"
+    },
+    "purchase_cancel_basket_reservation": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/cancelBasketReservation"
+    },
+    "purchase_basket_rate_and_advice": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/basketRateAndAdvice"
+    },
+    "purchase_basket_rate_and_deduct": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/basketRateAndDeduct"
+    },
+    "purchase_basket_rate_and_execute": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/basketRateAndExecute"
+    },
+    "purchase_basket_rate_and_reserve": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/basketRateAndReserve"
+    },
+
+    "create_policy_session": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/BSSFSessionManagement/v1/session/createPolicySession"
+    },
+    "move_charging_session": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/BSSFSessionManagement/v1/session/moveChargingSessionToInternal"
+    },
+
+    "spec_agreement_item": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/agreementItemSpecification"
+    },
+    "spec_agreement": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/agreementSpecification"
+    },
+    "spec_billing_cycle": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/billingCycleSpecification"
+    },
+    "spec_bucket_determination": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/bucketDeterminationSpecification"
+    },
+    "spec_characteristic_set": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/characteristicSetSpecification"
+    },
+    "spec_common_dimension": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/commonDimension?{{queryString}}"
+    },
+    "spec_common_dimension_spec": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/commonDimensionSpecification?{{queryString}}"
+    },
+    "spec_communication_identifier": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/communicationIdentifierSpecification"
+    },
+    "spec_contact_medium": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/contactMediumSpecification"
+    },
+    "spec_customer_facing_service": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/customerFacingServiceSpecification"
+    },
+    "spec_customer_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/customerListSpecification"
+    },
+    "spec_customer": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/customerSpecification"
+    },
+    "spec_entity_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/entitySpecificationList?{{queryString}}"
+    },
+    "spec_generic_business_setting": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/genericBusinessSetting?{{queryString}}"
+    },
+    "spec_individual": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/individualSpecification"
+    },
+    "spec_organization": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/organizationSpecification"
+    },
+    "spec_party_role": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/partyRoleSpecification"
+    },
+    "spec_price_tax_category": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/priceTaxCategorySpecification?{{queryString}}"
+    },
+    "spec_product_offering_price": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOfferingPriceSpecification?{{queryString}}"
+    },
+    "spec_product_priority_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productPriorityList?{{queryString}}"
+    },
+    "spec_schedule_definition": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/scheduleDefinition"
+    },
+    "spec_settlement_account": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/settlementAccountSpecification"
+    },
+    "spec_sharing_provider": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/sharingProviderSpecification"
+    },
+    "spec_tag": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/tagSpecification"
+    },
+    "spec_tax_code_detail": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxCodeDetailSpecification?{{queryString}}"
+    },
+    "spec_tax_configuration": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxConfigurationSpecification?{{queryString}}"
+    },
+    "spec_tax_exemption": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxExemptionSpecification?{{queryString}}"
+    },
+    "spec_tax_package": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxPackageSpecification?{{queryString}}"
+    },
+    "spec_tax_rule_template": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxRuleTemplateSpecification?{{queryString}}"
+    },
+
+    "get_consumer_product": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/consumerProduct/read?{{queryString}}"
+    },
+    "get_inherited_contract_list": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/inheritedContractList?{{queryString}}"
+    },
+    "change_subscription_status": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/changeSubscriptionStatus"
+    },
+    "modify_consumer_product": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/consumerProductManagement/modify"
+    },
+    "modify_provider_product": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/providerProduct/modify"
+    },
+
+    "create_entity_adjustment": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfTestManagement/v1/customer/{{customerId}}/entityAdjustment"
+    },
+    "create_entity_adjustment_by_external_id": {
+      "method": "POST",
+      "url": "{{ROOT_BAE}}/bae/bssfTestManagement/v1/customerExternalId/{{customerExternalId}}/entityAdjustment"
+    },
+    "get_entity_adjustment": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfTestManagement/v1/entityAdjustment?{{queryString}}"
+    },
+
+    "update_user_by_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/user/{{userId}}"
+    },
+    "update_user_by_external_id": {
+      "method": "PATCH",
+      "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/userExternalId/{{userExternalId}}"
     }
   },
   "defaults": {
     "partitionId": "1",
+    "partyExternalId": "",
     "partySpecExternalId": "Party_Individual_CHT",
+    "customerExternalId": "",
     "customerSpecExternalId": "CHT_Customer_Postpaid",
+    "customerBAExternalId": "",
+    "customerBCSExternalId": "",
+    "contractExternalId": "",
     "contractSpecExternalId": "CHT_Contract_Postpaid",
     "billingAccountSpecExternalId": "BAS_CHT_Postpaid",
     "billCycleSpecExternalId": "CHT_billcycle_01",
+    "technicalProductOffering": "",
     "basePlanProductOfferingExternalId": "PO_HOTSPOT_CHT",
+    "basePlanProductExternalId": "",
     "paymentContext": "Postpaid",
     "homeTimeZone": "Europe/Stockholm",
     "msisdnResourceSpecExternalId": "",
@@ -366,7 +824,19 @@
     "imsiResourceSpecExternalId": "",
     "imsiResourceSpecId": "a35baba8-c815-4c2b-b418-09f8a161bff1",
     "SMS_contactMediumSpecExternalId": "",
+    "SMS_contactMediumExternalId": "",
+    "SMS_contactMediumSpecCommunicationId": "communicationId",
+    "SMS_contactMediumSpecChannelType": "channelType",
     "REST_contactMediumSpecExternalId": "",
-    "EMAIL_contactMediumSpecExternalId": ""
+    "REST_contactMediumExternalId": "",
+    "REST_contactMediumSpecCommunicationId": "communicationId",
+    "REST_contactMediumSpecChannelType": "channelType",
+    "EMAIL_contactMediumSpecExternalId": "",
+    "EMAIL_contactMediumExternalId": "",
+    "EMAIL_contactMediumSpecCommunicationId": "communicationId",
+    "EMAIL_contactMediumSpecChannelType": "channelType",
+    "customerCharacteristics": [],
+    "contractCharacteristics": [],
+    "communicationIdentifierSpecExternalId": ""
   }
 }

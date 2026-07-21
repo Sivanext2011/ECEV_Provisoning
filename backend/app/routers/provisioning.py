@@ -192,8 +192,61 @@ async def terminate_customer_ep(req: TerminateRequest):
         raise HTTPException(status_code=502, detail=str(e))
 
 
-# === Specification Enquiry ===
-@router.get("/spec/{spec_type}")
+# === Catalog Manager — Create PO from Template ===
+@router.get("/catalog/product-offering")
+async def catalog_get_po(externalId: str = None, id: str = None):
+    """Fetch a single product offering from the live catalog."""
+    from ..services.catalog_manager import get_product_offering
+    try:
+        return await get_product_offering(external_id=externalId, po_id=id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.get("/catalog/product-offering/template-form")
+async def catalog_get_template_form(externalId: str = None, id: str = None):
+    """Fetch a TEMPLATE product offering and return a structured form for creating a new PO from it."""
+    from ..services.catalog_manager import get_product_offering, build_po_template_form
+    try:
+        po = await get_product_offering(external_id=externalId, po_id=id)
+        return build_po_template_form(po)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/catalog/product-offering/create-from-template")
+async def catalog_create_from_template(form: dict):
+    """
+    Create a new product offering from a template.
+    Body: filled-in template form from /catalog/product-offering/template-form.
+    Required: form.newOffering.externalId, form.templateRef.externalId or id.
+    """
+    from ..services.catalog_manager import create_from_template
+    try:
+        return await create_from_template(form)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.put("/catalog/product-offering/{identifier}")
+async def catalog_update_po(identifier: str, body: dict, by: str = "externalId", version: str = "1"):
+    """Update an existing product offering by externalId or id."""
+    if by == "id":
+        return await _safe_call("catalog_update_product_offering_by_id",
+                                path_params={"id": identifier, "version": version}, body=body)
+    return await _safe_call("catalog_update_product_offering_by_external_id",
+                            path_params={"externalId": identifier, "version": version}, body=body)
+
+
+
 async def get_specification(spec_type: str, externalId: str):
     key = f"spec_{spec_type}"
     return await _safe_call(key, path_params={"specExternalId": externalId})
@@ -265,6 +318,7 @@ async def get_specs():
     return {
         "partySpecifications": catalog.get("individualPartySpecifications", []),
         "customerSpecifications": catalog.get("customerSpecifications", []),
+        "organizationSpecifications": catalog.get("organizationSpecifications", []),
         "contractSpecifications": catalog.get("contractSpecifications", []),
         "billingAccountSpecifications": catalog.get("billingAccountSpecifications", []),
         "productSpecifications": catalog.get("productSpecifications", []),
@@ -276,6 +330,16 @@ async def get_specs():
         "billingCycleSpecifications": catalog.get("billingCycleSpecifications", []),
         "scheduleDefinitions": catalog.get("scheduleDefinitions", []),
         "contactMediumSpecifications": catalog.get("contactMediumSpecifications", []),
+        "agreementSpecifications": catalog.get("agreementSpecifications", []),
+        "agreementItemSpecifications": catalog.get("agreementItemSpecifications", []),
+        "partyRoleSpecifications": catalog.get("partyRoleSpecifications", []),
+        "settlementAccountSpecifications": catalog.get("settlementAccountSpecifications", []),
+        "sharingProviderSpecifications": catalog.get("sharingProviderSpecifications", []),
+        "communicationIdentifierSpecifications": catalog.get("communicationIdentifierSpecifications", []),
+        "customerListSpecifications": catalog.get("customerListSpecifications", []),
+        "referenceDataListSpecifications": catalog.get("referenceDataListSpecifications", []),
+        "bucketDeterminationSpecifications": catalog.get("bucketDeterminationSpecifications", []),
+        "tagSpecifications": catalog.get("tagSpecifications", []),
     }
 
 
@@ -292,6 +356,16 @@ async def upload_specs(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse: {e}")
+
+
+@router.post("/specs/fetch")
+async def fetch_specs_from_bssf():
+    """Fetch all catalog specifications from live BSSF Specification Enquiry API."""
+    try:
+        from ..services.catalog_fetch import fetch_catalog_from_bssf
+        return await fetch_catalog_from_bssf()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 # === Cert Upload ===
