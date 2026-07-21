@@ -436,8 +436,8 @@ async def spec_customer(externalId: str = None):
     return await _call("spec_customer", query_params=q)
 
 @router.get("/spec/entityList")
-async def spec_entity_list(externalId: str = None):
-    q = {"externalId": externalId} if externalId else {}
+async def spec_entity_list(specificationType: str = None):
+    q = {"specificationType": specificationType} if specificationType else {}
     return await _call("spec_entity_list", query_params=q)
 
 @router.get("/spec/genericBusinessSetting")

@@ -606,10 +606,11 @@ function POPublishPanel() {
   const fetchTemplates = async () => {
     setTemplatesLoading(true); setTemplatesError('')
     try {
-      const r = await fetch(`${API}/execute/rmca_list_product_offerings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      // Use BSSF entitySpecificationList to list all product offerings
+      const r = await fetch(`${API}/spec/entityList?specificationType=PRODUCT_OFFERING`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
-      const list = Array.isArray(data) ? data : (data?.productOffering || data?.items || [])
+      const list = data?.entitySpecificationListEntry || (Array.isArray(data) ? data : [])
       setTemplates(list)
     } catch (e: any) { setTemplatesError(e.message) }
     setTemplatesLoading(false)
@@ -619,10 +620,8 @@ function POPublishPanel() {
     if (!selectedTemplate) return
     setFetchLoading(true); setError(''); setResult(null)
     try {
-      const r = await fetch(`${API}/execute/rmca_read_product_offering`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _params: { specExternalId: selectedTemplate } })
-      })
+      // Use BSSF Product Catalog Integration to read full PO
+      const r = await fetch(`${API}/catalog/productOffering?externalId=${encodeURIComponent(selectedTemplate)}`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
       const pot = Array.isArray(data) ? data[0] : data
