@@ -381,8 +381,8 @@ async def upload_cert(file: UploadFile = File(...), name: str = "cert"):
     certs_dir = Path(__file__).parent.parent.parent.parent / "config" / "certs"
     certs_dir.mkdir(parents=True, exist_ok=True)
     # Prefix filename with name to avoid collisions between sections (e.g. rmca_ca.crt vs ca.crt)
-    suffix = Path(file.filename).suffix
-    safe_name = f"{name}{suffix}" if name != "cert" else file.filename
+    suffix = Path(file.filename).suffix or '.crt'
+    safe_name = f"{name}{suffix}"
     dest = certs_dir / safe_name
     content = await file.read()
     if not content:
