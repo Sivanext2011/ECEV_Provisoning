@@ -699,7 +699,11 @@ function POPublishPanel() {
           productOfferingPriceRelationship: p.productOfferingPriceRelationship || [],
         }
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
-        if (ov.operation === 'UPDATE' && p.productOfferingPriceRef) entry.productOfferingPriceRef = p.productOfferingPriceRef
+        if (ov.operation === 'UPDATE') {
+          const refExtId = ov.priceRefExternalId ?? p.productOfferingPriceRef?.externalId
+          const refId = ov.priceRefId ?? p.productOfferingPriceRef?.id
+          if (refExtId || refId) entry.productOfferingPriceRef = { ...(refExtId && { externalId: refExtId }), ...(refId && { id: refId }) }
+        }
         if (ov.pricingRows?.length)
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: ov.pricingRows }
         return entry
@@ -825,11 +829,34 @@ function POPublishPanel() {
                     <option value="CREATE">CREATE (new price)</option>
                   </select>
                 </div>
-                <label style={{ fontSize: 12 }}>Name override
-                  <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.name || ''}
-                    onChange={e => setPriceOv(p.externalId, 'name', e.target.value)}
-                    placeholder={p.name || p.externalId} />
-                </label>
+                <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
+                  <label style={{ fontSize: 12 }}>Name override
+                    <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.name || ''}
+                      onChange={e => setPriceOv(p.externalId, 'name', e.target.value)}
+                      placeholder={p.name || p.externalId} />
+                  </label>
+                  <label style={{ fontSize: 12 }}>Party Role Involvement Group Ref
+                    <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.partyRoleInvolvementGroupRef || ''}
+                      onChange={e => setPriceOv(p.externalId, 'partyRoleInvolvementGroupRef', e.target.value)}
+                      placeholder={p.partyRoleInvolvementGroupRef || 'e.g. PRIG_001'} />
+                  </label>
+                  {(priceOverrides[p.externalId]?.operation === 'UPDATE') && (
+                    <>
+                      <label style={{ fontSize: 12 }}>Price Ref — ExternalId (UPDATE target)
+                        <input style={{ width: '100%' }}
+                          value={priceOverrides[p.externalId]?.priceRefExternalId ?? (p.productOfferingPriceRef?.externalId || '')}
+                          onChange={e => setPriceOv(p.externalId, 'priceRefExternalId', e.target.value)}
+                          placeholder={p.productOfferingPriceRef?.externalId || p.externalId} />
+                      </label>
+                      <label style={{ fontSize: 12 }}>Price Ref — Id (UPDATE target)
+                        <input style={{ width: '100%' }}
+                          value={priceOverrides[p.externalId]?.priceRefId ?? (p.productOfferingPriceRef?.id || '')}
+                          onChange={e => setPriceOv(p.externalId, 'priceRefId', e.target.value)}
+                          placeholder={p.productOfferingPriceRef?.id || ''} />
+                      </label>
+                    </>
+                  )}
+                </div>
                 {p.scheduleDefinitionRef && (
                   <p style={{ fontSize: 11, color: '#888', margin: '4px 0 0' }}>
                     Schedule: {p.scheduleDefinitionRef.scheduleName || p.scheduleDefinitionRef.externalId}
