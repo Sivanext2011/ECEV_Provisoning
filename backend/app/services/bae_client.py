@@ -10,13 +10,22 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.parent.parent / "config" / "config.json"))
 
-# In-memory API call log
+# In-memory API call log (kept for BAEClient/TokenManager usage)
 api_logs: list[dict] = []
 
 
 def load_config() -> dict:
     with open(CONFIG_PATH) as f:
         return json.load(f)
+
+
+def _shared_logs() -> list:
+    """Return the canonical log list — ericsson_client's if available, else local."""
+    try:
+        from .ericsson_client import api_logs as ec_logs
+        return ec_logs
+    except Exception:
+        return api_logs
 
 
 class TokenManager:
@@ -368,13 +377,10 @@ class RMCACatalogClient:
     def reload(self):
         self._load()
 
-    def _resolve_url(self, url_template: str, params: dict = None) -> str:
+    def _resolve_url(self, url_template: str) -> str:
         url = url_template
         for k, v in self.env.items():
             url = url.replace(f"{{{{{k}}}}}", v)
-        if params:
-            for k, v in params.items():
-                url = url.replace(f"{{{{{k}}}}}", str(v))
         return url
 
     def _headers(self) -> dict:
@@ -392,38 +398,43 @@ class RMCACatalogClient:
         if not api:
             raise ValueError(f"Unknown API: {api_key}")
         method = api["method"]
-        url = self._resolve_url(api["url"], params)
+        url = self._resolve_url(api["url"])  # env vars only; params go as query string
         headers = self._headers()
+        logs = _shared_logs()
 
-        api_logs.append({
+        logs.append({
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "REQUEST", "method": method, "url": url,
             "headers": {k: (v[:20] + '...' if k == 'Authorization' else v) for k, v in headers.items()},
             "request_body": body, "status": "-",
             "ssl_verify": str(self._verify), "client_cert": str(self._client_cert),
         })
+        if len(logs) > 500:
+            logs.pop(0)
 
         try:
             if method == "GET":
-                r = await self._client.get(url, headers=headers)
+                r = await self._client.get(url, headers=headers, params=params)
             elif method == "POST":
-                r = await self._client.post(url, json=body, headers=headers)
+                r = await self._client.post(url, json=body, headers=headers, params=params)
             elif method == "PATCH":
-                r = await self._client.patch(url, json=body, headers=headers)
+                r = await self._client.patch(url, json=body, headers=headers, params=params)
             elif method == "DELETE":
-                r = await self._client.delete(url, headers=headers)
+                r = await self._client.delete(url, headers=headers, params=params)
             else:
                 raise ValueError(f"Unsupported method: {method}")
         except Exception as e:
             import traceback
             err = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
-            api_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
-                             "method": method, "url": url, "status": "ERROR", "response_body": err})
+            logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
+                         "method": method, "url": url, "status": "ERROR", "response_body": err})
             raise ConnectionError(f"{method} {url} failed: {type(e).__name__}: {e}")
 
-        api_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
-                         "method": method, "url": url, "status": r.status_code,
-                         "request_body": body, "response_body": r.text[:4000], "response_headers": dict(r.headers)})
+        logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
+                     "method": method, "url": url, "status": r.status_code,
+                     "request_body": body, "response_body": r.text[:4000], "response_headers": dict(r.headers)})
+        if len(logs) > 500:
+            logs.pop(0)
 
         if r.status_code == 401 and not getattr(self, '_retrying', False):
             self._retrying = True
