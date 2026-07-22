@@ -621,14 +621,30 @@ function POPublishPanel() {
   const [templates, setTemplates] = useState<any[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(false)
   const [templatesError, setTemplatesError] = useState('')
-  const [selectedTemplate, setSelectedTemplate] = useState('')
-  const [json, setJson] = useState('')
-  const [externalId, setExternalId] = useState('')
-  const [version, setVersion] = useState('')
+  const [selectedTemplateExtId, setSelectedTemplateExtId] = useState('')
+  const [template, setTemplate] = useState<any>(null)
+  const [fetchLoading, setFetchLoading] = useState(false)
+
+  // Form fields
+  const [newExtId, setNewExtId] = useState('')
+  const [newName, setNewName] = useState('')
+  const [newDesc, setNewDesc] = useState('')
+  const [validStart, setValidStart] = useState('')
+  const [validEnd, setValidEnd] = useState('')
+  // Per-price overrides: { [priceExternalId]: { name, operation, partyRoleInvolvementGroupRef, pricingRows } }
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, any>>({})
+  // prodSpecCharValueUse overrides: [{ refExternalId, value, unitOfMeasure, isDefault }]
+  const [charOverrides, setCharOverrides] = useState<Array<{ refExternalId: string; value: string; unitOfMeasure: string; isDefault: boolean }>>([])
+  // productOfferingRelationship additions
+  const [relationships, setRelationships] = useState<Array<{ externalId: string; type: string; targetType: string }>>([])
+
+  const [showJson, setShowJson] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [fetchLoading, setFetchLoading] = useState(false)
+  // Update mode
+  const [updateExtId, setUpdateExtId] = useState('')
+  const [updateVersion, setUpdateVersion] = useState('')
 
   const fetchTemplates = async () => {
     setTemplatesLoading(true); setTemplatesError('')
@@ -636,34 +652,83 @@ function POPublishPanel() {
       const r = await fetch(`${API}/catalog/productOffering/list?type=TEMPLATE`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
-      const list = Array.isArray(data) ? data : []
-      setTemplates(list)
+      setTemplates(Array.isArray(data) ? data : [])
     } catch (e: any) { setTemplatesError(e.message) }
     setTemplatesLoading(false)
   }
 
   const loadTemplate = async () => {
-    if (!selectedTemplate) return
-    setFetchLoading(true); setError(''); setResult(null)
+    if (!selectedTemplateExtId) return
+    setFetchLoading(true); setError(''); setResult(null); setTemplate(null)
     try {
-      const r = await fetch(`${API}/catalog/productOffering?externalId=${encodeURIComponent(selectedTemplate)}`)
+      const r = await fetch(`${API}/catalog/productOffering?externalId=${encodeURIComponent(selectedTemplateExtId)}`)
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       const data = await r.json()
       const pot = Array.isArray(data) ? data[0] : data
-      setJson(JSON.stringify(pot, null, 2))
-      setExternalId(pot?.externalId || selectedTemplate)
-      setVersion(pot?.version || '')
+      setTemplate(pot)
+      // Init price overrides — deep-clone pricing rows so user can edit values inline
+      const po: Record<string, any> = {}
+      for (const p of (pot.productOfferingPrice || [])) {
+        const rows = JSON.parse(JSON.stringify(p.pricingLogicAlgorithm?.productOfferingPriceRow || []))
+        po[p.externalId] = { name: p.name || '', operation: 'UPDATE', partyRoleInvolvementGroupRef: p.partyRoleInvolvementGroupRef || '', pricingRows: rows }
+      }
+      setPriceOverrides(po)
+      setCharOverrides([])
+      setRelationships([])
+      setNewExtId(''); setNewName(''); setNewDesc('')
+      setValidStart(''); setValidEnd('')
+      setUpdateExtId(''); setUpdateVersion('')
     } catch (e: any) { setError(e.message) }
     setFetchLoading(false)
   }
 
+  // Build the create request body from form
+  const buildBody = (): any => {
+    if (!template) return {}
+    const body: any = {
+      externalId: newExtId,
+      name: newName || newExtId,
+      description: newDesc || undefined,
+      productOfferingTemplateRef: { id: template.id, externalId: template.externalId },
+      productOfferingPrice: (template.productOfferingPrice || []).map((p: any) => {
+        const ov = priceOverrides[p.externalId] || {}
+        const entry: any = {
+          externalId: p.externalId,
+          name: ov.name || p.name || null,
+          operation: ov.operation || 'UPDATE',
+          productOfferingPriceRelationship: p.productOfferingPriceRelationship || [],
+        }
+        if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
+        if (ov.operation === 'UPDATE' && p.productOfferingPriceRef) entry.productOfferingPriceRef = p.productOfferingPriceRef
+        if (ov.pricingRows?.length)
+          entry.pricingLogicAlgorithm = { productOfferingPriceRow: ov.pricingRows }
+        return entry
+      }),
+      productOfferingPolicyRef: template.productOfferingPolicyRef || [],
+      productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
+        externalId: r.externalId,
+        type: r.type || null,
+        targetType: r.targetType || null,
+      })),
+      prodSpecCharValueUse: charOverrides.filter(c => c.refExternalId && c.value).map(c => ({
+        productSpecificationCharacteristicValueUseRef: { externalId: c.refExternalId },
+        productSpecCharacteristicValue: [{ value: c.value, isDefault: c.isDefault, unitOfMeasure: c.unitOfMeasure || null }],
+      })),
+    }
+    if (validStart || validEnd) {
+      body.validFor = {}
+      if (validStart) body.validFor.startDateTime = validStart
+      if (validEnd) body.validFor.endDateTime = validEnd
+    }
+    return body
+  }
+
   const publish = async () => {
+    if (!newExtId.trim()) { setError('New External ID is required'); return }
     setLoading(true); setError(''); setResult(null)
     try {
-      let body: any
-      try { body = JSON.parse(json) } catch { throw new Error('Invalid JSON') }
       const r = await fetch(`${API}/catalog/productOffering`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildBody())
       })
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       setResult(await r.json())
@@ -672,12 +737,11 @@ function POPublishPanel() {
   }
 
   const update = async () => {
-    if (!externalId || !version) { setError('External ID and Version are required for update'); return }
+    if (!updateExtId || !updateVersion) { setError('External ID and Version required for update'); return }
     setLoading(true); setError(''); setResult(null)
     try {
-      let body: any
-      try { body = JSON.parse(json) } catch { throw new Error('Invalid JSON') }
-      const r = await fetch(`${API}/catalog/productOffering/externalId/${encodeURIComponent(externalId)}/version/${encodeURIComponent(version)}`, {
+      const body = buildBody()
+      const r = await fetch(`${API}/catalog/productOffering/externalId/${encodeURIComponent(updateExtId)}/version/${encodeURIComponent(updateVersion)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
       })
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
@@ -686,69 +750,233 @@ function POPublishPanel() {
     setLoading(false)
   }
 
+  const setPriceOv = (extId: string, k: string, v: any) =>
+    setPriceOverrides(prev => ({ ...prev, [extId]: { ...prev[extId], [k]: v } }))
+
   return (
     <div>
-      <h2>📤 PO Publish (POT)</h2>
-      <p style={{ fontSize: 13, color: '#666', margin: '0 0 16px' }}>Fetch a Product Offering Template from BSSF and publish it to BAE via the Product Catalog Integration API.</p>
+      <h2>📤 PO Publish</h2>
 
-      <fieldset style={{ marginBottom: 16 }}>
-        <legend><b>1. Load Templates from BSSF</b></legend>
-        <button onClick={fetchTemplates} disabled={templatesLoading}>{templatesLoading ? '⏳ Fetching...' : '🔄 Fetch POT List from BSSF'}</button>
-        {templatesError && <p style={{ color: 'red', fontSize: 12, margin: '6px 0 0' }}>{templatesError}</p>}
-        {templates.length > 0 && <p style={{ fontSize: 12, color: '#0a7', margin: '6px 0 0' }}>✓ {templates.length} templates loaded</p>}
-      </fieldset>
-
-      <fieldset style={{ marginBottom: 16 }}>
-        <legend><b>2. Select &amp; Load Template</b></legend>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          {templates.length > 0 ? (
-            <select style={{ flex: 1, minWidth: 200 }} value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-              <option value="">-- Select template --</option>
-              {templates.map((t: any, i: number) => (
-                <option key={t.id || t.externalId || i} value={t.externalId || t.id}>
-                  {t.name || t.externalId} ({t.externalId})
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input style={{ flex: 1 }} placeholder="Template externalId (fetch list first)" value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)} />
-          )}
-          <button onClick={loadTemplate} disabled={fetchLoading || !selectedTemplate}>{fetchLoading ? 'Loading...' : 'Load Template'}</button>
+      <fieldset style={{ marginBottom: 12 }}>
+        <legend><b>1. Load Template from RMCA Catalog</b></legend>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <button onClick={fetchTemplates} disabled={templatesLoading} style={{ marginBottom: 6 }}>
+              {templatesLoading ? '⏳ Fetching...' : '🔄 Fetch Template List'}
+            </button>
+            {templatesError && <p style={{ color: 'red', fontSize: 12, margin: '4px 0 0' }}>{templatesError}</p>}
+            {templates.length > 0 ? (
+              <select style={{ width: '100%' }} value={selectedTemplateExtId} onChange={e => setSelectedTemplateExtId(e.target.value)}>
+                <option value="">-- Select template --</option>
+                {templates.map((t: any, i: number) => (
+                  <option key={t.id || i} value={t.externalId}>{t.name || t.externalId} ({t.externalId})</option>
+                ))}
+              </select>
+            ) : (
+              <input style={{ width: '100%' }} placeholder="Or type template externalId" value={selectedTemplateExtId} onChange={e => setSelectedTemplateExtId(e.target.value)} />
+            )}
+          </div>
+          <button onClick={loadTemplate} disabled={fetchLoading || !selectedTemplateExtId}>
+            {fetchLoading ? 'Loading...' : 'Load Template'}
+          </button>
         </div>
+        {template && (
+          <p style={{ fontSize: 12, color: '#0a7', margin: '6px 0 0' }}>
+            ✓ Loaded: <b>{template.name}</b> (v{template.version}) — {(template.productOfferingPrice || []).length} prices, {(template.bucketSpecification || []).length} buckets
+          </p>
+        )}
       </fieldset>
 
-      {json && (
-        <fieldset>
-          <legend><b>3. Review &amp; Publish</b></legend>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-            <label style={{ fontSize: 13 }}>External ID
-              <input style={{ display: 'block', width: 220 }} value={externalId} onChange={e => setExternalId(e.target.value)} placeholder="externalId" />
-            </label>
-            <label style={{ fontSize: 13 }}>Version (for PATCH update only)
-              <input style={{ display: 'block', width: 160 }} value={version} onChange={e => setVersion(e.target.value)} placeholder="e.g. 1" />
-            </label>
+      {template && (
+        <>
+          <fieldset style={{ marginBottom: 12 }}>
+            <legend><b>2. New Product Offering Identity</b></legend>
+            <div style={{ display: 'grid', gap: 8 }}>
+              <label style={{ fontSize: 13 }}>External ID <span style={{ color: 'red' }}>*</span>
+                <input style={{ width: '100%' }} value={newExtId} onChange={e => setNewExtId(e.target.value)} placeholder="e.g. PO_CHT_DATA_001" />
+              </label>
+              <label style={{ fontSize: 13 }}>Name
+                <input style={{ width: '100%' }} value={newName} onChange={e => setNewName(e.target.value)} placeholder={newExtId || 'Display name'} />
+              </label>
+              <label style={{ fontSize: 13 }}>Description
+                <input style={{ width: '100%' }} value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Optional description" />
+              </label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <label style={{ fontSize: 13, flex: 1 }}>Valid From
+                  <input style={{ width: '100%' }} type="datetime-local" value={validStart} onChange={e => setValidStart(e.target.value ? e.target.value + '.000+00:00' : '')} />
+                </label>
+                <label style={{ fontSize: 13, flex: 1 }}>Valid To
+                  <input style={{ width: '100%' }} type="datetime-local" value={validEnd} onChange={e => setValidEnd(e.target.value ? e.target.value + '.000+00:00' : '')} />
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset style={{ marginBottom: 12 }}>
+            <legend><b>3. Prices</b> <span style={{ fontSize: 11, color: '#888', fontWeight: 'normal' }}>— inherited from template, override as needed</span></legend>
+            {(template.productOfferingPrice || []).map((p: any) => (
+              <div key={p.externalId} style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: '8px 10px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{p.name || p.externalId}</span>
+                  <span style={{ fontSize: 11, color: '#888' }}>{p.priceType}{p.priceSubType ? ' / ' + p.priceSubType : ''} · {p.paymentContext}</span>
+                  <select style={{ fontSize: 12 }} value={priceOverrides[p.externalId]?.operation || 'UPDATE'}
+                    onChange={e => setPriceOv(p.externalId, 'operation', e.target.value)}>
+                    <option value="UPDATE">UPDATE (inherit)</option>
+                    <option value="CREATE">CREATE (new price)</option>
+                  </select>
+                </div>
+                <label style={{ fontSize: 12 }}>Name override
+                  <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.name || ''}
+                    onChange={e => setPriceOv(p.externalId, 'name', e.target.value)}
+                    placeholder={p.name || p.externalId} />
+                </label>
+                {p.scheduleDefinitionRef && (
+                  <p style={{ fontSize: 11, color: '#888', margin: '4px 0 0' }}>
+                    Schedule: {p.scheduleDefinitionRef.scheduleName || p.scheduleDefinitionRef.externalId}
+                  </p>
+                )}
+                {/* Pricing Logic Algorithm rows */}
+                {(() => {
+                  const rows: any[] = priceOverrides[p.externalId]?.pricingRows || []
+                  if (!rows.length) return null
+                  return (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4 }}>Pricing Logic Rows</div>
+                      {rows.map((row: any, ri: number) => (
+                        <div key={ri} style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 4, padding: '6px 8px', marginBottom: 6 }}>
+                          <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 4 }}>
+                            Row: <b>{row.name || row.externalId || `#${ri+1}`}</b>
+                            {row.order !== undefined && <span style={{ marginLeft: 6 }}>order={row.order}</span>}
+                          </div>
+                          {(row.action || []).map((act: any, ai: number) => (
+                            <div key={ai} style={{ marginBottom: 4, paddingLeft: 8, borderLeft: '2px solid #d1d5db' }}>
+                              <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>
+                                Action: <b>{act.name || act.externalId || act.id || `#${ai+1}`}</b>
+                                {act.type && <span style={{ marginLeft: 6, color: '#9ca3af' }}>[{act.type}]</span>}
+                              </div>
+                              {(act.actionCharacteristicSpecificationUse || []).map((acsu: any, ci: number) => (
+                                <div key={ci} style={{ marginBottom: 4 }}>
+                                  <div style={{ fontSize: 11, color: '#374151', marginBottom: 2 }}>
+                                    <b>{acsu.name || acsu.externalId || acsu.id}</b>
+                                    {acsu.measure && <span style={{ color: '#9ca3af', marginLeft: 4 }}>({acsu.measure})</span>}
+                                    {acsu.actionCharacteristicSpecificationType && <span style={{ color: '#6b7280', marginLeft: 4 }}>[{acsu.actionCharacteristicSpecificationType}]</span>}
+                                  </div>
+                                  {(acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any, vi: number) => (
+                                    <div key={vi} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                      <input style={{ flex: 2, fontSize: 12 }} placeholder="value" value={vu.value ?? ''}
+                                        onChange={e => {
+                                          const updated = JSON.parse(JSON.stringify(rows))
+                                          updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].value = e.target.value
+                                          setPriceOv(p.externalId, 'pricingRows', updated)
+                                        }} />
+                                      <input style={{ flex: 1, fontSize: 12 }} placeholder="unit (e.g. MB)" value={vu.unitOfMeasure ?? ''}
+                                        onChange={e => {
+                                          const updated = JSON.parse(JSON.stringify(rows))
+                                          updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].unitOfMeasure = e.target.value
+                                          setPriceOv(p.externalId, 'pricingRows', updated)
+                                        }} />
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
+          ))}
+          </fieldset>
+
+          {(template.bucketSpecification || []).length > 0 && (
+            <fieldset style={{ marginBottom: 12 }}>
+              <legend><b>Buckets</b> <span style={{ fontSize: 11, color: '#888', fontWeight: 'normal' }}>— inherited from template (read-only)</span></legend>
+              {(template.bucketSpecification || []).map((b: any) => (
+                <div key={b.id} style={{ fontSize: 12, padding: '4px 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <span style={{ fontWeight: 500 }}>{b.externalId || b.id}</span>
+                  <span style={{ color: '#888', marginLeft: 8 }}>{b.measure} · {b.type}</span>
+                </div>
+              ))}
+            </fieldset>
+          )}
+
+          <fieldset style={{ marginBottom: 12 }}>
+            <legend><b>4. Characteristic Value Overrides</b> <span style={{ fontSize: 11, color: '#888', fontWeight: 'normal' }}>— optional</span></legend>
+            <p style={{ fontSize: 12, color: '#666', margin: '0 0 8px' }}>Override specific characteristic values from the template (e.g. data quota, validity period).</p>
+            {charOverrides.map((c, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                <input style={{ flex: 2 }} placeholder="Characteristic Spec ExternalId" value={c.refExternalId}
+                  onChange={e => { const u = [...charOverrides]; u[i] = { ...u[i], refExternalId: e.target.value }; setCharOverrides(u) }} />
+                <input style={{ flex: 2 }} placeholder="Value" value={c.value}
+                  onChange={e => { const u = [...charOverrides]; u[i] = { ...u[i], value: e.target.value }; setCharOverrides(u) }} />
+                <input style={{ flex: 1 }} placeholder="Unit (e.g. MB)" value={c.unitOfMeasure}
+                  onChange={e => { const u = [...charOverrides]; u[i] = { ...u[i], unitOfMeasure: e.target.value }; setCharOverrides(u) }} />
+                <label style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+                  <input type="checkbox" checked={c.isDefault} onChange={e => { const u = [...charOverrides]; u[i] = { ...u[i], isDefault: e.target.checked }; setCharOverrides(u) }} /> default
+                </label>
+                <button style={{ fontSize: 11 }} onClick={() => setCharOverrides(charOverrides.filter((_, j) => j !== i))}>✕</button>
+              </div>
+            ))}
+            <button style={{ fontSize: 11 }} onClick={() => setCharOverrides([...charOverrides, { refExternalId: '', value: '', unitOfMeasure: '', isDefault: true }])}>+ Add Override</button>
+          </fieldset>
+
+          <fieldset style={{ marginBottom: 12 }}>
+            <legend><b>5. Product Offering Relationships</b> <span style={{ fontSize: 11, color: '#888', fontWeight: 'normal' }}>— optional</span></legend>
+            <p style={{ fontSize: 12, color: '#666', margin: '0 0 8px' }}>Link to other product offerings (e.g. bundles, add-ons).</p>
+            {relationships.map((r, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                <input style={{ flex: 2 }} placeholder="Target PO ExternalId" value={r.externalId}
+                  onChange={e => { const u = [...relationships]; u[i] = { ...u[i], externalId: e.target.value }; setRelationships(u) }} />
+                <input style={{ flex: 1 }} placeholder="Type (e.g. bundled)" value={r.type}
+                  onChange={e => { const u = [...relationships]; u[i] = { ...u[i], type: e.target.value }; setRelationships(u) }} />
+                <input style={{ flex: 1 }} placeholder="Target Type" value={r.targetType}
+                  onChange={e => { const u = [...relationships]; u[i] = { ...u[i], targetType: e.target.value }; setRelationships(u) }} />
+                <button style={{ fontSize: 11 }} onClick={() => setRelationships(relationships.filter((_, j) => j !== i))}>✕</button>
+              </div>
+            ))}
+            <button style={{ fontSize: 11 }} onClick={() => setRelationships([...relationships, { externalId: '', type: '', targetType: '' }])}>+ Add Relationship</button>
+          </fieldset>
+
+          <fieldset style={{ marginBottom: 12 }}>
+            <legend><b>6. Update Existing PO</b> <span style={{ fontSize: 11, color: '#888', fontWeight: 'normal' }}>— fill only for PATCH</span></legend>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <label style={{ fontSize: 13, flex: 2 }}>ExternalId to update
+                <input style={{ width: '100%' }} value={updateExtId} onChange={e => setUpdateExtId(e.target.value)} placeholder="existing PO externalId" />
+              </label>
+              <label style={{ fontSize: 13, flex: 1 }}>Version
+                <input style={{ width: '100%' }} value={updateVersion} onChange={e => setUpdateVersion(e.target.value)} placeholder="e.g. 1784615970701" />
+              </label>
+            </div>
+          </fieldset>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+            <button disabled={loading} onClick={publish} style={{ background: '#1d4ed8', color: '#fff', padding: '6px 16px', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              {loading ? 'Publishing...' : '🚀 Publish (POST)'}
+            </button>
+            <button disabled={loading} onClick={update} style={{ padding: '6px 16px' }}>
+              {loading ? 'Updating...' : '✏️ Update (PATCH)'}
+            </button>
+            <button style={{ fontSize: 11, padding: '4px 10px' }} onClick={() => setShowJson(s => !s)}>
+              {showJson ? 'Hide' : 'Preview'} JSON
+            </button>
           </div>
 
-          <textarea
-            style={{ width: '100%', fontFamily: 'monospace', fontSize: 11, boxSizing: 'border-box' }}
-            rows={24}
-            value={json}
-            onChange={e => setJson(e.target.value)}
-          />
+          {showJson && (
+            <pre style={{ background: '#f5f5f5', padding: 10, borderRadius: 4, fontSize: 11, maxHeight: 400, overflow: 'auto', marginBottom: 12 }}>
+              {JSON.stringify(buildBody(), null, 2)}
+            </pre>
+          )}
 
           {error && <p style={{ color: 'red', wordBreak: 'break-all' }}>❌ {error}</p>}
-
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <button disabled={loading} onClick={publish}>{loading ? 'Publishing...' : '🚀 Publish (POST)'}</button>
-            <button disabled={loading} onClick={update}>{loading ? 'Updating...' : '✏️ Update (PATCH)'}</button>
-          </div>
-
           {result && (
-            <pre style={{ background: '#f0fff0', padding: 10, border: '1px solid #cfc', borderRadius: 4, maxHeight: 300, overflow: 'auto', marginTop: 10 }}>
+            <pre style={{ background: '#f0fff0', padding: 10, border: '1px solid #cfc', borderRadius: 4, maxHeight: 300, overflow: 'auto' }}>
               {JSON.stringify(result, null, 2)}
             </pre>
           )}
-        </fieldset>
+        </>
       )}
     </div>
   )
