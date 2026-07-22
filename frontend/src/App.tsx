@@ -723,7 +723,7 @@ function POPublishPanel() {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
@@ -765,7 +765,10 @@ function POPublishPanel() {
       productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
         const ov = priceOverrides[p.externalId] || {}
         const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
-        return { productOfferingPriceRef: [{ externalId: effectiveExtId }] }
+        return {
+          priceId: p.id,
+          productOfferingPriceRef: [{ externalId: effectiveExtId }]
+        }
       }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
