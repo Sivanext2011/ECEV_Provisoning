@@ -725,7 +725,12 @@ function POPublishPanel() {
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
-      productOfferingPolicyRef: template.productOfferingPolicyRef || [],
+      productOfferingPolicyRef: (template.productOfferingPolicyRef || []).map((pol: any) => ({
+        ...(pol.productOfferingPriceRef?.length && { productOfferingPriceRef: pol.productOfferingPriceRef.map((ref: any) => ({
+          ...(ref.id && { id: ref.id }),
+          ...(ref.externalId && { externalId: ref.externalId }),
+        })) }),
+      })).filter((pol: any) => pol.productOfferingPriceRef?.length),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
