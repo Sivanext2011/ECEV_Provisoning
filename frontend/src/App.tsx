@@ -741,8 +741,9 @@ function POPublishPanel() {
       productOfferingTemplateRef: { id: template.id, externalId: template.externalId },
       productOfferingPrice: (template.productOfferingPrice || []).map((p: any) => {
         const ov = priceOverrides[p.externalId] || {}
+        const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
         const entry: any = {
-          externalId: p.externalId,
+          externalId: isCreate ? (ov.name || p.externalId) : p.externalId,
           name: ov.name || p.name || null,
           operation: ov.operation || 'UPDATE',
           productOfferingPriceRelationship: (p.productOfferingPriceRelationship || []).map((rel: any) => ({
