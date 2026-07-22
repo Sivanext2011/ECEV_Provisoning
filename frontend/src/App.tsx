@@ -262,7 +262,7 @@ function ProvisionWizard() {
               </div>
             )
           })}
-          <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedCmSpecs([...selectedCmSpecs, { specExtId: '', channelType: '', value: '', externalId: '' }])}>+ Add Contact Medium</button>
+          <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedCmSpecs([...selectedCmSpecs, { specExtId: '', charVals: {}, externalId: '' }])}>+ Add Contact Medium</button>
           <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec} onClick={() => setStep(1)}>Next →</button>
         </div>
       )}
