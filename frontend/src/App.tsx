@@ -761,25 +761,11 @@ function POPublishPanel() {
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
-      productOfferingPolicyRef: (() => {
-        // Build a map: template price externalId -> effective externalId (name override for CREATE)
-        const effectiveId: Record<string, string> = {}
-        for (const p of (template.productOfferingPrice || [])) {
-          const ov = priceOverrides[p.externalId] || {}
-          effectiveId[p.externalId] = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
-        }
-        const seen = new Set<string>()
-        return (template.productOfferingPolicyRef || []).reduce((acc: any[], pol: any) => {
-          const refs = (pol.productOfferingPriceRef || []).filter((ref: any) => ref.externalId)
-          if (!refs.length) return acc
-          const mapped = refs.map((ref: any) => ({ externalId: effectiveId[ref.externalId] || ref.externalId }))
-          const key = mapped.map((r: any) => r.externalId).join(',')
-          if (seen.has(key)) return acc
-          seen.add(key)
-          acc.push({ productOfferingPriceRef: mapped })
-          return acc
-        }, [])
-      })(),
+      productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
+        const ov = priceOverrides[p.externalId] || {}
+        const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
+        return { productOfferingPriceRef: [{ externalId: effectiveExtId }] }
+      }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
