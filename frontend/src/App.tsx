@@ -683,9 +683,7 @@ function POPublishPanel() {
   }
 
   // Strip read-only fields from pricing rows — schema uses additionalProperties:false
-  const sanitizePricingRows = (rows: any[], priceExternalId: string): any[] => rows.map((row, ri) => ({
-    ...(row.name && { name: row.name }),
-    ...(row.externalId ? { productOfferingPriceRowRef: { externalId: `${priceExternalId}_${row.externalId || ri}` } } : {}),
+  const sanitizePricingRows = (rows: any[]): any[] => rows.map((row) => ({
     action: (row.action || []).map((act: any) => ({
       ...(act.externalId ? { actionRef: { externalId: act.externalId } } : {}),
       actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => ({
@@ -742,7 +740,7 @@ function POPublishPanel() {
           if (refExtId) entry.productOfferingPriceRef = { externalId: refExtId }
         }
         if (ov.pricingRows?.length)
-          entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows, p.externalId) }
+          entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
       productOfferingPolicyRef: (() => {
