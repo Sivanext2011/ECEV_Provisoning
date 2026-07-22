@@ -47,6 +47,9 @@ def _empty_catalog() -> dict:
         "referenceDataListSpecifications": [],
         "bucketDeterminationSpecifications": [],
         "tagSpecifications": [],
+        # Reference data from BusinessConfig global lists — never overwritten by BSSF live fetch
+        "unitsByMeasure": {},   # { "Data": ["kilobyte", "megabyte", ...], "TWD": ["TWD", ...], ... }
+        "currencies": [],       # ["EUR", "TWD", "USD", ...]
     }
 
 
@@ -498,6 +501,40 @@ def parse_business_config(zip_bytes: bytes) -> dict:
             "commIdCharKey": comm_id_key,
             "channelTypeCharKey": channel_type_key,
         })
+
+    # --- Parse reference data from RMCA_GLOBAL_LISTS nested zip ---
+    try:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+            gl_entry = next((n for n in zf.namelist() if "GLOBAL_LISTS" in n and n.endswith(".zip")), None)
+            if gl_entry:
+                gl_zip = zipfile.ZipFile(io.BytesIO(zf.read(gl_entry)))
+                # UnitOfMeasurement -> unitsByMeasure
+                if "entities/UnitOfMeasurement.json" in gl_zip.namelist():
+                    uoms = json.loads(gl_zip.read("entities/UnitOfMeasurement.json").decode("utf-8"))
+                    by_measure: dict = {}
+                    for u in uoms:
+                        uom = u.get("uom") or u.get("id") or ""
+                        measure = u.get("measure") or ""
+                        if uom and measure:
+                            by_measure.setdefault(measure, []).append(uom)
+                    _catalog["unitsByMeasure"] = by_measure
+                # Currency -> currencies
+                if "entities/Currency.json" in gl_zip.namelist():
+                    currencies = json.loads(gl_zip.read("entities/Currency.json").decode("utf-8"))
+                    _catalog["currencies"] = sorted(
+                        c.get("alpha3Code") or c.get("id") for c in currencies
+                        if c.get("alpha3Code") or c.get("id")
+                    )
+    except Exception as e:
+        logger.warning(f"Could not parse global lists from zip: {e}")
+        # Preserve existing reference data if parse failed
+        if CATALOG_PATH.exists():
+            try:
+                existing = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+                _catalog["unitsByMeasure"] = existing.get("unitsByMeasure") or _catalog["unitsByMeasure"]
+                _catalog["currencies"] = existing.get("currencies") or _catalog["currencies"]
+            except Exception:
+                pass
 
     _save_catalog()
 

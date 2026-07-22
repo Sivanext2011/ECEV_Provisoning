@@ -207,8 +207,18 @@ async def _fetch_spec(api_key: str, ext_id_param: str, ext_id: str, spec_id: str
 
 async def fetch_catalog_from_bssf() -> dict:
     """Fetch all specs from BSSF using two-step: list IDs then fetch each individually."""
+    # Preserve reference data (parsed from BusinessConfig zip) before resetting catalog
+    existing = cat_mod.get_catalog()
+    preserved_units = existing.get("unitsByMeasure") or {}
+    preserved_currencies = existing.get("currencies") or []
+
     cat_mod._catalog = cat_mod._empty_catalog()
     catalog = cat_mod._catalog
+
+    # Restore preserved reference data immediately so it survives the fetch
+    catalog["unitsByMeasure"] = preserved_units
+    catalog["currencies"] = preserved_currencies
+
     counts = {}
     errors = {}
 

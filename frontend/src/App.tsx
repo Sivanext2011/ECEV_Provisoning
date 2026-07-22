@@ -645,6 +645,14 @@ function POPublishPanel() {
   // Update mode
   const [updateExtId, setUpdateExtId] = useState('')
   const [updateVersion, setUpdateVersion] = useState('')
+  // System reference data
+  const [unitsByMeasure, setUnitsByMeasure] = useState<Record<string, string[]>>({})
+  const [currencies, setCurrencies] = useState<string[]>([])
+
+  React.useEffect(() => {
+    fetch(`${API}/refdata/units`).then(r => r.ok ? r.json() : {}).then(setUnitsByMeasure).catch(() => {})
+    fetch(`${API}/refdata/currencies`).then(r => r.ok ? r.json() : []).then(setCurrencies).catch(() => {})
+  }, [])
 
   const fetchTemplates = async () => {
     setTemplatesLoading(true); setTemplatesError('')
@@ -746,10 +754,8 @@ function POPublishPanel() {
           })),
         }
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
-        if (ov.operation === 'UPDATE') {
-          const refExtId = p.externalId
-          if (refExtId) entry.productOfferingPriceRef = { externalId: refExtId }
-        }
+        // Always include productOfferingPriceRef — required by RMCA for both UPDATE and CREATE
+        if (p.externalId) entry.productOfferingPriceRef = { externalId: p.externalId }
         if (ov.pricingRows?.length)
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
@@ -935,13 +941,17 @@ function POPublishPanel() {
                                     {acsu.actionCharacteristicSpecificationType && <span style={{ color: '#6b7280', marginLeft: 4 }}>[{acsu.actionCharacteristicSpecificationType}]</span>}
                                   </div>
                                   {(acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any, vi: number) => {
-                                    const specType = acsu.actionCharacteristicSpecificationType || ''
-                                    const measure = acsu.measure || ''
+                                    const measure = (acsu.measure || acsu.actionCharacteristicSpecificationType || '')
                                     const unitOptions: string[] = (() => {
-                                      if (specType === 'ChargingInterval' || measure === 'Data' || specType === 'ValueWithUoM') return ['kilobyte','kibibyte','megabyte','mebibyte','gigabyte','gibibyte','terabyte','tebibyte']
-                                      if (specType === 'Consumption') return ['kilobyte','kibibyte','megabyte','mebibyte','gigabyte','gibibyte','terabyte','tebibyte','second','minute','hour']
-                                      if (specType === 'PriceWithUoM' || measure === 'TWD' || measure === 'USD' || measure === 'EUR') return ['TWD','USD','EUR','GBP','JPY','SGD','AUD','CAD']
-                                      if (vu.unitOfMeasure) return [vu.unitOfMeasure]
+                                      // Currency measures: use fetched currencies list
+                                      if (currencies.includes(measure)) return currencies.length ? currencies : [measure]
+                                      // Known measure: use fetched UoMs for that measure
+                                      if (measure && unitsByMeasure[measure]?.length) return unitsByMeasure[measure]
+                                      // Fallback: all known UoMs flat
+                                      if (vu.unitOfMeasure) {
+                                        const all = Object.values(unitsByMeasure).flat()
+                                        return all.length ? all : [vu.unitOfMeasure]
+                                      }
                                       return []
                                     })()
                                     const hasUnit = vu.unitOfMeasure !== undefined

@@ -311,6 +311,22 @@ async def update_party_role_by_external_id(partyRoleExternalId: str, body: dict)
     return await _call("update_party_role_by_external_id", body=body, path_params={"partyRoleExternalId": partyRoleExternalId})
 
 
+# === Reference Data (Measure / UnitOfMeasurement / Currency — served from catalog) ===
+
+@router.get("/refdata/units")
+async def get_refdata_units():
+    """Return unitsByMeasure from catalog (parsed from BusinessConfig zip upload)."""
+    from ..services.catalog import get_catalog
+    return get_catalog().get("unitsByMeasure") or {}
+
+
+@router.get("/refdata/currencies")
+async def get_refdata_currencies():
+    """Return currencies list from catalog (parsed from BusinessConfig zip upload)."""
+    from ..services.catalog import get_catalog
+    return get_catalog().get("currencies") or []
+
+
 # === Product Catalog Integration (RMCA Catalog endpoint, separate TLS) ===
 async def _catalog_call(api_key: str, body: dict = None, params: dict = None):
     try:
