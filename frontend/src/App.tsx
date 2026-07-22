@@ -683,9 +683,9 @@ function POPublishPanel() {
   }
 
   // Strip read-only fields from pricing rows — schema uses additionalProperties:false
-  const sanitizePricingRows = (rows: any[]): any[] => rows.map(row => ({
+  const sanitizePricingRows = (rows: any[], priceExternalId: string): any[] => rows.map((row, ri) => ({
     ...(row.name && { name: row.name }),
-    ...(row.externalId ? { productOfferingPriceRowRef: { externalId: row.externalId } } : {}),
+    ...(row.externalId ? { productOfferingPriceRowRef: { externalId: `${priceExternalId}_${row.externalId || ri}` } } : {}),
     action: (row.action || []).map((act: any) => ({
       ...(act.externalId ? { actionRef: { externalId: act.externalId } } : {}),
       actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => ({
@@ -742,14 +742,21 @@ function POPublishPanel() {
           if (refExtId) entry.productOfferingPriceRef = { externalId: refExtId }
         }
         if (ov.pricingRows?.length)
-          entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
+          entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows, p.externalId) }
         return entry
       }),
-      productOfferingPolicyRef: (template.productOfferingPolicyRef || []).map((pol: any) => ({
-        ...(pol.productOfferingPriceRef?.length && { productOfferingPriceRef: pol.productOfferingPriceRef.map((ref: any) => ({
-          ...(ref.externalId && { externalId: ref.externalId }),
-        })) }),
-      })).filter((pol: any) => pol.productOfferingPriceRef?.length),
+      productOfferingPolicyRef: (() => {
+        const seen = new Set<string>()
+        return (template.productOfferingPolicyRef || []).reduce((acc: any[], pol: any) => {
+          const refs = (pol.productOfferingPriceRef || []).filter((ref: any) => ref.externalId)
+          if (!refs.length) return acc
+          const key = refs.map((r: any) => r.externalId).join(',')
+          if (seen.has(key)) return acc
+          seen.add(key)
+          acc.push({ productOfferingPriceRef: refs.map((ref: any) => ({ externalId: ref.externalId })) })
+          return acc
+        }, [])
+      })(),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
