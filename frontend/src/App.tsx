@@ -1785,24 +1785,53 @@ function CRMView() {
     patchContract({ product: [{ productOfferingExternalId: poExtId, externalId: `${poExtId}-${ts}`, name: poExtId, status: [{ status: 'ProductCreated' }], billingAccountReference: { externalId: baExtId }, baRefForBillCycleAlignedRecurrence: { externalId: baExtId } }] })
   }
 
-  // Balance bucket bar
-  const BucketBar = ({ bucket }: { bucket: any }) => {
-    const remaining = Number(bucket?.remainingValue ?? bucket?.value ?? bucket?.amount ?? 0)
-    const total = Number(bucket?.totalValue ?? bucket?.maxValue ?? bucket?.capacity ?? remaining)
-    const pct = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 100
-    const unit = bucket?.unitOfMeasure || bucket?.unit || ''
-    const name = bucket?.bucketName || bucket?.name || bucket?.bucketSpecExternalId || 'Bucket'
-    const barColor = pct > 50 ? '#22c55e' : pct > 20 ? '#f59e0b' : '#ef4444'
+  // Flatten balance response into bucket list regardless of nesting shape
+  const flattenBuckets = (data: any): any[] => {
+    if (!data) return []
+    const arr = Array.isArray(data) ? data : [data]
+    const result: any[] = []
+    for (const item of arr) {
+      // Shape: { billingAccount: [{ bucket: [...] }] }
+      if (item.billingAccount) {
+        for (const ba of item.billingAccount) {
+          for (const b of (ba.bucket || [])) result.push({ ...b, _baExternalId: ba.externalId, _baId: ba.id })
+        }
+      }
+      // Shape: { bucket: [...] } or flat bucket object
+      else if (item.bucket) {
+        for (const b of item.bucket) result.push(b)
+      } else if (item.bucketSpecExternalId || item.bucketSpecId) {
+        result.push(item)
+      }
+    }
+    return result
+  }
+
+  const fmtDate = (dt: string) => {
+    if (!dt || dt.startsWith('0001') || dt.startsWith('9999')) return null
+    return dt.replace('T', ' ').slice(0, 16) + ' UTC'
+  }
+
+  // Balance bucket card
+  const BucketCard = ({ bucket }: { bucket: any }) => {
+    const amount = Number(bucket?.amount?.number ?? bucket?.remainingValue ?? bucket?.value ?? 0)
+    const decPlaces = Number(bucket?.amount?.decimalPlaces ?? 0)
+    const reserved = Number(bucket?.reservedAmount?.number ?? 0)
+    const displayAmount = decPlaces > 0 ? (amount / Math.pow(10, decPlaces)).toFixed(2) : amount
+    const displayReserved = decPlaces > 0 ? (reserved / Math.pow(10, decPlaces)).toFixed(2) : reserved
+    const unit = bucket?.unitOfMeasure || ''
+    const name = bucket?.bucketSpecExternalId || bucket?.bucketName || bucket?.name || 'Bucket'
+    const start = fmtDate(bucket?.validFor?.startDateTime)
+    const end = fmtDate(bucket?.validFor?.endDateTime)
     return (
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
-          <span style={{ fontWeight: 500 }}>{name}</span>
-          <span style={{ color: '#555' }}>{remaining}{unit ? ' ' + unit : ''}{total !== remaining ? ` / ${total}${unit ? ' ' + unit : ''}` : ''}</span>
-        </div>
-        <div style={{ background: '#e5e7eb', borderRadius: 6, height: 10, overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, background: barColor, height: '100%', borderRadius: 6, transition: 'width 0.3s' }} />
-        </div>
-        <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{pct}% remaining</div>
+      <div style={{ border: '1px solid #fde68a', borderRadius: 6, padding: '8px 10px', marginBottom: 8, background: '#fffbeb' }}>
+        <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>{name}</div>
+        <InfoRow label="Amount" value={`${displayAmount}${unit ? ' ' + unit : ''}`} />
+        {reserved > 0 && <InfoRow label="Reserved" value={`${displayReserved}${unit ? ' ' + unit : ''}`} />}
+        {bucket?.bucketSpecId && <InfoRow label="Spec ID" value={bucket.bucketSpecId} />}
+        {bucket?._baExternalId && <InfoRow label="Billing Account" value={bucket._baExternalId} />}
+        {start && <InfoRow label="Valid From" value={start} />}
+        {end && <InfoRow label="Valid To" value={end} />}
       </div>
     )
   }
@@ -1837,6 +1866,8 @@ function CRMView() {
                 <InfoRow label="Family Name" value={p0.familyName} />
                 <InfoRow label="Spec" value={p0.individualSpecification?.externalId} />
                 <InfoRow label="Status" value={p0.status?.slice(-1)[0]?.status} />
+                <InfoRow label="Valid From" value={fmtDate(p0.validFor?.startDateTime)} />
+                <InfoRow label="Valid To" value={fmtDate(p0.validFor?.endDateTime)} />
                 {(p0.contactMedium || []).map((cm: any, i: number) => {
                   const commId = cm.characteristic?.find((ch: any) => (ch.charSpecExternalId || '').toLowerCase().includes('communication'))?.value?.[0]?.value
                   const chType = cm.characteristic?.find((ch: any) => (ch.charSpecExternalId || '').toLowerCase().includes('channel'))?.value?.[0]?.value
@@ -1861,6 +1892,8 @@ function CRMView() {
                     <InfoRow label="Internal ID" value={a.id} />
                     <InfoRow label="Spec" value={a.billingAccountSpecExternalId} />
                     <InfoRow label="Status" value={a.status?.slice(-1)[0]?.status} />
+                    <InfoRow label="Valid From" value={fmtDate(a.validFor?.startDateTime)} />
+                    <InfoRow label="Valid To" value={fmtDate(a.validFor?.endDateTime)} />
                     {a.customerBillCycleSpecification?.map((bcs: any, j: number) => (
                       <InfoRow key={j} label="Bill Cycle Spec" value={bcs.billCycleSpecExternalId} />
                     ))}
@@ -1881,6 +1914,8 @@ function CRMView() {
                 </div>
                 <InfoRow label="Internal ID" value={c.id} />
                 <InfoRow label="Spec" value={c.contractSpecification?.externalId} />
+                <InfoRow label="Valid From" value={fmtDate(c.validFor?.startDateTime)} />
+                <InfoRow label="Valid To" value={fmtDate(c.validFor?.endDateTime)} />
                 <InfoRow label="Home Time Zone" value={c.homeTimeZone?.[0]?.timeZone} />
                 {(c.characteristic || []).map((ch: any, i: number) => (
                   <InfoRow key={i} label={ch.charSpecExternalId || `Char ${i+1}`} value={ch.value?.[0]?.value ?? ch.value} />
@@ -1903,6 +1938,8 @@ function CRMView() {
                           </div>
                           <InfoRow label="External ID" value={p.externalId} />
                           <InfoRow label="Internal ID" value={p.id} />
+                          <InfoRow label="Valid From" value={fmtDate(p.validFor?.startDateTime)} />
+                          <InfoRow label="Valid To" value={fmtDate(p.validFor?.endDateTime)} />
                           <InfoRow label="Billing Account" value={p.billingAccountReference?.externalId} />
                           {(p.resource || []).map((r: any, j: number) => (
                             <InfoRow key={j} label={`Resource (${r.resourceSpecificationExternalId || 'spec'})`} value={r.resourceNumber || r.externalId} />
@@ -1912,12 +1949,12 @@ function CRMView() {
                           ))}
                           {/* Product buckets from balance */}
                           {(() => {
-                            const balArr = Array.isArray(balance) ? balance : (balance ? [balance] : [])
-                            const prodBuckets = balArr.filter((b: any) => b.productExternalId === p.externalId || b.productId === p.id)
+                            const buckets = flattenBuckets(balance)
+                            const prodBuckets = buckets.filter((b: any) => b.productExternalId === p.externalId || b.productId === p.id)
                             return prodBuckets.length > 0 ? (
                               <div style={{ marginTop: 6 }}>
                                 <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 600, marginBottom: 4 }}>Buckets</div>
-                                {prodBuckets.map((b: any, k: number) => <BucketBar key={k} bucket={b} />)}
+                                {prodBuckets.map((b: any, k: number) => <BucketCard key={k} bucket={b} />)}
                               </div>
                             ) : null
                           })()}
@@ -1934,15 +1971,13 @@ function CRMView() {
               </Card>
             )}
 
-            {/* Balance — buckets not matched to a product */}
+            {/* Balance — all buckets as cards */}
             {balance && (() => {
-              const balArr = Array.isArray(balance) ? balance : [balance]
-              const unmatched = balArr.filter((b: any) => !b.productExternalId && !b.productId)
-              if (!unmatched.length && !balArr.length) return null
-              const allBuckets = unmatched.length ? unmatched : balArr
+              const buckets = flattenBuckets(balance)
+              if (!buckets.length) return null
               return (
-                <Card title="Balance" icon="💰" color="#f59e0b" rawData={balance}>
-                  {allBuckets.map((b: any, i: number) => <BucketBar key={i} bucket={b} />)}
+                <Card title={`Balance (${buckets.length} bucket${buckets.length !== 1 ? 's' : ''})`} icon="💰" color="#f59e0b" rawData={balance}>
+                  {buckets.map((b: any, i: number) => <BucketCard key={i} bucket={b} />)}
                 </Card>
               )
             })()}
