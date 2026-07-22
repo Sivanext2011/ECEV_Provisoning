@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import httpx
 from ..services.ericsson_client import ericsson_client
+from ..services.bae_client import rmca_catalog_client
 
 router = APIRouter(prefix="/api/v1", tags=["bssf"])
 
@@ -310,26 +311,34 @@ async def update_party_role_by_external_id(partyRoleExternalId: str, body: dict)
     return await _call("update_party_role_by_external_id", body=body, path_params={"partyRoleExternalId": partyRoleExternalId})
 
 
-# === Product Catalog Integration ===
+# === Product Catalog Integration (RMCA Catalog endpoint, separate TLS) ===
+async def _catalog_call(api_key: str, body: dict = None, params: dict = None):
+    try:
+        return await rmca_catalog_client.call(api_key, params=params, body=body)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
 @router.get("/catalog/productOffering")
 async def catalog_get_product_offering(id: str = None, externalId: str = None, type: str = None):
     q = {}
     if id: q["id"] = id
     if externalId: q["externalId"] = externalId
     if type: q["type"] = type
-    return await _call("catalog_get_product_offering", query_params=q)
+    return await _catalog_call("catalog_get_product_offering", params=q)
 
 @router.post("/catalog/productOffering")
 async def catalog_create_product_offering(body: dict):
-    return await _call("catalog_create_product_offering", body=body)
+    return await _catalog_call("catalog_create_product_offering", body=body)
 
 @router.patch("/catalog/productOffering/{id}/version/{version}")
 async def catalog_update_product_offering_by_id(id: str, version: str, body: dict):
-    return await _call("catalog_update_product_offering_by_id", body=body, path_params={"id": id, "version": version})
+    return await _catalog_call("catalog_update_product_offering_by_id", body=body, params={"id": id, "version": version})
 
 @router.patch("/catalog/productOffering/externalId/{externalId}/version/{version}")
 async def catalog_update_product_offering_by_external_id(externalId: str, version: str, body: dict):
-    return await _call("catalog_update_product_offering_by_external_id", body=body, path_params={"externalId": externalId, "version": version})
+    return await _catalog_call("catalog_update_product_offering_by_external_id", body=body, params={"externalId": externalId, "version": version})
 
 # === Purchase Charge Management ===
 @router.post("/purchase/cancelReservation")

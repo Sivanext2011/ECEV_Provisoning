@@ -317,3 +317,127 @@ class BAEClient:
 
 # Singleton
 bae_client = BAEClient()
+
+
+class RMCACatalogClient:
+    """Separate client for RMCA Catalog Integration — uses its own TLS certs."""
+
+    def __init__(self):
+        self._load()
+
+    def _load(self):
+        cfg = load_config()
+        self.env = cfg.get("environment", {})
+        self.auth_cfg = cfg.get("auth", {})
+        self.tls_cfg = cfg.get("rmca_catalog_tls", cfg.get("tls", {}))  # fallback to main tls
+        self.network_cfg = cfg.get("network", {})
+        self.apis = cfg.get("apis", {})
+        self.defaults = cfg.get("defaults", {})
+
+        ca = self.tls_cfg.get("ca_cert_path", "")
+        cert = self.tls_cfg.get("client_cert_path", "")
+        key = self.tls_cfg.get("client_key_path", "")
+        verify_cfg = self.tls_cfg.get("ssl_verify", False)
+
+        has_ca = ca and Path(ca).exists()
+        has_client_cert = cert and key and Path(cert).exists() and Path(key).exists()
+        self._client_cert = (cert, key) if has_client_cert else None
+        if verify_cfg and has_ca:
+            self._verify = ca
+        elif verify_cfg:
+            self._verify = True
+        else:
+            self._verify = False
+
+        self.token_mgr = TokenManager(
+            self.auth_cfg, self.env, self._verify, self._client_cert
+        )
+
+        timeout = self.network_cfg.get("timeout_seconds", 30)
+        proxy = self.network_cfg.get("socks5_proxy", "")
+        socks_enabled = self.network_cfg.get("socks5_enabled", False)
+        if proxy and socks_enabled:
+            import httpx_socks
+            transport = httpx_socks.AsyncProxyTransport.from_url(proxy, verify=self._verify)
+            self._client = httpx.AsyncClient(timeout=timeout, transport=transport, cert=self._client_cert)
+        else:
+            self._client = httpx.AsyncClient(timeout=timeout, verify=self._verify, cert=self._client_cert)
+
+        logger.info(f"RMCACatalogClient loaded: verify={self._verify}, cert={self._client_cert}")
+
+    def reload(self):
+        self._load()
+
+    def _resolve_url(self, url_template: str, params: dict = None) -> str:
+        url = url_template
+        for k, v in self.env.items():
+            url = url.replace(f"{{{{{k}}}}}", v)
+        if params:
+            for k, v in params.items():
+                url = url.replace(f"{{{{{k}}}}}", str(v))
+        return url
+
+    def _headers(self) -> dict:
+        token = self.token_mgr.get_access_token()
+        h = {"Content-Type": "application/json", "Accept": "application/json"}
+        if token:
+            h["Authorization"] = f"Bearer {token}"
+        partition_id = self.defaults.get("partitionId", "")
+        if partition_id:
+            h["ERICSSON.Partition-Id"] = partition_id
+        return h
+
+    async def call(self, api_key: str, params: dict = None, body: dict = None) -> dict:
+        api = self.apis.get(api_key)
+        if not api:
+            raise ValueError(f"Unknown API: {api_key}")
+        method = api["method"]
+        url = self._resolve_url(api["url"], params)
+        headers = self._headers()
+
+        api_logs.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "type": "REQUEST", "method": method, "url": url,
+            "headers": {k: (v[:20] + '...' if k == 'Authorization' else v) for k, v in headers.items()},
+            "request_body": body, "status": "-",
+            "ssl_verify": str(self._verify), "client_cert": str(self._client_cert),
+        })
+
+        try:
+            if method == "GET":
+                r = await self._client.get(url, headers=headers)
+            elif method == "POST":
+                r = await self._client.post(url, json=body, headers=headers)
+            elif method == "PATCH":
+                r = await self._client.patch(url, json=body, headers=headers)
+            elif method == "DELETE":
+                r = await self._client.delete(url, headers=headers)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+        except Exception as e:
+            import traceback
+            err = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
+            api_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
+                             "method": method, "url": url, "status": "ERROR", "response_body": err})
+            raise ConnectionError(f"{method} {url} failed: {type(e).__name__}: {e}")
+
+        api_logs.append({"timestamp": datetime.now(timezone.utc).isoformat(), "type": "RESPONSE",
+                         "method": method, "url": url, "status": r.status_code,
+                         "request_body": body, "response_body": r.text[:4000], "response_headers": dict(r.headers)})
+
+        if r.status_code == 401 and not getattr(self, '_retrying', False):
+            self._retrying = True
+            self.token_mgr.expires_at = 0
+            try:
+                return await self.call(api_key, params=params, body=body)
+            finally:
+                self._retrying = False
+
+        r.raise_for_status()
+        return r.json() if r.text else {}
+
+    async def close(self):
+        await self._client.aclose()
+
+
+rmca_catalog_client = RMCACatalogClient()

@@ -6,6 +6,7 @@
     "ROOT_CPM_INTERNAL": "",
     "ROOT_CPM_BATCH": "",
     "ROOT_RMCA": "https://bss-trf.2l3ccaf.ocs.cht.com.tw",
+    "ROOT_RMCA_CATALOG": "https://eric-bss-rmca-server-catalog-integration-httpproxy.ecevns-oam-haber031.ews.gic.ericsson.se",
     "SITE": ""
   },
   "auth": {
@@ -15,6 +16,12 @@
     "token_endpoint": "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw/auth/realms/master/protocol/openid-connect/token",
     "scope": "openid",
     "grant_type": "password"
+  },
+  "rmca_catalog_tls": {
+    "ssl_verify": false,
+    "ca_cert_path": "",
+    "client_cert_path": "",
+    "client_key_path": ""
   },
   "tls": {
     "ssl_verify": false,
@@ -585,19 +592,19 @@
 
     "catalog_get_product_offering": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering"
+      "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOffering"
     },
     "catalog_create_product_offering": {
       "method": "POST",
-      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering"
+      "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOffering"
     },
     "catalog_update_product_offering_by_id": {
       "method": "PATCH",
-      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOffering/{{id}}/version/{{version}}"
+      "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOffering/{{id}}/version/{{version}}"
     },
     "catalog_update_product_offering_by_external_id": {
       "method": "PATCH",
-      "url": "{{ROOT_BAE}}/bae/bssfProductCatalogIntegration/v1/productOfferingExternalId/{{externalId}}/version/{{version}}"
+      "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOfferingExternalId/{{externalId}}/version/{{version}}"
     },
 
     "purchase_cancel_reservation": {

@@ -41,9 +41,7 @@ function ProvisionWizard() {
   const [selectedPO, setSelectedPO] = useState('')
   const [additionalPOs, setAdditionalPOs] = useState<Array<{ poExtId: string; formVals: any }>>([{ poExtId: '', formVals: {} }])
   const [selectedCommIdSpec, setSelectedCommIdSpec] = useState('')
-  const [selectedSMSCmSpec, setSelectedSMSCmSpec] = useState<any>(null)
-  const [selectedRESTCmSpec, setSelectedRESTCmSpec] = useState<any>(null)
-  const [selectedEMAILCmSpec, setSelectedEMAILCmSpec] = useState<any>(null)
+  const [selectedCmSpecs, setSelectedCmSpecs] = useState<Array<{ specExtId: string; charVals: Record<string, string>; externalId: string }>>([{ specExtId: '', charVals: {}, externalId: '' }])
   const [homeTimeZone, setHomeTimeZone] = useState('Europe/Stockholm')
   const [includeContactMediumAssoc, setIncludeContactMediumAssoc] = useState(true)
   const [cmDefaults, setCmDefaults] = useState<any>({})
@@ -103,12 +101,13 @@ function ProvisionWizard() {
   const getPersonalizableChars = (chars: any[]) =>
     chars.filter((c: any) => (c.externalId || '').trim() !== '' && c.valueRegulator !== 'fixed')
 
-  // Pre-fill default values for a spec's chars into a form section
+  // Pre-fill default values only for mustBePersonalized chars (truly required)
   const prefillDefaults = (chars: any[], section: string) => {
     const updates: any = {}
     for (const c of chars) {
       const key = c.externalId || c.id
-      if (c.defaultValue && !formValues[section]?.[key]) updates[key] = c.defaultValue
+      if (c.valueRegulator === 'mustBePersonalized' && c.defaultValue && !formValues[section]?.[key])
+        updates[key] = c.defaultValue
     }
     if (Object.keys(updates).length)
       setFormValues((prev: any) => ({ ...prev, [section]: { ...prev[section], ...updates } }))
@@ -205,31 +204,66 @@ function ProvisionWizard() {
             </div>
           ))}
           <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setAdditionalPOs([...additionalPOs, { poExtId: '', formVals: {} }])}>+ Add Product Offering</button>
-          <label>SMS Contact Medium Specification
-            <select style={{ width: '100%' }} value={selectedSMSCmSpec?.externalId || ''} onChange={e => setSelectedSMSCmSpec(deriveCmSpec(e.target.value))}>
-              <option value="">-- Select --</option>
-              {cmSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
-            </select>
-          </label>
-          <label>REST Contact Medium Specification
-            <select style={{ width: '100%' }} value={selectedRESTCmSpec?.externalId || ''} onChange={e => setSelectedRESTCmSpec(deriveCmSpec(e.target.value))}>
-              <option value="">-- Select --</option>
-              {cmSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
-            </select>
-          </label>
-          <label>EMAIL Contact Medium Specification
-            <select style={{ width: '100%' }} value={selectedEMAILCmSpec?.externalId || ''} onChange={e => setSelectedEMAILCmSpec(deriveCmSpec(e.target.value))}>
-              <option value="">-- Select --</option>
-              {cmSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
-            </select>
-          </label>
-          <label>Communication Identifier Specification (optional)
-            <select style={{ width: '100%' }} value={selectedCommIdSpec} onChange={e => setSelectedCommIdSpec(e.target.value)}>
-              <option value="">-- None --</option>
-              {commIdSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
-            </select>
-          </label>
-          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec || !selectedSMSCmSpec || !selectedRESTCmSpec || !selectedEMAILCmSpec} onClick={() => setStep(1)}>Next →</button>
+          <label style={{ fontSize: 12, fontWeight: 'bold', marginTop: 4 }}>Contact Mediums</label>
+          {selectedCmSpecs.map((entry, idx) => {
+            const spec = cmSpecs.find((s: any) => s.externalId === entry.specExtId)
+            // Derive channelType from spec name/externalId — not shown to user
+            const deriveChannelType = (s: any) => {
+              const n = (s?.externalId || s?.name || '').toUpperCase()
+              if (n.includes('EMAIL') || n.includes('MAIL')) return 'EMail'
+              if (n.includes('REST') || n.includes('SOCIAL')) return 'socialMedia'
+              if (n.includes('SMS') || n.includes('TEL')) return 'SMS'
+              return ''
+            }
+            const channelTypeChar = spec?.characteristics?.find((c: any) => (c.externalId || '').toLowerCase().includes('channel'))
+            const userChars = spec?.characteristics?.filter((c: any) => !((c.externalId || '').toLowerCase().includes('channel'))) || []
+            const commIdLabel = (() => {
+              const ct = deriveChannelType(spec)
+              if (ct === 'EMail') return 'Email Address'
+              if (ct === 'SMS') return 'Phone Number (MSISDN)'
+              if (ct === 'socialMedia') return 'Social Media ID'
+              return 'Communication ID'
+            })()
+            return (
+              <div key={idx} style={{ border: '1px solid #ddd', borderRadius: 4, padding: 8, display: 'grid', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <select style={{ flex: 1 }} value={entry.specExtId} onChange={e => {
+                    const s = cmSpecs.find((s: any) => s.externalId === e.target.value)
+                    const ct = deriveChannelType(s)
+                    const ctKey = s?.characteristics?.find((c: any) => (c.externalId || '').toLowerCase().includes('channel'))?.externalId
+                    const u = [...selectedCmSpecs]
+                    u[idx] = { specExtId: e.target.value, charVals: ctKey && ct ? { [ctKey]: ct } : {}, externalId: u[idx].externalId }
+                    setSelectedCmSpecs(u)
+                  }}>
+                    <option value="">-- Select Spec --</option>
+                    {cmSpecs.map((s: any) => <option key={s.id} value={s.externalId}>{s.name} ({s.externalId})</option>)}
+                  </select>
+                  {selectedCmSpecs.length > 1 && <button type="button" onClick={() => setSelectedCmSpecs(selectedCmSpecs.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
+                </div>
+                {channelTypeChar && (
+                  <label style={{ fontSize: 12 }}>Channel Type
+                    <input style={{ width: '100%' }} placeholder="e.g. SMS, EMail, socialMedia"
+                      value={entry.charVals[channelTypeChar.externalId] || ''}
+                      onChange={e => { const u = [...selectedCmSpecs]; u[idx] = { ...u[idx], charVals: { ...u[idx].charVals, [channelTypeChar.externalId]: e.target.value } }; setSelectedCmSpecs(u) }} />
+                  </label>
+                )}
+                {userChars.map((c: any) => {
+                  const isCommId = (c.externalId || '').toLowerCase().includes('communication')
+                  const label = isCommId ? commIdLabel : (c.name || c.externalId)
+                  const placeholder = isCommId ? commIdLabel : c.externalId
+                  return (
+                    <label key={c.id} style={{ fontSize: 12 }}>{label}
+                      <input style={{ width: '100%' }} placeholder={placeholder}
+                        value={entry.charVals[c.externalId || c.id] || ''}
+                        onChange={e => { const u = [...selectedCmSpecs]; u[idx] = { ...u[idx], charVals: { ...u[idx].charVals, [c.externalId || c.id]: e.target.value } }; setSelectedCmSpecs(u) }} />
+                    </label>
+                  )
+                })}
+              </div>
+            )
+          })}
+          <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedCmSpecs([...selectedCmSpecs, { specExtId: '', channelType: '', value: '', externalId: '' }])}>+ Add Contact Medium</button>
+          <button disabled={!selectedPartySpec || !selectedCustSpec || !selectedBASpec || !selectedContractSpec} onClick={() => setStep(1)}>Next →</button>
         </div>
       )}
 
@@ -309,18 +343,17 @@ function ProvisionWizard() {
             return (
               <fieldset><legend>Contract & Product</legend>
                 {(() => {
-                  const logicalRS = poResourceSpecs.filter((rs: any) => rs.type === 'LRS')
-                  return logicalRS.length > 0 ? <>
-                    <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Logical Resources (required by Product Offering):</p>
-                    {logicalRS.map((rs: any) => (
+                  return poResourceSpecs.length > 0 ? <>
+                    <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Identification Resources (required by Product Offering):</p>
+                    {poResourceSpecs.map((rs: any) => (
                       <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
-                        {rs.name}{rs.externalId ? ` (${rs.externalId})` : ''} <span style={{ color: 'red' }}>*</span>
+                        {rs.name}{rs.externalId ? ` (${rs.externalId})` : ''}{rs.type ? ` [${rs.type}]` : ''} <span style={{ color: 'red' }}>*</span>
                         <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
                           value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
                           onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
                       </label>
                     ))}
-                  </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No resource specs linked to this PO.</p> : null
+                  </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No identification resources linked to this PO.</p> : null
                 })()}
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>Home Time Zone
                   <input style={{ width: '100%' }} value={homeTimeZone} onChange={e => setHomeTimeZone(e.target.value)} placeholder="e.g. Europe/Stockholm" />
@@ -413,11 +446,15 @@ function ProvisionWizard() {
                 }
                 return cm
               }
-              pb.contactMedium = [
-                buildCm(selectedSMSCmSpec, 'SMS', msisdn, 'SMS'),
-                buildCm(selectedRESTCmSpec, 'socialMedia', msisdn, 'REST'),
-                buildCm(selectedEMAILCmSpec, 'EMail', email || `${msisdn}@placeholder.com`, 'EMAIL'),
-              ]
+              pb.contactMedium = selectedCmSpecs
+                .filter(e => e.specExtId)
+                .map(e => ({
+                  contactMediumSpecExternalId: e.specExtId,
+                  externalId: e.externalId || `cm_${e.specExtId}_${msisdn}`,
+                  characteristic: Object.entries(e.charVals)
+                    .filter(([, v]) => v)
+                    .map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] })),
+                }))
               const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
               if (partyChars.length) pb.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
 
@@ -523,29 +560,19 @@ function ProvisionWizard() {
                 ctb.homeTimeZone = [{ timeZone: homeTimeZone.trim() }]
               }
               if (includeContactMediumAssoc) {
-                ctb.contactMediumAssociation = [
-                  { contactRole: 'Notification', language: 'en', contactMediumExternalId: cmDefaults['SMS_contactMediumExternalId'] || `cm_SMS_${msisdn}`, enabled: true },
-                  { contactRole: 'Notification', language: 'en', contactMediumExternalId: cmDefaults['REST_contactMediumExternalId'] || `cm_REST_${msisdn}`, enabled: true },
-                  { contactRole: 'Notification', language: 'en', contactMediumExternalId: cmDefaults['EMAIL_contactMediumExternalId'] || `cm_EMAIL_${msisdn}`, enabled: true },
-                ]
+                ctb.contactMediumAssociation = selectedCmSpecs
+                  .filter(e => e.specExtId)
+                  .map(e => ({
+                    contactRole: 'Notification',
+                    language: 'en',
+                    contactMediumExternalId: e.externalId || `cm_${e.specExtId}_${msisdn}`,
+                    enabled: true,
+                  }))
               }
-              // Contract chars — all non-resource, non-PO keys
+              // Contract chars — only user-entered values (non-resource, non-PO keys)
               const contractChars = Object.entries(formValues.contract)
                 .filter(([k, v]) => !k.startsWith('_') && (v as string)?.trim())
               if (contractChars.length) ctb.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
-
-              // Also include fixed chars from contract spec that have a defaultValue
-              const cs2 = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
-              if (cs2) {
-                const fixedChars = getPersonalizableChars(cs2.characteristics)
-                  .filter((c: any) => c.valueRegulator === 'fixed' && c.defaultValue)
-                  .filter((c: any) => !contractChars.find(([k]) => k === (c.externalId || c.id)))
-                if (fixedChars.length) {
-                  ctb.characteristic = [...(ctb.characteristic || []),
-                    ...fixedChars.map((c: any) => ({ charSpecExternalId: c.externalId || c.id, value: [{ value: c.defaultValue }] }))
-                  ]
-                }
-              }
 
               setPartyJson(JSON.stringify(pb, null, 2))
               setCustomerJson(JSON.stringify(cb, null, 2))
@@ -1332,6 +1359,52 @@ function OperationsPanel() {
   )
 }
 
+// --- Status badge helper ---
+function StatusBadge({ status }: { status: string }) {
+  const s = (status || '').toLowerCase()
+  const color = s.includes('active') ? '#1a7f37' : s.includes('halt') || s.includes('suspend') ? '#b45309' : s.includes('terminat') ? '#b91c1c' : s.includes('creat') ? '#1d4ed8' : '#555'
+  const bg = s.includes('active') ? '#dcfce7' : s.includes('halt') || s.includes('suspend') ? '#fef3c7' : s.includes('terminat') ? '#fee2e2' : s.includes('creat') ? '#dbeafe' : '#f3f4f6'
+  return <span style={{ fontSize: 11, fontWeight: 600, color, background: bg, border: `1px solid ${color}40`, borderRadius: 10, padding: '1px 8px', whiteSpace: 'nowrap' }}>{status || '—'}</span>
+}
+
+// --- Info row helper ---
+function InfoRow({ label, value }: { label: string; value: any }) {
+  if (!value && value !== 0) return null
+  return (
+    <div style={{ display: 'flex', gap: 8, fontSize: 12, padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
+      <span style={{ color: '#888', minWidth: 160, flexShrink: 0 }}>{label}</span>
+      <span style={{ color: '#222', wordBreak: 'break-all' }}>{String(value)}</span>
+    </div>
+  )
+}
+
+// --- Collapsible card ---
+function Card({ title, icon, color, defaultOpen, rawData, children }: { title: string; icon: string; color: string; defaultOpen?: boolean; rawData?: any; children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(defaultOpen ?? true)
+  const [showRaw, setShowRaw] = React.useState(false)
+  return (
+    <div style={{ border: `1px solid ${color}40`, borderRadius: 8, marginBottom: 10, overflow: 'hidden' }}>
+      <div style={{ background: `${color}15`, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+        onClick={() => setOpen(o => !o)}>
+        <span style={{ fontSize: 16 }}>{icon}</span>
+        <span style={{ fontWeight: 600, fontSize: 13, flex: 1, color: '#222' }}>{title}</span>
+        {rawData !== undefined && open && (
+          <button style={{ fontSize: 10, padding: '1px 6px', background: showRaw ? '#555' : '#eee', color: showRaw ? '#fff' : '#555', border: '1px solid #ccc', borderRadius: 3, cursor: 'pointer' }}
+            onClick={e => { e.stopPropagation(); setShowRaw(r => !r) }}>{showRaw ? 'Visual' : 'Raw JSON'}</button>
+        )}
+        <span style={{ fontSize: 11, color: '#999' }}>{open ? '▲' : '▼'}</span>
+      </div>
+      {open && (
+        <div style={{ padding: '10px 14px' }}>
+          {showRaw
+            ? <pre style={{ fontSize: 11, margin: 0, maxHeight: 400, overflow: 'auto', whiteSpace: 'pre-wrap', background: '#f8f8f8', padding: 8, borderRadius: 4 }}>{JSON.stringify(rawData, null, 2)}</pre>
+            : children}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CRMView() {
   const [searchType, setSearchType] = useState<'msisdn' | 'externalId' | 'id'>('msisdn')
   const [searchValue, setSearchValue] = useState('')
@@ -1341,7 +1414,6 @@ function CRMView() {
   const [customer, setCustomer] = useState<any>(null)
   const [contract, setContract] = useState<any>(null)
   const [balance, setBalance] = useState<any>(null)
-  const [expandedSection, setExpandedSection] = useState<string | null>('tree')
   const [actionMsg, setActionMsg] = useState('')
   const [actionErr, setActionErr] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
@@ -1397,77 +1469,54 @@ function CRMView() {
     setLoading(false)
   }
 
-  const Section = ({ title, icon, id, data }: { title: string; icon: string; id: string; data: any }) => (
-    <div style={{ border: '1px solid #ddd', borderRadius: 6, marginBottom: 10 }}>
-      <div style={{ padding: '8px 12px', background: '#f8f8f8', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-        onClick={() => setExpandedSection(expandedSection === id ? null : id)}>
-        <span><b>{icon} {title}</b></span>
-        <span style={{ fontSize: 12, color: '#888' }}>{expandedSection === id ? '▼' : '▶'}</span>
-      </div>
-      {expandedSection === id && data && (
-        <div style={{ padding: 12 }}>
-          <pre style={{ fontSize: 11, margin: 0, maxHeight: 400, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-      )}
-      {expandedSection === id && !data && <p style={{ padding: 12, color: '#888', margin: 0 }}>No data loaded</p>}
-    </div>
-  )
+  const p0 = Array.isArray(party) ? party[0] : party
+  const cu = Array.isArray(customer) ? customer[0] : customer
+  const c = Array.isArray(contract) ? contract[0] : contract
+  const custExtId = cu?.externalId || ''
+  const contractExtId = c?.externalId || ''
+  const baExtId = cu?.account?.[0]?.externalId || ''
+  const contractStatus = c?.status?.slice(-1)[0]?.status || ''
+  const products = c?.product || []
+  const poList2 = specs?.productOfferings || []
 
-  // Build relationship tree from contract data
-  const buildTree = () => {
-    if (!contract && !customer && !party) return null
-    const c = Array.isArray(contract) ? contract[0] : contract
-    const cu = Array.isArray(customer) ? customer[0] : customer
+  const patchContract = async (body: any) => {
+    setActionLoading(true); setActionMsg(''); setActionErr('')
+    try {
+      const r = await fetch(`${API}/execute/update_contract`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, _params: { customerExternalId: custExtId, contractExternalId: contractExtId } })
+      })
+      if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
+      setActionMsg('✓ Success'); search()
+    } catch (e: any) { setActionErr(e.message) }
+    setActionLoading(false)
+  }
+  const changeContractStatus = (status: string) => patchContract({ status: [{ status }] })
+  const changeProductStatus = (productExtId: string, status: string) => patchContract({ product: [{ externalId: productExtId, status: [{ status }] }] })
+  const purchaseProduct = (poExtId: string) => {
+    if (!poExtId) return
+    const ts = Date.now().toString(36)
+    patchContract({ product: [{ productOfferingExternalId: poExtId, externalId: `${poExtId}-${ts}`, name: poExtId, status: [{ status: 'ProductCreated' }], billingAccountReference: { externalId: baExtId }, baRefForBillCycleAlignedRecurrence: { externalId: baExtId } }] })
+  }
 
+  // Balance bucket bar
+  const BucketBar = ({ bucket }: { bucket: any }) => {
+    const remaining = Number(bucket?.remainingValue ?? bucket?.value ?? bucket?.amount ?? 0)
+    const total = Number(bucket?.totalValue ?? bucket?.maxValue ?? bucket?.capacity ?? remaining)
+    const pct = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 100
+    const unit = bucket?.unitOfMeasure || bucket?.unit || ''
+    const name = bucket?.bucketName || bucket?.name || bucket?.bucketSpecExternalId || 'Bucket'
+    const barColor = pct > 50 ? '#22c55e' : pct > 20 ? '#f59e0b' : '#ef4444'
     return (
-      <div style={{ fontFamily: 'monospace', fontSize: 12, background: '#1a1a2e', color: '#e0e0e0', padding: 16, borderRadius: 8, overflow: 'auto' }}>
-        <div style={{ color: '#64ffda' }}>TMF SID Entity Relationship</div>
-        <div style={{ marginTop: 8 }}>
-          {party && <div>
-            <span style={{ color: '#ff9800' }}>📋 Party</span> [{party?.id || party?.[0]?.id || ''}]
-            <span style={{ color: '#aaa' }}> externalId={party?.externalId || party?.[0]?.externalId || ''}</span>
-          </div>}
-          {cu && <div style={{ marginLeft: 20 }}>
-            <span style={{ color: '#4fc3f7' }}>├── 👤 Customer</span> [{cu?.id || ''}]
-            <span style={{ color: '#aaa' }}> externalId={cu?.externalId || ''} spec={cu?.customerSpecification?.externalId || ''}</span>
-            {cu?.account && cu.account.map((a: any, i: number) => (
-              <div key={i} style={{ marginLeft: 20 }}>
-                <span style={{ color: '#81c784' }}>├── 💳 BillingAccount</span> [{a?.id || ''}]
-                <span style={{ color: '#aaa' }}> externalId={a?.externalId || ''}</span>
-              </div>
-            ))}
-          </div>}
-          {c && <div style={{ marginLeft: 20 }}>
-            <span style={{ color: '#ce93d8' }}>├── 📄 Contract</span> [{c?.id || ''}]
-            <span style={{ color: '#aaa' }}> externalId={c?.externalId || ''} status={c?.status?.slice(-1)[0]?.status || ''}</span>
-            {c?.product && c.product.map((p: any, i: number) => (
-              <div key={i} style={{ marginLeft: 20 }}>
-                <span style={{ color: '#fff176' }}>├── 📦 Product</span> [{p?.id || ''}]
-                <span style={{ color: '#aaa' }}> PO={p?.productOfferingExternalId || ''} status={p?.status?.slice(-1)[0]?.status || ''}</span>
-                {p?.resource && p.resource.map((r: any, j: number) => (
-                  <div key={j} style={{ marginLeft: 20 }}>
-                    <span style={{ color: '#80cbc4' }}>├── 🔗 Resource</span> [{r?.resourceNumber || r?.id || ''}]
-                    <span style={{ color: '#aaa' }}> spec={r?.resourceSpecificationExternalId || ''}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-            {c?.resource && c.resource.map((r: any, i: number) => (
-              <div key={i} style={{ marginLeft: 20 }}>
-                <span style={{ color: '#80cbc4' }}>├── 🔗 Resource</span> [{r?.resourceNumber || r?.id || ''}]
-                <span style={{ color: '#aaa' }}> spec={r?.resourceSpecificationExternalId || ''} externalId={r?.externalId || ''}</span>
-              </div>
-            ))}
-          </div>}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 3 }}>
+          <span style={{ fontWeight: 500 }}>{name}</span>
+          <span style={{ color: '#555' }}>{remaining}{unit ? ' ' + unit : ''}{total !== remaining ? ` / ${total}${unit ? ' ' + unit : ''}` : ''}</span>
         </div>
-        {balance && <div style={{ marginTop: 12, borderTop: '1px solid #333', paddingTop: 8 }}>
-          <span style={{ color: '#ffab40' }}>💰 Balance</span>
-          {Array.isArray(balance) ? balance.map((b: any, i: number) => (
-            <div key={i} style={{ marginLeft: 20, color: '#aaa' }}>
-              {b?.bucketName || b?.name || `Bucket ${i+1}`}: {b?.remainingValue ?? b?.amount ?? JSON.stringify(b)}
-            </div>
-          )) : <pre style={{ marginLeft: 20, color: '#aaa', fontSize: 11 }}>{JSON.stringify(balance, null, 2)}</pre>}
-        </div>}
+        <div style={{ background: '#e5e7eb', borderRadius: 6, height: 10, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, background: barColor, height: '100%', borderRadius: 6, transition: 'width 0.3s' }} />
+        </div>
+        <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{pct}% remaining</div>
       </div>
     )
   }
@@ -1486,110 +1535,155 @@ function CRMView() {
           onKeyDown={e => e.key === 'Enter' && search()} />
         <button onClick={search} disabled={loading || !searchValue}>{loading ? 'Searching...' : 'Search'}</button>
       </div>
-
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {(contract || customer || party) && (
-        <div>
-          <Section title="Entity Relationship Tree" icon="🌳" id="tree" data={null} />
-          {expandedSection === 'tree' && buildTree()}
+      {(c || cu || p0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
-          <div style={{ marginTop: 16 }}>
-            {party && <Section title={`Party ${party?.externalId || party?.[0]?.externalId || ''}`} icon="📋" id="party" data={party} />}
-            {customer && <Section title={`Customer ${(Array.isArray(customer) ? customer[0] : customer)?.externalId || ''}`} icon="👤" id="customer" data={customer} />}
-            {contract && <Section title={`Contract ${(Array.isArray(contract) ? contract[0] : contract)?.externalId || ''}`} icon="📄" id="contract" data={contract} />}
-            {balance && <Section title="Balance" icon="💰" id="balance" data={balance} />}
+          {/* LEFT COLUMN */}
+          <div>
+            {/* Party */}
+            {p0 && (
+              <Card title={`Party — ${p0.givenName || ''} ${p0.familyName || ''}`} icon="👤" color="#f97316" rawData={p0}>
+                <InfoRow label="External ID" value={p0.externalId} />
+                <InfoRow label="Internal ID" value={p0.id} />
+                <InfoRow label="Given Name" value={p0.givenName} />
+                <InfoRow label="Family Name" value={p0.familyName} />
+                <InfoRow label="Spec" value={p0.individualSpecification?.externalId} />
+                <InfoRow label="Status" value={p0.status?.slice(-1)[0]?.status} />
+                {(p0.contactMedium || []).map((cm: any, i: number) => {
+                  const commId = cm.characteristic?.find((ch: any) => (ch.charSpecExternalId || '').toLowerCase().includes('communication'))?.value?.[0]?.value
+                  const chType = cm.characteristic?.find((ch: any) => (ch.charSpecExternalId || '').toLowerCase().includes('channel'))?.value?.[0]?.value
+                  return <InfoRow key={i} label={`Contact Medium ${chType || cm.contactMediumSpecExternalId || i+1}`} value={commId || cm.externalId} />
+                })}
+              </Card>
+            )}
+
+            {/* Customer */}
+            {cu && (
+              <Card title={`Customer — ${cu.externalId || ''}`} icon="🏢" color="#3b82f6" rawData={cu}>
+                <InfoRow label="External ID" value={cu.externalId} />
+                <InfoRow label="Internal ID" value={cu.id} />
+                <InfoRow label="Spec" value={cu.customerSpecification?.externalId} />
+                <InfoRow label="Status" value={cu.status?.slice(-1)[0]?.status} />
+                {(cu.characteristic || []).map((ch: any, i: number) => (
+                  <InfoRow key={i} label={ch.charSpecExternalId || ch.name || `Char ${i+1}`} value={ch.value?.[0]?.value ?? ch.value} />
+                ))}
+                {(cu.account || []).map((a: any, i: number) => (
+                  <div key={i} style={{ marginTop: 8, padding: '6px 8px', background: '#eff6ff', borderRadius: 6, fontSize: 12 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>💳 Billing Account {a.externalId}</div>
+                    <InfoRow label="Internal ID" value={a.id} />
+                    <InfoRow label="Spec" value={a.billingAccountSpecExternalId} />
+                    <InfoRow label="Status" value={a.status?.slice(-1)[0]?.status} />
+                    {a.customerBillCycleSpecification?.map((bcs: any, j: number) => (
+                      <InfoRow key={j} label="Bill Cycle Spec" value={bcs.billCycleSpecExternalId} />
+                    ))}
+                  </div>
+                ))}
+              </Card>
+            )}
           </div>
 
-          {/* Actions Panel */}
-          {contract && (() => {
-            const c = Array.isArray(contract) ? contract[0] : contract
-            const cu = Array.isArray(customer) ? customer[0] : customer
-            const custExtId = cu?.externalId || ''
-            const contractExtId = c?.externalId || ''
-            const baExtId = cu?.account?.[0]?.externalId || ''
-            const contractStatus = c?.status?.slice(-1)[0]?.status || ''
-            const products = c?.product || []
-            const poList2 = specs?.productOfferings || []
+          {/* RIGHT COLUMN */}
+          <div>
+            {/* Contract */}
+            {c && (
+              <Card title={`Contract — ${c.externalId || ''}`} icon="📄" color="#8b5cf6" rawData={c}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <StatusBadge status={contractStatus} />
+                  <span style={{ fontSize: 11, color: '#888' }}>{c.externalId}</span>
+                </div>
+                <InfoRow label="Internal ID" value={c.id} />
+                <InfoRow label="Spec" value={c.contractSpecification?.externalId} />
+                <InfoRow label="Home Time Zone" value={c.homeTimeZone?.[0]?.timeZone} />
+                {(c.characteristic || []).map((ch: any, i: number) => (
+                  <InfoRow key={i} label={ch.charSpecExternalId || `Char ${i+1}`} value={ch.value?.[0]?.value ?? ch.value} />
+                ))}
+                {(c.resource || []).map((r: any, i: number) => (
+                  <InfoRow key={i} label={`Resource (${r.resourceSpecificationExternalId || 'spec'})`} value={r.resourceNumber || r.externalId} />
+                ))}
 
-            const patchContract = async (body: any) => {
-              setActionLoading(true); setActionMsg(''); setActionErr('')
-              try {
-                const r = await fetch(`${API}/execute/update_contract`, {
-                  method: 'POST', headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ ...body, _params: { customerExternalId: custExtId, contractExternalId: contractExtId } })
-                })
-                if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
-                setActionMsg('✓ Success'); search()
-              } catch (e: any) { setActionErr(e.message) }
-              setActionLoading(false)
-            }
-
-            const changeContractStatus = (status: string) => patchContract({ status: [{ status }] })
-
-            const changeProductStatus = (productExtId: string, status: string) => patchContract({
-              product: [{ externalId: productExtId, status: [{ status }] }]
-            })
-
-            const purchaseProduct = (poExtId: string) => {
-              if (!poExtId) return
-              const ts = Date.now().toString(36)
-              patchContract({
-                product: [{
-                  productOfferingExternalId: poExtId,
-                  externalId: `${poExtId}-${ts}`,
-                  name: poExtId,
-                  status: [{ status: 'ProductCreated' }],
-                  billingAccountReference: { externalId: baExtId },
-                  baRefForBillCycleAlignedRecurrence: { externalId: baExtId },
-                }]
-              })
-            }
-
-            return (
-              <div style={{ marginTop: 16 }}>
-                <h3 style={{ margin: '0 0 10px' }}>⚡ Actions</h3>
-                {actionMsg && <p style={{ color: 'green', fontSize: 12 }}>{actionMsg}</p>}
-                {actionErr && <p style={{ color: 'red', fontSize: 12, wordBreak: 'break-all' }}>{actionErr}</p>}
-
-                <fieldset style={{ marginBottom: 12 }}>
-                  <legend><b>Contract Status</b> <span style={{ fontSize: 11, color: '#888' }}>current: {contractStatus}</span></legend>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <button disabled={actionLoading || contractStatus === 'Active'} onClick={() => changeContractStatus('Active')}>Activate</button>
-                    <button disabled={actionLoading || contractStatus === 'Halt'} onClick={() => changeContractStatus('Halt')}>Halt</button>
-                    <button disabled={actionLoading || contractStatus === 'Active'} onClick={() => changeContractStatus('Active')}>Resume</button>
-                    <button disabled={actionLoading || contractStatus === 'Terminated'} onClick={() => changeContractStatus('Terminated')} style={{ color: 'red' }}>Terminate</button>
-                  </div>
-                </fieldset>
-
+                {/* Products */}
                 {products.length > 0 && (
-                  <fieldset style={{ marginBottom: 12 }}>
-                    <legend><b>Product Status</b></legend>
-                    {products.map((p: any) => (
-                      <div key={p.id || p.externalId} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 12, minWidth: 180 }}>{p.productOfferingExternalId || p.name} <span style={{ color: '#888' }}>({p.status?.slice(-1)[0]?.status})</span></span>
-                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductActive')} style={{ fontSize: 11 }}>Activate</button>
-                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductHalt')} style={{ fontSize: 11 }}>Halt</button>
-                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductActive')} style={{ fontSize: 11 }}>Resume</button>
-                        <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductTerminated')} style={{ fontSize: 11, color: 'red' }}>Terminate</button>
-                      </div>
-                    ))}
-                  </fieldset>
-                )}
-
-                <fieldset>
-                  <legend><b>Purchase New Product</b></legend>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <select style={{ flex: 1 }} value={newPO} onChange={e => setNewPO(e.target.value)}>
-                      <option value="">-- Select Product Offering --</option>
-                      {poList2.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
-                    </select>
-                    <button disabled={actionLoading || !newPO} onClick={() => purchaseProduct(newPO)}>Purchase</button>
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>📦 Products ({products.length})</div>
+                    {products.map((p: any, i: number) => {
+                      const pStatus = p.status?.slice(-1)[0]?.status || ''
+                      return (
+                        <div key={i} style={{ border: '1px solid #e9d5ff', borderRadius: 6, padding: '8px 10px', marginBottom: 8, background: '#faf5ff' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, flex: 1 }}>{p.productOfferingExternalId || p.name || p.externalId}</span>
+                            <StatusBadge status={pStatus} />
+                          </div>
+                          <InfoRow label="External ID" value={p.externalId} />
+                          <InfoRow label="Internal ID" value={p.id} />
+                          <InfoRow label="Billing Account" value={p.billingAccountReference?.externalId} />
+                          {(p.resource || []).map((r: any, j: number) => (
+                            <InfoRow key={j} label={`Resource (${r.resourceSpecificationExternalId || 'spec'})`} value={r.resourceNumber || r.externalId} />
+                          ))}
+                          {(p.characteristic || []).map((ch: any, j: number) => (
+                            <InfoRow key={j} label={ch.charSpecExternalId || `Char ${j+1}`} value={ch.value?.[0]?.value ?? ch.value} />
+                          ))}
+                          {/* Product buckets from balance */}
+                          {(() => {
+                            const balArr = Array.isArray(balance) ? balance : (balance ? [balance] : [])
+                            const prodBuckets = balArr.filter((b: any) => b.productExternalId === p.externalId || b.productId === p.id)
+                            return prodBuckets.length > 0 ? (
+                              <div style={{ marginTop: 6 }}>
+                                <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 600, marginBottom: 4 }}>Buckets</div>
+                                {prodBuckets.map((b: any, k: number) => <BucketBar key={k} bucket={b} />)}
+                              </div>
+                            ) : null
+                          })()}
+                          <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
+                            <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductActive')} style={{ fontSize: 10, padding: '2px 6px' }}>Activate</button>
+                            <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductHalt')} style={{ fontSize: 10, padding: '2px 6px' }}>Halt</button>
+                            <button disabled={actionLoading} onClick={() => changeProductStatus(p.externalId, 'ProductTerminated')} style={{ fontSize: 10, padding: '2px 6px', color: 'red' }}>Terminate</button>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                </fieldset>
-              </div>
-            )
-          })()}
+                )}
+              </Card>
+            )}
+
+            {/* Balance — buckets not matched to a product */}
+            {balance && (() => {
+              const balArr = Array.isArray(balance) ? balance : [balance]
+              const unmatched = balArr.filter((b: any) => !b.productExternalId && !b.productId)
+              if (!unmatched.length && !balArr.length) return null
+              const allBuckets = unmatched.length ? unmatched : balArr
+              return (
+                <Card title="Balance" icon="💰" color="#f59e0b" rawData={balance}>
+                  {allBuckets.map((b: any, i: number) => <BucketBar key={i} bucket={b} />)}
+                </Card>
+              )
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      {c && (
+        <div style={{ marginTop: 16, borderTop: '2px solid #eee', paddingTop: 14 }}>
+          <h3 style={{ margin: '0 0 10px', fontSize: 14 }}>⚡ Actions</h3>
+          {actionMsg && <p style={{ color: 'green', fontSize: 12 }}>{actionMsg}</p>}
+          {actionErr && <p style={{ color: 'red', fontSize: 12, wordBreak: 'break-all' }}>{actionErr}</p>}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontSize: 12, color: '#555' }}>Contract:</span>
+            <button disabled={actionLoading || contractStatus === 'Active'} onClick={() => changeContractStatus('Active')}>Activate</button>
+            <button disabled={actionLoading || contractStatus === 'Halt'} onClick={() => changeContractStatus('Halt')}>Halt</button>
+            <button disabled={actionLoading || contractStatus === 'Terminated'} onClick={() => changeContractStatus('Terminated')} style={{ color: 'red' }}>Terminate</button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: '#555' }}>Purchase:</span>
+            <select style={{ flex: 1, maxWidth: 320 }} value={newPO} onChange={e => setNewPO(e.target.value)}>
+              <option value="">-- Select Product Offering --</option>
+              {poList2.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
+            </select>
+            <button disabled={actionLoading || !newPO} onClick={() => purchaseProduct(newPO)}>Purchase</button>
+          </div>
         </div>
       )}
     </div>
@@ -1713,6 +1807,7 @@ function SettingsPanel() {
   const updateEnv = (k: string, v: string) => setConfig({ ...config, environment: { ...config.environment, [k]: v } })
   const updateAuth = (k: string, v: any) => setConfig({ ...config, auth: { ...config.auth, [k]: v } })
   const updateTls = (k: string, v: any) => setConfig({ ...config, tls: { ...config.tls, [k]: v } })
+  const updateCatalogTls = (k: string, v: any) => setConfig({ ...config, rmca_catalog_tls: { ...config.rmca_catalog_tls, [k]: v } })
   const updateNet = (k: string, v: any) => setConfig({ ...config, network: { ...config.network, [k]: v } })
 
   return (
@@ -1739,12 +1834,30 @@ function SettingsPanel() {
         </fieldset>
 
         <fieldset>
-          <legend><b>TLS / mTLS</b></legend>
+          <legend><b>TLS / mTLS (Main BAE)</b></legend>
           <div style={{ display: 'grid', gap: 8 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={config.tls?.ssl_verify || false} onChange={e => updateTls('ssl_verify', e.target.checked)} />Verify SSL</label>
             <label>CA Certificate<CertUpload value={config.tls?.ca_cert_path || ''} onChange={v => updateTls('ca_cert_path', v)} name="ca" /></label>
             <label>Client Certificate<CertUpload value={config.tls?.client_cert_path || ''} onChange={v => updateTls('client_cert_path', v)} name="client_cert" /></label>
             <label>Client Key<CertUpload value={config.tls?.client_key_path || ''} onChange={v => updateTls('client_key_path', v)} name="client_key" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset style={{ borderColor: '#7c3aed' }}>
+          <legend><b style={{ color: '#7c3aed' }}>🗂 RMCA Catalog Integration TLS</b></legend>
+          <p style={{ fontSize: 12, color: '#666', margin: '0 0 8px' }}>
+            Used for <code>eric-bss-rmca-server-catalog-integration-httpproxy</code> — Product Offering Template publish/fetch.
+          </p>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <label>RMCA Catalog URL
+              <input style={{ width: '100%' }} value={config.environment?.ROOT_RMCA_CATALOG || ''} onChange={e => updateEnv('ROOT_RMCA_CATALOG', e.target.value)} placeholder="https://eric-bss-rmca-server-catalog-integration-httpproxy..." />
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={config.rmca_catalog_tls?.ssl_verify || false} onChange={e => updateCatalogTls('ssl_verify', e.target.checked)} />Verify SSL
+            </label>
+            <label>CA Certificate<CertUpload value={config.rmca_catalog_tls?.ca_cert_path || ''} onChange={v => updateCatalogTls('ca_cert_path', v)} name="rmca_catalog_ca" /></label>
+            <label>Client Certificate<CertUpload value={config.rmca_catalog_tls?.client_cert_path || ''} onChange={v => updateCatalogTls('client_cert_path', v)} name="rmca_catalog_cert" /></label>
+            <label>Client Key<CertUpload value={config.rmca_catalog_tls?.client_key_path || ''} onChange={v => updateCatalogTls('client_key_path', v)} name="rmca_catalog_key" /></label>
           </div>
         </fieldset>
 

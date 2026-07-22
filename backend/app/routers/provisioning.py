@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from pathlib import Path
 import httpx
 from ..services.ericsson_client import ericsson_client, load_config, api_logs, CONFIG_PATH
+from ..services.bae_client import rmca_catalog_client
 from ..services.catalog import get_catalog, parse_business_config, reload_catalog
 
 SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
@@ -262,6 +263,8 @@ async def get_settings():
         safe["auth"]["password"] = "***"
     if safe.get("tls", {}).get("client_key_path"):
         safe["tls"]["client_key_path"] = "***"
+    if safe.get("rmca_catalog_tls", {}).get("client_key_path"):
+        safe["rmca_catalog_tls"]["client_key_path"] = "***"
     return safe
 
 
@@ -273,9 +276,12 @@ async def update_settings(body: dict):
         body["auth"]["password"] = existing.get("auth", {}).get("password", "")
     if body.get("tls", {}).get("client_key_path") == "***":
         body["tls"]["client_key_path"] = existing.get("tls", {}).get("client_key_path", "")
+    if body.get("rmca_catalog_tls", {}).get("client_key_path") == "***":
+        body["rmca_catalog_tls"]["client_key_path"] = existing.get("rmca_catalog_tls", {}).get("client_key_path", "")
     with open(CONFIG_PATH, "w") as f:
         json.dump(body, f, indent=2)
     ericsson_client.reinit()
+    rmca_catalog_client.reload()
     return {"status": "ok"}
 
 
