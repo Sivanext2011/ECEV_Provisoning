@@ -684,17 +684,25 @@ function POPublishPanel() {
 
   // Strip read-only fields from pricing rows — schema uses additionalProperties:false
   const sanitizePricingRows = (rows: any[]): any[] => rows.map((row) => ({
-    action: (row.action || []).map((act: any) => ({
-      ...(act.externalId ? { actionRef: { externalId: act.externalId } } : {}),
-      actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => ({
-        ...(acsu.externalId ? { actionCharacteristicSpecificationUseRef: { externalId: acsu.externalId } } : {}),
-        actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
-          ...(vu.value !== undefined && { value: vu.value }),
-          ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
-          ...(vu.valueReference && { valueReference: vu.valueReference }),
-        })),
-      })),
-    })),
+    action: (row.action || []).map((act: any) => {
+      // actionRef externalId may be nested under actionRef or flat on act
+      const actionExtId = act.actionRef?.externalId || act.externalId
+      return {
+        ...(actionExtId ? { actionRef: { externalId: actionExtId } } : {}),
+        actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => {
+          // acsuRef externalId may be nested under actionCharacteristicSpecificationUseRef or flat on acsu
+          const acsuExtId = acsu.actionCharacteristicSpecificationUseRef?.externalId || acsu.externalId
+          return {
+            ...(acsuExtId ? { actionCharacteristicSpecificationUseRef: { externalId: acsuExtId } } : {}),
+            actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
+              ...(vu.value !== undefined && { value: vu.value }),
+              ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
+              ...(vu.valueReference && { valueReference: vu.valueReference }),
+            })),
+          }
+        }),
+      }
+    }),
   }))
 
   // Deep-strip 'id' from any object except productOfferingTemplateRef
@@ -913,13 +921,13 @@ function POPublishPanel() {
                           {(row.action || []).map((act: any, ai: number) => (
                             <div key={ai} style={{ marginBottom: 4, paddingLeft: 8, borderLeft: '2px solid #d1d5db' }}>
                               <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>
-                                Action: <b>{act.name || act.externalId || act.id || `#${ai+1}`}</b>
+                                Action: <b>{act.actionRef?.externalId || act.name || act.externalId || `#${ai+1}`}</b>
                                 {act.type && <span style={{ marginLeft: 6, color: '#9ca3af' }}>[{act.type}]</span>}
                               </div>
                               {(act.actionCharacteristicSpecificationUse || []).map((acsu: any, ci: number) => (
                                 <div key={ci} style={{ marginBottom: 4 }}>
                                   <div style={{ fontSize: 11, color: '#374151', marginBottom: 2 }}>
-                                    <b>{acsu.name || acsu.externalId || acsu.id}</b>
+                                    <b>{acsu.actionCharacteristicSpecificationUseRef?.externalId || acsu.name || acsu.externalId}</b>
                                     {acsu.measure && <span style={{ color: '#9ca3af', marginLeft: 4 }}>({acsu.measure})</span>}
                                     {acsu.actionCharacteristicSpecificationType && <span style={{ color: '#6b7280', marginLeft: 4 }}>[{acsu.actionCharacteristicSpecificationType}]</span>}
                                   </div>
