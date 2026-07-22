@@ -380,7 +380,10 @@ async def upload_cert(file: UploadFile = File(...), name: str = "cert"):
     """Upload a cert/key file to config/certs/ directory."""
     certs_dir = Path(__file__).parent.parent.parent.parent / "config" / "certs"
     certs_dir.mkdir(parents=True, exist_ok=True)
-    dest = certs_dir / file.filename
+    # Prefix filename with name to avoid collisions between sections (e.g. rmca_ca.crt vs ca.crt)
+    suffix = Path(file.filename).suffix
+    safe_name = f"{name}{suffix}" if name != "cert" else file.filename
+    dest = certs_dir / safe_name
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Empty file")
