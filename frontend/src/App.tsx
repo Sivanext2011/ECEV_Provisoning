@@ -764,10 +764,12 @@ function POPublishPanel() {
       }),
       productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
         const ov = priceOverrides[p.externalId] || {}
-        const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
-        const ref: any = {}
-        if (effectiveExtId) ref.externalId = effectiveExtId
-        if (p.id) ref.id = p.id
+        const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
+        // RMCA matches policy refs by template price internal id for CREATE,
+        // and by externalId for UPDATE
+        const ref: any = isCreate
+          ? { id: p.id }  // must reference template price id so RMCA can correlate
+          : { externalId: p.externalId }
         return { productOfferingPriceRef: [ref] }
       }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
