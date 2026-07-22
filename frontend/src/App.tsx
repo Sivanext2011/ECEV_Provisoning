@@ -717,8 +717,8 @@ function POPublishPanel() {
         }
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
         if (ov.operation === 'UPDATE') {
-          const refExtId = ov.priceRefExternalId ?? p.productOfferingPriceRef?.externalId
-          const refId = ov.priceRefId ?? p.productOfferingPriceRef?.id
+          const refExtId = p.externalId
+          const refId = p.id
           if (refExtId || refId) entry.productOfferingPriceRef = { ...(refExtId && { externalId: refExtId }), ...(refId && { id: refId }) }
         }
         if (ov.pricingRows?.length)
@@ -863,20 +863,9 @@ function POPublishPanel() {
                       placeholder={p.partyRoleInvolvementGroupRef || 'e.g. PRIG_001'} />
                   </label>
                   {(priceOverrides[p.externalId]?.operation === 'UPDATE') && (
-                    <>
-                      <label style={{ fontSize: 12 }}>Price Ref — ExternalId (UPDATE target)
-                        <input style={{ width: '100%' }}
-                          value={priceOverrides[p.externalId]?.priceRefExternalId ?? (p.productOfferingPriceRef?.externalId || '')}
-                          onChange={e => setPriceOv(p.externalId, 'priceRefExternalId', e.target.value)}
-                          placeholder={p.productOfferingPriceRef?.externalId || p.externalId} />
-                      </label>
-                      <label style={{ fontSize: 12 }}>Price Ref — Id (UPDATE target)
-                        <input style={{ width: '100%' }}
-                          value={priceOverrides[p.externalId]?.priceRefId ?? (p.productOfferingPriceRef?.id || '')}
-                          onChange={e => setPriceOv(p.externalId, 'priceRefId', e.target.value)}
-                          placeholder={p.productOfferingPriceRef?.id || ''} />
-                      </label>
-                    </>
+                    <p style={{ fontSize: 11, color: '#888', margin: '2px 0 0' }}>
+                      Price Ref: <b>{p.externalId}</b>{p.id ? ` · ${p.id}` : ''}
+                    </p>
                   )}
                 </div>
                 {p.scheduleDefinitionRef && (
@@ -910,7 +899,18 @@ function POPublishPanel() {
                                     {acsu.measure && <span style={{ color: '#9ca3af', marginLeft: 4 }}>({acsu.measure})</span>}
                                     {acsu.actionCharacteristicSpecificationType && <span style={{ color: '#6b7280', marginLeft: 4 }}>[{acsu.actionCharacteristicSpecificationType}]</span>}
                                   </div>
-                                  {(acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any, vi: number) => (
+                                  {(acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any, vi: number) => {
+                                    const specType = acsu.actionCharacteristicSpecificationType || ''
+                                    const measure = acsu.measure || ''
+                                    const unitOptions: string[] = (() => {
+                                      if (specType === 'ChargingInterval' || measure === 'Data' || specType === 'ValueWithUoM') return ['kilobyte','kibibyte','megabyte','mebibyte','gigabyte','gibibyte','terabyte','tebibyte']
+                                      if (specType === 'Consumption') return ['kilobyte','kibibyte','megabyte','mebibyte','gigabyte','gibibyte','terabyte','tebibyte','second','minute','hour']
+                                      if (specType === 'PriceWithUoM' || measure === 'TWD' || measure === 'USD' || measure === 'EUR') return ['TWD','USD','EUR','GBP','JPY','SGD','AUD','CAD']
+                                      if (vu.unitOfMeasure) return [vu.unitOfMeasure]
+                                      return []
+                                    })()
+                                    const hasUnit = vu.unitOfMeasure !== undefined
+                                    return (
                                     <div key={vi} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                                       <input style={{ flex: 2, fontSize: 12 }} placeholder="value" value={vu.value ?? ''}
                                         onChange={e => {
@@ -918,14 +918,26 @@ function POPublishPanel() {
                                           updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].value = e.target.value
                                           setPriceOv(p.externalId, 'pricingRows', updated)
                                         }} />
-                                      <input style={{ flex: 1, fontSize: 12 }} placeholder="unit (e.g. MB)" value={vu.unitOfMeasure ?? ''}
-                                        onChange={e => {
-                                          const updated = JSON.parse(JSON.stringify(rows))
-                                          updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].unitOfMeasure = e.target.value
-                                          setPriceOv(p.externalId, 'pricingRows', updated)
-                                        }} />
+                                      {hasUnit && unitOptions.length > 0 ? (
+                                        <select style={{ flex: 1, fontSize: 12 }} value={vu.unitOfMeasure ?? ''}
+                                          onChange={e => {
+                                            const updated = JSON.parse(JSON.stringify(rows))
+                                            updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].unitOfMeasure = e.target.value
+                                            setPriceOv(p.externalId, 'pricingRows', updated)
+                                          }}>
+                                          {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
+                                        </select>
+                                      ) : hasUnit ? (
+                                        <input style={{ flex: 1, fontSize: 12 }} placeholder="unit" value={vu.unitOfMeasure ?? ''}
+                                          onChange={e => {
+                                            const updated = JSON.parse(JSON.stringify(rows))
+                                            updated[ri].action[ai].actionCharacteristicSpecificationUse[ci].actionCharacteristicSpecificationValueUse[vi].unitOfMeasure = e.target.value
+                                            setPriceOv(p.externalId, 'pricingRows', updated)
+                                          }} />
+                                      ) : null}
                                     </div>
-                                  ))}
+                                    )
+                                  })}
                                 </div>
                               ))}
                             </div>
