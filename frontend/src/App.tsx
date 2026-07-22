@@ -716,14 +716,14 @@ function POPublishPanel() {
     }
   })
 
-  // Deep-strip 'id' from any object except productOfferingTemplateRef and valueReference
+  // Deep-strip 'id' from any object except specific ref fields that need id preserved
   const stripIds = (obj: any, keepId = false): any => {
     if (Array.isArray(obj)) return obj.map(i => stripIds(i))
     if (obj && typeof obj === 'object') {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
