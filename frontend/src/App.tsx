@@ -723,7 +723,7 @@ function POPublishPanel() {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
@@ -762,12 +762,9 @@ function POPublishPanel() {
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
-      productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
-        return {
-          priceId: p.id,
-          productOfferingPriceRef: [{ externalId: p.externalId }]
-        }
-      }),
+      productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => ({
+        productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }]
+      })),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
