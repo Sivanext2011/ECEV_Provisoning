@@ -705,14 +705,14 @@ function POPublishPanel() {
     }),
   }))
 
-  // Deep-strip 'id' from any object except productOfferingTemplateRef
-  const stripIds = (obj: any, keepRoot = false): any => {
+  // Deep-strip 'id' from any object except productOfferingTemplateRef and valueReference
+  const stripIds = (obj: any, keepId = false): any => {
     if (Array.isArray(obj)) return obj.map(i => stripIds(i))
     if (obj && typeof obj === 'object') {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
-        if (k === 'id' && !keepRoot) continue
-        if (k === 'productOfferingTemplateRef') { out[k] = v; continue }
+        if (k === 'id' && !keepId) continue
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
