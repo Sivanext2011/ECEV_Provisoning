@@ -887,8 +887,7 @@ function POPublishPanel() {
                   )
                 })()}
               </div>
-            )}
-          })}
+            ))}
           </fieldset>
 
           {(template.bucketSpecification || []).length > 0 && (
