@@ -766,7 +766,7 @@ function POPublishPanel() {
         const ov = priceOverrides[p.externalId] || {}
         const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
         return isCreate
-          ? { priceId: null }
+          ? { priceId: null, productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
           : { productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
       }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
