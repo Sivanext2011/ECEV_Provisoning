@@ -763,11 +763,9 @@ function POPublishPanel() {
         return entry
       }),
       productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
-        const ov = priceOverrides[p.externalId] || {}
-        const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
         return {
           priceId: p.id,
-          productOfferingPriceRef: [{ externalId: effectiveExtId }]
+          productOfferingPriceRef: [{ externalId: p.externalId }]
         }
       }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
