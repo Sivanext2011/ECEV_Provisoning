@@ -685,11 +685,11 @@ function POPublishPanel() {
   // Strip read-only fields from pricing rows — schema uses additionalProperties:false
   const sanitizePricingRows = (rows: any[]): any[] => rows.map(row => ({
     ...(row.name && { name: row.name }),
-    ...(row.externalId || row.id ? { productOfferingPriceRowRef: { ...(row.id && { id: row.id }), ...(row.externalId && { externalId: row.externalId }) } } : {}),
+    ...(row.externalId ? { productOfferingPriceRowRef: { externalId: row.externalId } } : {}),
     action: (row.action || []).map((act: any) => ({
-      ...(act.id || act.externalId ? { actionRef: { ...(act.id && { id: act.id }), ...(act.externalId && { externalId: act.externalId }) } } : {}),
+      ...(act.externalId ? { actionRef: { externalId: act.externalId } } : {}),
       actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => ({
-        ...(acsu.id || acsu.externalId ? { actionCharacteristicSpecificationUseRef: { ...(acsu.id && { id: acsu.id }), ...(acsu.externalId && { externalId: acsu.externalId }) } } : {}),
+        ...(acsu.externalId ? { actionCharacteristicSpecificationUseRef: { externalId: acsu.externalId } } : {}),
         actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
           ...(vu.value !== undefined && { value: vu.value }),
           ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
@@ -718,8 +718,7 @@ function POPublishPanel() {
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
         if (ov.operation === 'UPDATE') {
           const refExtId = p.externalId
-          const refId = p.id
-          if (refExtId || refId) entry.productOfferingPriceRef = { ...(refExtId && { externalId: refExtId }), ...(refId && { id: refId }) }
+          if (refExtId) entry.productOfferingPriceRef = { externalId: refExtId }
         }
         if (ov.pricingRows?.length)
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
@@ -727,7 +726,6 @@ function POPublishPanel() {
       }),
       productOfferingPolicyRef: (template.productOfferingPolicyRef || []).map((pol: any) => ({
         ...(pol.productOfferingPriceRef?.length && { productOfferingPriceRef: pol.productOfferingPriceRef.map((ref: any) => ({
-          ...(ref.id && { id: ref.id }),
           ...(ref.externalId && { externalId: ref.externalId }),
         })) }),
       })).filter((pol: any) => pol.productOfferingPriceRef?.length),
