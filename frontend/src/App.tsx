@@ -683,27 +683,30 @@ function POPublishPanel() {
   }
 
   // Strip read-only fields from pricing rows — schema uses additionalProperties:false
-  const sanitizePricingRows = (rows: any[]): any[] => rows.map((row) => ({
-    action: (row.action || []).map((act: any) => {
-      // actionRef externalId may be nested under actionRef or flat on act
-      const actionExtId = act.actionRef?.externalId || act.externalId
-      return {
-        ...(actionExtId ? { actionRef: { externalId: actionExtId } } : {}),
-        actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => {
-          // acsuRef externalId may be nested under actionCharacteristicSpecificationUseRef or flat on acsu
-          const acsuExtId = acsu.actionCharacteristicSpecificationUseRef?.externalId || acsu.externalId
-          return {
-            ...(acsuExtId ? { actionCharacteristicSpecificationUseRef: { externalId: acsuExtId } } : {}),
-            actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
-              ...(vu.value !== undefined && { value: vu.value }),
-              ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
-              ...(vu.valueReference && { valueReference: vu.valueReference }),
-            })),
-          }
-        }),
-      }
-    }),
-  }))
+  const sanitizePricingRows = (rows: any[]): any[] => rows.map((row) => {
+    // Identify row by its internal id (rows share the same externalId "ActionRow1")
+    const rowId = row.id
+    return {
+      ...(rowId ? { productOfferingPriceRowRef: { id: rowId } } : {}),
+      action: (row.action || []).map((act: any) => {
+        const actionExtId = act.actionRef?.externalId || act.externalId
+        return {
+          ...(actionExtId ? { actionRef: { externalId: actionExtId } } : {}),
+          actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => {
+            const acsuExtId = acsu.actionCharacteristicSpecificationUseRef?.externalId || acsu.externalId
+            return {
+              ...(acsuExtId ? { actionCharacteristicSpecificationUseRef: { externalId: acsuExtId } } : {}),
+              actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
+                ...(vu.value !== undefined && { value: vu.value }),
+                ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
+                ...(vu.valueReference && { valueReference: vu.valueReference }),
+              })),
+            }
+          }),
+        }
+      }),
+    }
+  })
 
   // Deep-strip 'id' from any object except productOfferingTemplateRef and valueReference
   const stripIds = (obj: any, keepId = false): any => {
@@ -712,7 +715,7 @@ function POPublishPanel() {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
