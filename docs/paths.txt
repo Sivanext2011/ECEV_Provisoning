@@ -1,0 +1,15 @@
+38   /bssfProductCatalogIntegration/v1/productOffering:
+39     post:
+42       summary: "Create a ProductOffering based on a ProductOfferingTemplate."
+44       operationId: "createProductOfferingFromTemplateBssfProductCatalogIntegrationV1ProductOffering"
+181     get:
+184       summary: "Retrieves ProductOffering information."
+186       operationId: "readProductOfferingBssfProductCatalogIntegrationV1ProductOffering"
+330   /bssfProductCatalogIntegration/v1/productOffering/{id}/version/{version}:
+331     patch:
+334       summary: "Update a product offering."
+336       operationId: "updateProductOfferingBssfProductCatalogIntegrationV1ProductOfferingVersion"
+490   /bssfProductCatalogIntegration/v1/productOfferingExternalId/{externalId}/version/{version}:
+491     patch:
+494       summary: "Update a product offering."
+496       operationId: "updateProductOfferingBssfProductCatalogIntegrationV1ProductOfferingExternalIdVersion"
