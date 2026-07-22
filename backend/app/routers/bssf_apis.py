@@ -328,6 +328,10 @@ async def catalog_get_product_offering(id: str = None, externalId: str = None, t
     if type: q["type"] = type
     return await _catalog_call("catalog_get_product_offering", params=q)
 
+@router.get("/catalog/productOffering/list")
+async def catalog_list_product_offerings(type: str = "TEMPLATE"):
+    return await _catalog_call("catalog_get_product_offering", params={"type": type})
+
 @router.post("/catalog/productOffering")
 async def catalog_create_product_offering(body: dict):
     return await _catalog_call("catalog_create_product_offering", body=body)
