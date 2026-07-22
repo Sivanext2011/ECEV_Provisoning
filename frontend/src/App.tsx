@@ -757,6 +757,7 @@ function POPublishPanel() {
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
         // Always include productOfferingPriceRef — required by RMCA for both UPDATE and CREATE
         if (p.externalId) entry.productOfferingPriceRef = { externalId: p.externalId }
+        else if (p.id) entry.productOfferingPriceRef = { id: p.id }
         if (ov.pricingRows?.length)
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
@@ -764,7 +765,10 @@ function POPublishPanel() {
       productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
         const ov = priceOverrides[p.externalId] || {}
         const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
-        return { productOfferingPriceRef: [{ externalId: effectiveExtId }] }
+        const ref: any = {}
+        if (effectiveExtId) ref.externalId = effectiveExtId
+        if (p.id) ref.id = p.id
+        return { productOfferingPriceRef: [ref] }
       }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
