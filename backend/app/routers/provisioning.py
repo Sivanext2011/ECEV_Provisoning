@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pathlib import Path
 import httpx
 from ..services.ericsson_client import ericsson_client, load_config, api_logs, CONFIG_PATH
@@ -376,7 +376,7 @@ async def fetch_specs_from_bssf():
 
 # === Cert Upload ===
 @router.post("/certs/upload")
-async def upload_cert(file: UploadFile = File(...), name: str = "cert"):
+async def upload_cert(file: UploadFile = File(...), name: str = Form("cert")):
     """Upload a cert/key file to config/certs/ directory."""
     certs_dir = Path(__file__).parent.parent.parent.parent / "config" / "certs"
     certs_dir.mkdir(parents=True, exist_ok=True)
