@@ -682,6 +682,23 @@ function POPublishPanel() {
     setFetchLoading(false)
   }
 
+  // Strip read-only fields from pricing rows — schema uses additionalProperties:false
+  const sanitizePricingRows = (rows: any[]): any[] => rows.map(row => ({
+    ...(row.name && { name: row.name }),
+    ...(row.externalId || row.id ? { productOfferingPriceRowRef: { ...(row.id && { id: row.id }), ...(row.externalId && { externalId: row.externalId }) } } : {}),
+    action: (row.action || []).map((act: any) => ({
+      ...(act.id || act.externalId ? { actionRef: { ...(act.id && { id: act.id }), ...(act.externalId && { externalId: act.externalId }) } } : {}),
+      actionCharacteristicSpecificationUse: (act.actionCharacteristicSpecificationUse || []).map((acsu: any) => ({
+        ...(acsu.id || acsu.externalId ? { actionCharacteristicSpecificationUseRef: { ...(acsu.id && { id: acsu.id }), ...(acsu.externalId && { externalId: acsu.externalId }) } } : {}),
+        actionCharacteristicSpecificationValueUse: (acsu.actionCharacteristicSpecificationValueUse || []).map((vu: any) => ({
+          ...(vu.value !== undefined && { value: vu.value }),
+          ...(vu.unitOfMeasure && { unitOfMeasure: vu.unitOfMeasure }),
+          ...(vu.valueReference && { valueReference: vu.valueReference }),
+        })),
+      })),
+    })),
+  }))
+
   // Build the create request body from form
   const buildBody = (): any => {
     if (!template) return {}
@@ -705,7 +722,7 @@ function POPublishPanel() {
           if (refExtId || refId) entry.productOfferingPriceRef = { ...(refExtId && { externalId: refExtId }), ...(refId && { id: refId }) }
         }
         if (ov.pricingRows?.length)
-          entry.pricingLogicAlgorithm = { productOfferingPriceRow: ov.pricingRows }
+          entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
       productOfferingPolicyRef: template.productOfferingPolicyRef || [],
