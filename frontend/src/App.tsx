@@ -699,6 +699,21 @@ function POPublishPanel() {
     })),
   }))
 
+  // Deep-strip 'id' from any object except productOfferingTemplateRef
+  const stripIds = (obj: any, keepRoot = false): any => {
+    if (Array.isArray(obj)) return obj.map(i => stripIds(i))
+    if (obj && typeof obj === 'object') {
+      const out: any = {}
+      for (const [k, v] of Object.entries(obj)) {
+        if (k === 'id' && !keepRoot) continue
+        if (k === 'productOfferingTemplateRef') { out[k] = v; continue }
+        out[k] = stripIds(v)
+      }
+      return out
+    }
+    return obj
+  }
+
   // Build the create request body from form
   const buildBody = (): any => {
     if (!template) return {}
@@ -713,7 +728,13 @@ function POPublishPanel() {
           externalId: p.externalId,
           name: ov.name || p.name || null,
           operation: ov.operation || 'UPDATE',
-          productOfferingPriceRelationship: p.productOfferingPriceRelationship || [],
+          productOfferingPriceRelationship: (p.productOfferingPriceRelationship || []).map((rel: any) => ({
+            ...(rel.externalId && { externalId: rel.externalId }),
+            ...(rel.type && { type: rel.type }),
+            ...(rel.productOfferingPriceRef && { productOfferingPriceRef: {
+              ...(rel.productOfferingPriceRef.externalId && { externalId: rel.productOfferingPriceRef.externalId }),
+            }}),
+          })),
         }
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
         if (ov.operation === 'UPDATE') {
@@ -752,7 +773,7 @@ function POPublishPanel() {
     setLoading(true); setError(''); setResult(null)
     try {
       const r = await fetch(`${API}/catalog/productOffering`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildBody())
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(stripIds(buildBody()))
       })
       if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`)
       setResult(await r.json())
@@ -764,7 +785,7 @@ function POPublishPanel() {
     if (!updateExtId || !updateVersion) { setError('External ID and Version required for update'); return }
     setLoading(true); setError(''); setResult(null)
     try {
-      const body = buildBody()
+      const body = stripIds(buildBody())
       const r = await fetch(`${API}/catalog/productOffering/externalId/${encodeURIComponent(updateExtId)}/version/${encodeURIComponent(updateVersion)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
       })
@@ -1784,25 +1805,21 @@ function CRMView() {
   }
 
   // Flatten balance response into bucket list regardless of nesting shape
-  const flattenBuckets = (data: any): any[] => {
-    if (!data) return []
+  const flattenBuckets = (data: any): { billing: any[], products: Record<string, any[]> } => {
+    const billing: any[] = []
+    const products: Record<string, any[]> = {}
+    if (!data) return { billing, products }
     const arr = Array.isArray(data) ? data : [data]
-    const result: any[] = []
     for (const item of arr) {
-      // Shape: { billingAccount: [{ bucket: [...] }] }
-      if (item.billingAccount) {
-        for (const ba of item.billingAccount) {
-          for (const b of (ba.bucket || [])) result.push({ ...b, _baExternalId: ba.externalId, _baId: ba.id })
-        }
+      for (const ba of (item.billingAccount || [])) {
+        for (const b of (ba.bucket || [])) billing.push({ ...b, _baExternalId: ba.externalId })
       }
-      // Shape: { bucket: [...] } or flat bucket object
-      else if (item.bucket) {
-        for (const b of item.bucket) result.push(b)
-      } else if (item.bucketSpecExternalId || item.bucketSpecId) {
-        result.push(item)
+      for (const prod of (item.product || [])) {
+        const key = prod.externalId || prod.id
+        if (key) products[key] = (prod.bucket || []).map((b: any) => ({ ...b, _productExternalId: key }))
       }
     }
-    return result
+    return { billing, products }
   }
 
   const fmtDate = (dt: string) => {
@@ -1810,23 +1827,41 @@ function CRMView() {
     return dt.replace('T', ' ').slice(0, 16) + ' UTC'
   }
 
-  // Balance bucket card
   const BucketCard = ({ bucket }: { bucket: any }) => {
-    const amount = Number(bucket?.amount?.number ?? bucket?.remainingValue ?? bucket?.value ?? 0)
+    const rawAmount = Number(bucket?.amount?.number ?? 0)
     const decPlaces = Number(bucket?.amount?.decimalPlaces ?? 0)
-    const reserved = Number(bucket?.reservedAmount?.number ?? 0)
-    const displayAmount = decPlaces > 0 ? (amount / Math.pow(10, decPlaces)).toFixed(2) : amount
-    const displayReserved = decPlaces > 0 ? (reserved / Math.pow(10, decPlaces)).toFixed(2) : reserved
-    const unit = bucket?.unitOfMeasure || ''
+    const rawReserved = Number(bucket?.reservedAmount?.number ?? 0)
+    const unit = (bucket?.unitOfMeasure || '').toLowerCase()
+    // For bytes, show human-readable
+    const fmtBytes = (n: number) => {
+      if (n >= 1073741824) return `${(n / 1073741824).toFixed(2)} GB`
+      if (n >= 1048576) return `${(n / 1048576).toFixed(2)} MB`
+      if (n >= 1024) return `${(n / 1024).toFixed(2)} KB`
+      return `${n} B`
+    }
+    const fmtAmount = (n: number) => {
+      if (unit === 'byte' || unit === 'bytes') return fmtBytes(n)
+      const scaled = decPlaces > 0 ? n / Math.pow(10, decPlaces) : n
+      return `${scaled.toFixed(decPlaces > 0 ? 2 : 0)}${unit ? ' ' + bucket.unitOfMeasure : ''}`
+    }
+    // Pick active valueContainer (current time within validFor)
+    const activeContainer = (bucket?.valueContainer || []).find((vc: any) => {
+      const s = vc.validFor?.startDateTime
+      const e = vc.validFor?.endDateTime
+      const now = Date.now()
+      const after = s && !s.startsWith('0001') ? new Date(s).getTime() <= now : true
+      const before = e && !e.startsWith('9999') ? new Date(e).getTime() >= now : true
+      return after && before && Number(vc.amount?.number) > 0
+    })
+    const displayAmount = activeContainer ? fmtAmount(Number(activeContainer.amount.number)) : fmtAmount(rawAmount)
     const name = bucket?.bucketSpecExternalId || bucket?.bucketName || bucket?.name || 'Bucket'
     const start = fmtDate(bucket?.validFor?.startDateTime)
     const end = fmtDate(bucket?.validFor?.endDateTime)
     return (
       <div style={{ border: '1px solid #fde68a', borderRadius: 6, padding: '8px 10px', marginBottom: 8, background: '#fffbeb' }}>
         <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>{name}</div>
-        <InfoRow label="Amount" value={`${displayAmount}${unit ? ' ' + unit : ''}`} />
-        {reserved > 0 && <InfoRow label="Reserved" value={`${displayReserved}${unit ? ' ' + unit : ''}`} />}
-        {bucket?.bucketSpecId && <InfoRow label="Spec ID" value={bucket.bucketSpecId} />}
+        <InfoRow label="Amount" value={displayAmount} />
+        {rawReserved > 0 && <InfoRow label="Reserved" value={fmtAmount(rawReserved)} />}
         {bucket?._baExternalId && <InfoRow label="Billing Account" value={bucket._baExternalId} />}
         {start && <InfoRow label="Valid From" value={start} />}
         {end && <InfoRow label="Valid To" value={end} />}
@@ -1947,12 +1982,12 @@ function CRMView() {
                           ))}
                           {/* Product buckets from balance */}
                           {(() => {
-                            const buckets = flattenBuckets(balance)
-                            const prodBuckets = buckets.filter((b: any) => b.productExternalId === p.externalId || b.productId === p.id)
-                            return prodBuckets.length > 0 ? (
+                            const { products: prodBucketMap } = flattenBuckets(balance)
+                            const buckets = prodBucketMap[p.externalId] || prodBucketMap[p.id] || []
+                            return buckets.length > 0 ? (
                               <div style={{ marginTop: 6 }}>
                                 <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 600, marginBottom: 4 }}>Buckets</div>
-                                {prodBuckets.map((b: any, k: number) => <BucketCard key={k} bucket={b} />)}
+                                {buckets.map((b: any, k: number) => <BucketCard key={k} bucket={b} />)}
                               </div>
                             ) : null
                           })()}
@@ -1969,13 +2004,13 @@ function CRMView() {
               </Card>
             )}
 
-            {/* Balance — all buckets as cards */}
+            {/* Balance — billing account buckets */}
             {balance && (() => {
-              const buckets = flattenBuckets(balance)
-              if (!buckets.length) return null
+              const { billing } = flattenBuckets(balance)
+              if (!billing.length) return null
               return (
-                <Card title={`Balance (${buckets.length} bucket${buckets.length !== 1 ? 's' : ''})`} icon="💰" color="#f59e0b" rawData={balance}>
-                  {buckets.map((b: any, i: number) => <BucketCard key={i} bucket={b} />)}
+                <Card title={`Balance — Billing (${billing.length} bucket${billing.length !== 1 ? 's' : ''})`} icon="💰" color="#f59e0b" rawData={balance}>
+                  {billing.map((b: any, i: number) => <BucketCard key={i} bucket={b} />)}
                 </Card>
               )
             })()}
