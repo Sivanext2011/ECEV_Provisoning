@@ -762,22 +762,11 @@ function POPublishPanel() {
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
-      // Only include productOfferingPolicyRef when there are UPDATE prices.
-      // For CREATE-only scenarios RMCA derives policy refs from the template internally.
-      ...(() => {
-        const prices = template.productOfferingPrice || []
-        const hasUpdate = prices.some((p: any) => (priceOverrides[p.externalId]?.operation || 'UPDATE') === 'UPDATE')
-        if (!hasUpdate) return {}
-        return {
-          productOfferingPolicyRef: prices.map((p: any) => {
-            const ov = priceOverrides[p.externalId] || {}
-            const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
-            return {
-              productOfferingPriceRef: [isCreate ? { id: p.id } : { externalId: p.externalId }]
-            }
-          })
-        }
-      })(),
+      productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
+        const ov = priceOverrides[p.externalId] || {}
+        const effectiveExtId = (ov.operation === 'CREATE' && ov.name) ? ov.name : p.externalId
+        return { productOfferingPriceRef: [{ externalId: effectiveExtId }] }
+      }),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
