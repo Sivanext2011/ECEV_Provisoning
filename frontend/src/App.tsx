@@ -570,8 +570,11 @@ function ProvisionWizard() {
                   }))
               }
               // Contract chars — only user-entered values (non-resource, non-PO keys)
+              // Only include contract chars that user explicitly entered (mustBePersonalized or user-personalized canBePersonalized)
+              const cs2 = contractSpecs.find((s: any) => s.externalId === selectedContractSpec)
+              const mustCharKeys = new Set((cs2 ? getMustChars(cs2.characteristics) : []).map((c: any) => c.externalId || c.id))
               const contractChars = Object.entries(formValues.contract)
-                .filter(([k, v]) => !k.startsWith('_') && (v as string)?.trim())
+                .filter(([k, v]) => !k.startsWith('_') && (v as string)?.trim() && mustCharKeys.has(k))
               if (contractChars.length) ctb.characteristic = contractChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
 
               setPartyJson(JSON.stringify(pb, null, 2))
@@ -2301,9 +2304,9 @@ function CharInput({ char: c, value, onChange }: { char: any; value: string; onC
   // For canBePersonalized: show default pre-filled, allow override via checkbox
   const [personalize, setPersonalize] = React.useState(isMust || isFixed || isSelection)
 
-  // Pre-fill default when not personalizing
+  // Pre-fill default when not personalizing — but don't write to parent state (avoids polluting contract chars)
   React.useEffect(() => {
-    if (!personalize && c.defaultValue) onChange(c.defaultValue)
+    if (!personalize) onChange('')
   }, [personalize, c.externalId])
 
   const badge = isMust
