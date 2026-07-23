@@ -726,7 +726,7 @@ function POPublishPanel() {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef' || k === 'productOfferingPriceRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
