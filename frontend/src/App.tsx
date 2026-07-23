@@ -762,13 +762,19 @@ function POPublishPanel() {
           entry.pricingLogicAlgorithm = { productOfferingPriceRow: sanitizePricingRows(ov.pricingRows) }
         return entry
       }),
-      productOfferingPolicyRef: (template.productOfferingPrice || []).map((p: any) => {
-        const ov = priceOverrides[p.externalId] || {}
-        const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
-        return isCreate
-          ? { priceId: null, productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
-          : { productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
-      }),
+      ...(() => {
+        const prices = template.productOfferingPrice || []
+        const allCreate = prices.every((p: any) => (priceOverrides[p.externalId]?.operation || 'UPDATE') === 'CREATE')
+        if (allCreate) return {}
+        return {
+          productOfferingPolicyRef: prices.map((p: any) => {
+            const isCreate = (priceOverrides[p.externalId]?.operation || 'UPDATE') === 'CREATE'
+            return isCreate
+              ? { priceId: null, productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
+              : { productOfferingPriceRef: [{ id: p.id, externalId: p.externalId }] }
+          })
+        }
+      })(),
       productOfferingRelationship: relationships.filter(r => r.externalId).map(r => ({
         externalId: r.externalId,
         type: r.type || null,
