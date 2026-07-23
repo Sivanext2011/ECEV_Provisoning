@@ -746,7 +746,7 @@ function POPublishPanel() {
         const ov = priceOverrides[p.externalId] || {}
         const isCreate = (ov.operation || 'UPDATE') === 'CREATE'
         const entry: any = {
-          externalId: isCreate ? (ov.name || p.externalId) : p.externalId,
+          externalId: isCreate ? (ov.name || p.externalId) : (ov.externalId || p.externalId),
           name: ov.name || p.name || null,
           operation: ov.operation || 'UPDATE',
           productOfferingPriceRelationship: (p.productOfferingPriceRelationship || []).map((rel: any) => ({
@@ -895,7 +895,7 @@ function POPublishPanel() {
                   <select style={{ fontSize: 12 }} value={priceOverrides[p.externalId]?.operation || 'UPDATE'}
                     onChange={e => setPriceOv(p.externalId, 'operation', e.target.value)}>
                     <option value="UPDATE">UPDATE (inherit)</option>
-                    <option value="CREATE">CREATE (new price)</option>
+                    <option value="CREATE">CREATE (new price — same template)</option>
                   </select>
                 </div>
                 <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
@@ -904,6 +904,13 @@ function POPublishPanel() {
                       onChange={e => setPriceOv(p.externalId, 'name', e.target.value)}
                       placeholder={p.name || p.externalId} />
                   </label>
+                  {(priceOverrides[p.externalId]?.operation || 'UPDATE') === 'UPDATE' && (
+                    <label style={{ fontSize: 12 }}>ExternalId override <span style={{ fontSize: 10, color: '#888' }}>(leave blank to keep {p.externalId})</span>
+                      <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.externalId || ''}
+                        onChange={e => setPriceOv(p.externalId, 'externalId', e.target.value)}
+                        placeholder={p.externalId} />
+                    </label>
+                  )}
                   <label style={{ fontSize: 12 }}>Party Role Involvement Group Ref
                     <input style={{ width: '100%' }} value={priceOverrides[p.externalId]?.partyRoleInvolvementGroupRef || ''}
                       onChange={e => setPriceOv(p.externalId, 'partyRoleInvolvementGroupRef', e.target.value)}
