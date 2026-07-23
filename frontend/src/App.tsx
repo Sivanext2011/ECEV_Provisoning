@@ -726,7 +726,7 @@ function POPublishPanel() {
       const out: any = {}
       for (const [k, v] of Object.entries(obj)) {
         if (k === 'id' && !keepId) continue
-        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef') { out[k] = v; continue }
+        if (k === 'productOfferingTemplateRef' || k === 'valueReference' || k === 'productOfferingPriceRowRef' || k === 'productOfferingPolicyRef' || k === 'scheduleDefinitionRef') { out[k] = v; continue }
         out[k] = stripIds(v)
       }
       return out
@@ -758,6 +758,8 @@ function POPublishPanel() {
           })),
         }
         if (ov.partyRoleInvolvementGroupRef) entry.partyRoleInvolvementGroupRef = ov.partyRoleInvolvementGroupRef
+        // Copy scheduleDefinitionRef from template price (required as business strategy for CREATE)
+        if (p.scheduleDefinitionRef) entry.scheduleDefinitionRef = p.scheduleDefinitionRef
         // Always include productOfferingPriceRef — required by RMCA for both UPDATE and CREATE
         if (p.externalId) entry.productOfferingPriceRef = { externalId: p.externalId }
         else if (p.id) entry.productOfferingPriceRef = { id: p.id }
