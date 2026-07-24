@@ -531,12 +531,15 @@ function ProvisionWizard() {
               // Resources from CommID specs selected by user
               const resources: any[] = []
               for (const entry of selectedResources.filter(e => e.specExtId && e.value.trim())) {
+                const commIdSpec = commIdSpecs.find((s: any) => s.externalId === entry.specExtId)
                 const rsLabel = entry.specExtId.replace(/[^a-zA-Z0-9_-]/g, '')
-                resources.push({
+                const res: any = {
                   externalId: `${rsLabel}-${entry.value}`,
                   resourceNumber: entry.value,
                   resourceSpecificationExternalId: entry.specExtId,
-                })
+                }
+                if (commIdSpec?.id) res.resourceSpecificationId = commIdSpec.id
+                resources.push(res)
               }
               if (resources.length) ctb.resource = resources
               if (selectedCommIdSpec) {
