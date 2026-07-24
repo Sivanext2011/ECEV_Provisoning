@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 _SPEC_TYPE_MAP = [
     ("CONTRACT_SPECIFICATION",              "spec_contract",          "contractSpecificationExternalId",              "contractSpecifications"),
     ("BILLING_ACCOUNT_SPECIFICATION",       "spec_billing_account",   "billingAccountSpecificationExternalId",        "billingAccountSpecifications"),
+    ("RESOURCE_SPECIFICATION",              "spec_resource",          "resourceSpecificationExternalId",              "resourceSpecifications"),
     ("PRODUCT_SPECIFICATION",               "spec_product",           "productSpecificationExternalId",               "productSpecifications"),
     ("PRODUCT_OFFERING",                    "spec_product_offering",  "productOfferingExternalId",                    "productOfferings"),
     ("CUSTOMER_SPECIFICATION",              "spec_customer",          "customerSpecificationExternalId",              "customerSpecifications"),
@@ -178,6 +179,9 @@ def _normalize(item: dict, catalog_key: str) -> dict:
             for r in (item.get("resourceSpecification") or [])
         ]
 
+    elif catalog_key == "resourceSpecifications":
+        base["rsType"] = item.get("resourceSpecificationType", "") or item.get("type", "")
+
     return base
 
 
@@ -247,8 +251,11 @@ async def fetch_catalog_from_bssf() -> dict:
         if fetched < len(entries):
             errors[catalog_key] = f"{len(entries) - fetched} of {len(entries)} failed"
 
-    # Build PS lookup by id for PO -> PS -> RS traversal
+    # Build lookups for PO -> PS -> RS traversal
     ps_by_id = {ps["id"]: ps for ps in catalog.get("productSpecifications", []) if ps.get("id")}
+    ps_by_ext = {ps["externalId"]: ps for ps in catalog.get("productSpecifications", []) if ps.get("externalId")}
+    rs_by_id = {rs["id"]: rs for rs in catalog.get("resourceSpecifications", []) if rs.get("id")}
+    rs_by_ext = {rs["externalId"]: rs for rs in catalog.get("resourceSpecifications", []) if rs.get("externalId")}
 
     # Resolve resourceSpecifications for each PO via linked productSpecifications
     for po in catalog.get("productOfferings", []):
@@ -257,24 +264,24 @@ async def fetch_catalog_from_bssf() -> dict:
         seen_rs_po = set()
         rs_list = []
         for ps_ref in (po.get("productSpecifications") or []):
-            ps = ps_by_id.get(ps_ref.get("id", ""))
+            ps = ps_by_id.get(ps_ref.get("id", "")) or ps_by_ext.get(ps_ref.get("externalId", ""))
             if not ps:
                 continue
-            for rs in (ps.get("resourceSpecifications") or []):
+            for rs_ref in (ps.get("resourceSpecifications") or []):
+                # Enrich with full RS data from catalog if available
+                rs_full = rs_by_id.get(rs_ref.get("id", "")) or rs_by_ext.get(rs_ref.get("externalId", ""))
+                rs = rs_full or rs_ref
                 key = rs.get("id") or rs.get("externalId")
                 if key and key not in seen_rs_po:
                     seen_rs_po.add(key)
-                    rs_list.append(rs)
+                    rs_list.append({
+                        "id": rs.get("id", ""),
+                        "externalId": rs.get("externalId", ""),
+                        "name": rs.get("name", ""),
+                        "type": rs.get("rsType") or rs.get("type", ""),
+                    })
         po["resourceSpecifications"] = rs_list
 
-    # Collect all resource specs into catalog-level list
-    seen_rs = set()
-    for ps in catalog.get("productSpecifications", []):
-        for rs in (ps.get("resourceSpecifications") or []):
-            key = rs.get("id") or rs.get("externalId")
-            if key and key not in seen_rs:
-                seen_rs.add(key)
-                catalog["resourceSpecifications"].append(rs)
     counts["resourceSpecifications"] = len(catalog["resourceSpecifications"])
 
     cat_mod._save_catalog()
