@@ -237,7 +237,7 @@ async def _link_po_resource_specs(catalog: dict) -> None:
             r = await ericsson_client._client.get(
                 rfss_url,
                 headers=headers,
-                params={"resourceFacingServiceSpecificationExternalId": rfss_ext_id}
+                params={"externalId": rfss_ext_id}
             )
             r.raise_for_status()
             data = r.json()
