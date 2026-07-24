@@ -348,7 +348,7 @@ function ProvisionWizard() {
                       </label>
                     ))}
                   </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No identification resources linked to this PO.</p> : null
-                })()
+                })()}
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>Home Time Zone
                   <input style={{ width: '100%' }} value={homeTimeZone} onChange={e => setHomeTimeZone(e.target.value)} placeholder="e.g. Europe/Stockholm" />
                 </label>
