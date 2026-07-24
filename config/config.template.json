@@ -1,19 +1,19 @@
 {
   "environment": {
-    "ROOT_BAE": "https://bss-trf.2l3ccaf.ocs.cht.com.tw",
-    "ROOT_SEC": "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw",
+    "ROOT_BAE": "",
+    "ROOT_SEC": "",
     "ROOT_CPM": "",
     "ROOT_CPM_INTERNAL": "",
     "ROOT_CPM_BATCH": "",
-    "ROOT_RMCA": "https://bss-trf.2l3ccaf.ocs.cht.com.tw",
-    "ROOT_RMCA_CATALOG": "https://eric-bss-rmca-server-catalog-integration-httpproxy.ecevns-oam-haber031.ews.gic.ericsson.se",
+    "ROOT_RMCA": "",
+    "ROOT_RMCA_CATALOG": "",
     "SITE": ""
   },
   "auth": {
-    "username": "bssadmin",
-    "password": "BssAdmin@CHT2026!",
+    "username": "",
+    "password": "",
     "client_id": "AuthorizationClient",
-    "token_endpoint": "https://eric-sec-access-mgmt.2l3ccaf.ocs.cht.com.tw/auth/realms/master/protocol/openid-connect/token",
+    "token_endpoint": "",
     "scope": "openid",
     "grant_type": "password"
   },
@@ -25,9 +25,9 @@
   },
   "tls": {
     "ssl_verify": false,
-    "ca_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\beamCA.crt",
-    "client_cert_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\bae-client.crt",
-    "client_key_path": "C:\\Users\\eransva\\Downloads\\ECEV_Provisning\\config\\certs\\bae-client.key"
+    "ca_cert_path": "",
+    "client_cert_path": "",
+    "client_key_path": ""
   },
   "network": {
     "socks5_proxy": "socks5://127.0.0.1:1234",
@@ -196,8 +196,14 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productSpecification"
     },
-    "spec_resource": {"method": "GET", "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceSpecification"},
-    "spec_rfss": {"method": "GET", "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceFacingServiceSpecification"},
+    "spec_resource": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceSpecification"
+    },
+    "spec_rfss": {
+      "method": "GET",
+      "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceFacingServiceSpecification"
+    },
     "spec_product_offering": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOffering"
@@ -225,7 +231,22 @@
     "activate_contract": {
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/customerExternalId/{{customerExternalId}}/contractExternalId/{{contractExternalId}}",
-      "defaultBody": {"status": [{"status": "Active"}], "product": [{"status": [{"status": "ProductActive"}]}]}
+      "defaultBody": {
+        "status": [
+          {
+            "status": "Active"
+          }
+        ],
+        "product": [
+          {
+            "status": [
+              {
+                "status": "ProductActive"
+              }
+            ]
+          }
+        ]
+      }
     },
     "terminate_contract_cascade": {
       "method": "PATCH",
@@ -363,7 +384,6 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/referenceDataList?referenceDataListId={{listId}}"
     },
-
     "get_settlement_account": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfAccountEnquiry/v1/settlementAccount?{{queryString}}"
@@ -380,7 +400,6 @@
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfAccountManagement/v1/relatedPartyExternalId/{{relatedPartyExternalId}}/relatedPartyReferredType/{{relatedPartyReferredType}}/settlementAccountExternalId/{{externalId}}"
     },
-
     "get_agreement": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfAgreementEnquiry/v1/agreement?{{queryString}}"
@@ -409,7 +428,6 @@
       "method": "DELETE",
       "url": "{{ROOT_BAE}}/bae/bssfAgreementManagement/v1/partyExternalId/{{partyExternalId}}/agreementExternalId/{{agreementExternalId}}"
     },
-
     "get_balance_topup_details": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfBalanceEnquiry/v1/balanceTopUpDetails?{{queryString}}"
@@ -434,12 +452,10 @@
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfBalanceManagement/v1/settlementAccountBucketAdjustment/adjust"
     },
-
     "get_communication_identity": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfCommunicationIdentityManagement/v1/communicationIdentity?{{queryString}}"
     },
-
     "get_applied_customer_billing_rate": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/appliedCustomerBillingRate?{{queryString}}"
@@ -464,12 +480,10 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfCustomerBillEnquiry/v1/unbilledCharge?{{queryString}}"
     },
-
     "get_financial_customer_account": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfFinancialCustomerAccountEnquiry/v1/financialCustomerAccount?{{queryString}}"
     },
-
     "get_financial_header": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionEnquiry/v1/financialHeader?{{queryString}}"
@@ -486,7 +500,6 @@
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfFinancialTransactionManagement/v1/financialTask"
     },
-
     "get_organization_party": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyEnquiry/v1/organizationParty?{{queryString}}"
@@ -507,7 +520,6 @@
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfOrganizationPartyManagement/v1/changeStatusCascading"
     },
-
     "get_partner_contract": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/contract?{{queryString}}"
@@ -540,7 +552,6 @@
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlementManagement/v1/partyRoleInvolvementGroup/{{partyRoleInvolvementGroupRef}}"
     },
-
     "get_applied_partner_settlement_rate": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/appliedPartnerSettlementRate?{{queryString}}"
@@ -569,12 +580,10 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfPartnerSettlingManagement/v1/summaryView?{{queryString}}"
     },
-
     "send_communication_message": {
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfPartyCommunicationManagement/v1/communicationMessage/send"
     },
-
     "get_party_role": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfPartyRoleEnquiry/v1/partyRole?{{queryString}}"
@@ -591,7 +600,6 @@
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfPartyRoleManagement/v1/partyRoleExternalId/{{partyRoleExternalId}}"
     },
-
     "catalog_get_product_offering": {
       "method": "GET",
       "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOffering"
@@ -608,7 +616,6 @@
       "method": "PATCH",
       "url": "{{ROOT_RMCA_CATALOG}}/rmca/bssfProductCatalogIntegration/v1/productOfferingExternalId/{{externalId}}/version/{{version}}"
     },
-
     "purchase_cancel_reservation": {
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/cancelReservation"
@@ -641,7 +648,6 @@
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfPurchaseChargeManagement/v1/basketRateAndReserve"
     },
-
     "create_policy_session": {
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/BSSFSessionManagement/v1/session/createPolicySession"
@@ -650,7 +656,6 @@
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/BSSFSessionManagement/v1/session/moveChargingSessionToInternal"
     },
-
     "spec_agreement_item": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/agreementItemSpecification"
@@ -767,7 +772,6 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/taxRuleTemplateSpecification?{{queryString}}"
     },
-
     "get_consumer_product": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSubscriptionEnquiry/v1/consumerProduct/read?{{queryString}}"
@@ -788,7 +792,6 @@
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfSubscriptionManagement/v1/providerProduct/modify"
     },
-
     "create_entity_adjustment": {
       "method": "POST",
       "url": "{{ROOT_BAE}}/bae/bssfTestManagement/v1/customer/{{customerId}}/entityAdjustment"
@@ -801,7 +804,6 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfTestManagement/v1/entityAdjustment?{{queryString}}"
     },
-
     "update_user_by_id": {
       "method": "PATCH",
       "url": "{{ROOT_BAE}}/bae/bssfUserManagement/v1/user/{{userId}}"

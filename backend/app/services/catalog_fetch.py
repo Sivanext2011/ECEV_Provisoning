@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 _SPEC_TYPE_MAP = [
     ("CONTRACT_SPECIFICATION",              "spec_contract",          "contractSpecificationExternalId",              "contractSpecifications"),
     ("BILLING_ACCOUNT_SPECIFICATION",       "spec_billing_account",   "billingAccountSpecificationExternalId",        "billingAccountSpecifications"),
-    ("RESOURCE_SPECIFICATION",              "spec_resource",          "resourceSpecificationExternalId",              "resourceSpecifications"),
     ("PRODUCT_SPECIFICATION",               "spec_product",           "productSpecificationExternalId",               "productSpecifications"),
     ("PRODUCT_OFFERING",                    "spec_product_offering",  "productOfferingExternalId",                    "productOfferings"),
     ("CUSTOMER_SPECIFICATION",              "spec_customer",          "customerSpecificationExternalId",              "customerSpecifications"),
@@ -227,10 +226,21 @@ async def _link_po_resource_specs(catalog: dict) -> None:
         if rfss_ext_id in rfss_rs_cache:
             return rfss_rs_cache[rfss_ext_id]
         try:
-            data = await ericsson_client.request(
-                "spec_rfss",
-                query_params={"resourceFacingServiceSpecificationExternalId": rfss_ext_id}
+            # Build URL directly from ROOT_BAE to avoid dependency on spec_rfss config key
+            root_bae = ericsson_client.env.get("ROOT_BAE", "")
+            rfss_url = f"{root_bae}/bae/bssfSpecificationEnquiry/v1/resourceFacingServiceSpecification"
+            token = await ericsson_client._get_token()
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+            await ericsson_client._ensure_client()
+            r = await ericsson_client._client.get(
+                rfss_url,
+                headers=headers,
+                params={"resourceFacingServiceSpecificationExternalId": rfss_ext_id}
             )
+            r.raise_for_status()
+            data = r.json()
             if isinstance(data, list):
                 data = data[0] if data else {}
             rs_refs = data.get("resourceSpecification") or []

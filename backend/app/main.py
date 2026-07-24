@@ -5,10 +5,21 @@ from .routers.provisioning import router
 from .routers.bssf_apis import router as bssf_router
 from .services.database import init_db
 from .services.ericsson_client import ericsson_client
+import shutil
+from pathlib import Path
+
+CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "config.json"
+CONFIG_TEMPLATE = Path(__file__).parent.parent.parent / "config" / "config.template.json"
+
+
+def _ensure_config():
+    if not CONFIG_PATH.exists() and CONFIG_TEMPLATE.exists():
+        shutil.copy(CONFIG_TEMPLATE, CONFIG_PATH)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _ensure_config()
     await init_db()
     yield
     await ericsson_client.close()
