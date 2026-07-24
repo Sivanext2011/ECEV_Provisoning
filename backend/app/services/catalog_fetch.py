@@ -163,23 +163,8 @@ def _normalize(item: dict, catalog_key: str) -> dict:
 
     elif catalog_key == "productOfferings":
         base["offeringTypes"] = item.get("type") or item.get("offeringTypes") or []
-        base["productSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
-            for r in (item.get("productSpecification") or [])
-        ]
-        # Collect RS from all possible fields in PO response
-        raw_rs = (
-            item.get("resourceSpecification") or
-            item.get("resourceSpecifications") or
-            item.get("resourceSpec") or []
-        )
-        base["resourceSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""), "type": r.get("type", "") or r.get("resourceSpecificationType", "")}
-            for r in raw_rs
-        ]
-        # Log full PO response keys for first PO to diagnose missing RS link
-        if not raw_rs:
-            logger.debug(f"PO {base['externalId']} raw keys: {list(item.keys())}")
+        base["productSpecifications"] = []
+        base["resourceSpecifications"] = []  # populated post-fetch from zip catalog
 
     elif catalog_key == "productSpecifications":
         base["resourceSpecifications"] = [
@@ -222,12 +207,158 @@ async def _fetch_spec(api_key: str, ext_id_param: str, ext_id: str, spec_id: str
         return None
 
 
+async def _link_po_resource_specs(catalog: dict) -> None:
+    """Traverse PO->PS->CFSS->RFSS->RS and attach resourceSpecifications to each PO."""
+    # Build lookup maps for already-fetched specs
+    ps_by_ext: dict[str, dict] = {
+        s["externalId"]: s for s in catalog.get("productSpecifications", []) if s.get("externalId")
+    }
+    cfss_by_ext: dict[str, dict] = {
+        s["externalId"]: s for s in catalog.get("customerFacingServiceSpecifications", []) if s.get("externalId")
+    }
+    rs_by_ext: dict[str, dict] = {
+        s["externalId"]: s for s in catalog.get("resourceSpecifications", []) if s.get("externalId")
+    }
+
+    # Cache for RFSS fetches (externalId -> list of RS refs)
+    rfss_rs_cache: dict[str, list] = {}
+
+    async def _get_rfss_rs(rfss_ext_id: str) -> list:
+        if rfss_ext_id in rfss_rs_cache:
+            return rfss_rs_cache[rfss_ext_id]
+        try:
+            data = await ericsson_client.request(
+                "spec_rfss",
+                query_params={"resourceFacingServiceSpecificationExternalId": rfss_ext_id}
+            )
+            if isinstance(data, list):
+                data = data[0] if data else {}
+            rs_refs = data.get("resourceSpecification") or []
+            result = [
+                {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""),
+                 "rsType": r.get("resourceSpecificationType") or r.get("type", "")}
+                for r in rs_refs
+            ]
+            rfss_rs_cache[rfss_ext_id] = result
+            return result
+        except Exception as e:
+            logger.warning(f"RFSS fetch failed for {rfss_ext_id}: {e}")
+            rfss_rs_cache[rfss_ext_id] = []
+            return []
+
+    for po in catalog.get("productOfferings", []):
+        # Step 1: extract PS externalIds from specCharacteristic[].specCharRelationship[]
+        ps_ext_ids = set()
+        for char in (po.get("characteristics") or []):
+            # characteristics are already normalized — need raw specCharRelationship
+            pass
+        # characteristics are normalized and lose specCharRelationship — fetch PO raw data
+        # Instead, use the already-fetched PS list and match via CFSS chain
+        # We need the raw PO to get specCharRelationship — re-fetch it
+        po_ext_id = po.get("externalId", "")
+        if not po_ext_id:
+            continue
+        try:
+            raw_po = await ericsson_client.request(
+                "spec_product_offering",
+                query_params={"productOfferingExternalId": po_ext_id}
+            )
+            if isinstance(raw_po, list):
+                raw_po = raw_po[0] if raw_po else {}
+        except Exception as e:
+            logger.warning(f"PO re-fetch failed for {po_ext_id}: {e}")
+            continue
+
+        for char in (raw_po.get("specCharacteristic") or []):
+            for rel in (char.get("specCharRelationship") or []):
+                if rel.get("targetType") == "ProductSpecification":
+                    ext = rel.get("externalId") or rel.get("targetExternalId", "")
+                    if ext:
+                        ps_ext_ids.add(ext)
+
+        if not ps_ext_ids:
+            continue
+
+        # Step 2: PS -> CFSS
+        cfss_ext_ids = set()
+        for ps_ext in ps_ext_ids:
+            ps = ps_by_ext.get(ps_ext)
+            if not ps:
+                continue
+            for cfss_ref in (ps.get("characteristics") or []):
+                pass  # normalized chars don't have CFSS refs
+            # Need raw PS for customerFacingServiceSpecification[]
+            try:
+                raw_ps = await ericsson_client.request(
+                    "spec_product",
+                    query_params={"productSpecificationExternalId": ps_ext}
+                )
+                if isinstance(raw_ps, list):
+                    raw_ps = raw_ps[0] if raw_ps else {}
+            except Exception as e:
+                logger.warning(f"PS re-fetch failed for {ps_ext}: {e}")
+                continue
+            for cfss_ref in (raw_ps.get("customerFacingServiceSpecification") or []):
+                ext = cfss_ref.get("externalId", "")
+                if ext:
+                    cfss_ext_ids.add(ext)
+
+        if not cfss_ext_ids:
+            continue
+
+        # Step 3: CFSS -> RFSS
+        rfss_ext_ids = set()
+        for cfss_ext in cfss_ext_ids:
+            cfss = cfss_by_ext.get(cfss_ext)
+            if not cfss:
+                continue
+            # Need raw CFSS for resourceFacingServiceSpecification[]
+            try:
+                raw_cfss = await ericsson_client.request(
+                    "spec_customer_facing_service",
+                    query_params={"customerFacingServiceSpecificationExternalId": cfss_ext}
+                )
+                if isinstance(raw_cfss, list):
+                    raw_cfss = raw_cfss[0] if raw_cfss else {}
+            except Exception as e:
+                logger.warning(f"CFSS re-fetch failed for {cfss_ext}: {e}")
+                continue
+            for rfss_ref in (raw_cfss.get("resourceFacingServiceSpecification") or []):
+                ext = rfss_ref.get("externalId", "")
+                if ext:
+                    rfss_ext_ids.add(ext)
+
+        if not rfss_ext_ids:
+            continue
+
+        # Step 4: RFSS -> RS
+        rs_list = []
+        for rfss_ext in rfss_ext_ids:
+            rs_list.extend(await _get_rfss_rs(rfss_ext))
+
+        if rs_list:
+            # Enrich with rsType from already-fetched resourceSpecifications
+            for rs in rs_list:
+                if not rs.get("rsType") and rs.get("externalId") in rs_by_ext:
+                    rs["rsType"] = rs_by_ext[rs["externalId"]].get("rsType", "")
+            po["resourceSpecifications"] = rs_list
+            logger.info(f"PO {po_ext_id}: linked {len(rs_list)} RS via RFSS chain")
+
+
 async def fetch_catalog_from_bssf() -> dict:
     """Fetch all specs from BSSF using two-step: list IDs then fetch each individually."""
     # Preserve reference data (parsed from BusinessConfig zip) before resetting catalog
     existing = cat_mod.get_catalog()
     preserved_units = existing.get("unitsByMeasure") or {}
     preserved_currencies = existing.get("currencies") or []
+
+    # Build PO->RS map from existing catalog (populated by BusinessConfig zip upload)
+    # BSSF Spec Enquiry API does not expose PO->PS->RS relationships
+    existing_po_rs: dict[str, list] = {
+        po["externalId"]: po.get("resourceSpecifications", [])
+        for po in existing.get("productOfferings", [])
+        if po.get("externalId") and po.get("resourceSpecifications")
+    }
 
     cat_mod._catalog = cat_mod._empty_catalog()
     catalog = cat_mod._catalog
@@ -238,7 +369,6 @@ async def fetch_catalog_from_bssf() -> dict:
 
     counts = {}
     errors = {}
-    _po_raw_keys_logged = False
 
     for spec_type, api_key, ext_id_param, catalog_key in _SPEC_TYPE_MAP:
         entries = await _list_spec_ids(spec_type)
@@ -252,9 +382,6 @@ async def fetch_catalog_from_bssf() -> dict:
             spec_id = entry.get("id", "")
             item = await _fetch_spec(api_key, ext_id_param, ext_id, spec_id)
             if item:
-                if catalog_key == "productOfferings" and not _po_raw_keys_logged:
-                    logger.warning(f"PO raw response keys for '{ext_id}': {list(item.keys())}")
-                    _po_raw_keys_logged = True
                 catalog[catalog_key].append(_normalize(item, catalog_key))
                 fetched += 1
 
@@ -263,38 +390,13 @@ async def fetch_catalog_from_bssf() -> dict:
         if fetched < len(entries):
             errors[catalog_key] = f"{len(entries) - fetched} of {len(entries)} failed"
 
-    # Build lookups for PO -> PS -> RS traversal
-    ps_by_id = {ps["id"]: ps for ps in catalog.get("productSpecifications", []) if ps.get("id")}
-    ps_by_ext = {ps["externalId"]: ps for ps in catalog.get("productSpecifications", []) if ps.get("externalId")}
-    rs_by_id = {rs["id"]: rs for rs in catalog.get("resourceSpecifications", []) if rs.get("id")}
-    rs_by_ext = {rs["externalId"]: rs for rs in catalog.get("resourceSpecifications", []) if rs.get("externalId")}
+    # Build PO->RS via live API chain: PO->PS->CFSS->RFSS->RS
+    await _link_po_resource_specs(catalog)
 
-    # Resolve resourceSpecifications for each PO via linked productSpecifications
+    # Fallback: restore from zip-populated catalog for any PO still missing RS
     for po in catalog.get("productOfferings", []):
-        if po.get("resourceSpecifications"):  # already populated from direct PO response
-            continue
-        seen_rs_po = set()
-        rs_list = []
-        for ps_ref in (po.get("productSpecifications") or []):
-            ps = ps_by_id.get(ps_ref.get("id", "")) or ps_by_ext.get(ps_ref.get("externalId", ""))
-            if not ps:
-                continue
-            for rs_ref in (ps.get("resourceSpecifications") or []):
-                # Enrich with full RS data from catalog if available
-                rs_full = rs_by_id.get(rs_ref.get("id", "")) or rs_by_ext.get(rs_ref.get("externalId", ""))
-                rs = rs_full or rs_ref
-                key = rs.get("id") or rs.get("externalId")
-                if key and key not in seen_rs_po:
-                    seen_rs_po.add(key)
-                    # Keep the type from PS traversal — don't overwrite with empty rsType from catalog RS
-                    rs_type = rs_ref.get("type", "") or (rs_full.get("rsType") or rs_full.get("type", "") if rs_full else "")
-                    rs_list.append({
-                        "id": rs.get("id", ""),
-                        "externalId": rs.get("externalId", ""),
-                        "name": rs.get("name", ""),
-                        "type": rs_type,
-                    })
-        po["resourceSpecifications"] = rs_list
+        if not po.get("resourceSpecifications") and po.get("externalId") in existing_po_rs:
+            po["resourceSpecifications"] = existing_po_rs[po["externalId"]]
 
     counts["resourceSpecifications"] = len(catalog["resourceSpecifications"])
 

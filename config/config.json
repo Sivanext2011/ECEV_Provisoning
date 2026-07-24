@@ -196,7 +196,9 @@
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productSpecification"
     },
-    "spec_resource": {"method": "GET", "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceSpecification"},"spec_product_offering": {
+    "spec_resource": {"method": "GET", "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceSpecification"},
+    "spec_rfss": {"method": "GET", "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/resourceFacingServiceSpecification"},
+    "spec_product_offering": {
       "method": "GET",
       "url": "{{ROOT_BAE}}/bae/bssfSpecificationEnquiry/v1/productOffering"
     },
