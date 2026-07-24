@@ -41,6 +41,7 @@ function ProvisionWizard() {
   const [selectedPO, setSelectedPO] = useState('')
   const [additionalPOs, setAdditionalPOs] = useState<Array<{ poExtId: string; formVals: any }>>([{ poExtId: '', formVals: {} }])
   const [selectedCommIdSpec, setSelectedCommIdSpec] = useState('')
+  const [selectedResources, setSelectedResources] = useState<Array<{ specExtId: string; value: string }>>([])
   const [selectedCmSpecs, setSelectedCmSpecs] = useState<Array<{ specExtId: string; charVals: Record<string, string>; externalId: string }>>([{ specExtId: '', charVals: {}, externalId: '' }])
   const [homeTimeZone, setHomeTimeZone] = useState('Europe/Stockholm')
   const [includeContactMediumAssoc, setIncludeContactMediumAssoc] = useState(true)
@@ -183,6 +184,7 @@ function ProvisionWizard() {
               setSelectedPO(e.target.value)
               const po = poList.find((p: any) => p.externalId === e.target.value)
               if (po) prefillDefaults(getPersonalizableChars(po.characteristics || []), 'contract')
+              setSelectedResources([{ specExtId: '', value: '' }])
             }}>
               <option value="">-- Select --</option>
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
@@ -330,25 +332,28 @@ function ProvisionWizard() {
             const optChars = cs ? getOptionalChars(cs.characteristics) : []
             const poMustChars = po ? getMustChars(po.characteristics || []) : []
             const poOptChars = po ? getOptionalChars(po.characteristics || []) : []
-            // LRS = Logical Resource Spec (MSISDN/IMSI) — needs user input
-            // PBS = Product Bucket Spec — auto-created by BSSF, no user input needed
-            // No type = live-fetch path (treat as LRS, show to user)
-            const poResourceSpecs = (po?.resourceSpecifications || []).filter((rs: any) => rs.type !== 'PBS')
             return (
               <fieldset><legend>Contract & Product</legend>
-                {(() => {
-                  return poResourceSpecs.length > 0 ? <>
-                    <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Identification Resources (required by Product Offering):</p>
-                    {poResourceSpecs.map((rs: any) => (
-                      <label key={rs.id || rs.externalId} style={{ display: 'block', marginBottom: 6 }}>
-                        {rs.name}{rs.externalId ? ` (${rs.externalId})` : ''}{rs.type ? ` [${rs.type}]` : ''} <span style={{ color: 'red' }}>*</span>
-                        <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
-                          value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
-                          onChange={e => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_res_${rs.externalId || rs.id}`]: e.target.value } })} />
-                      </label>
+                {selectedPO && (
+                  <div style={{ marginBottom: 8 }}>
+                    <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Identification Resources (MSISDN/IMSI):</p>
+                    {selectedResources.map((entry, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                        <select style={{ flex: 2 }} value={entry.specExtId} onChange={e => {
+                          const u = [...selectedResources]; u[idx] = { ...u[idx], specExtId: e.target.value }; setSelectedResources(u)
+                        }}>
+                          <option value="">-- Select CommID Spec --</option>
+                          {commIdSpecs.map((s: any) => <option key={s.id || s.externalId} value={s.externalId}>{s.name} ({s.externalId})</option>)}
+                        </select>
+                        <input style={{ flex: 2 }} placeholder="Enter number (e.g. MSISDN or IMSI)"
+                          value={entry.value}
+                          onChange={e => { const u = [...selectedResources]; u[idx] = { ...u[idx], value: e.target.value }; setSelectedResources(u) }} />
+                        {selectedResources.length > 1 && <button type="button" onClick={() => setSelectedResources(selectedResources.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
+                      </div>
                     ))}
-                  </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No identification resources linked to this PO.</p> : null
-                })()}
+                    <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedResources([...selectedResources, { specExtId: '', value: '' }])}>+ Add Resource</button>
+                  </div>
+                )}
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>Home Time Zone
                   <input style={{ width: '100%' }} value={homeTimeZone} onChange={e => setHomeTimeZone(e.target.value)} placeholder="e.g. Europe/Stockholm" />
                 </label>
@@ -523,19 +528,15 @@ function ProvisionWizard() {
                 products.push(addOn)
               }
               if (products.length) ctb.product = products
-              // Resources from PO
-              const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-              const poResourceSpecs2 = (po?.resourceSpecifications || []).filter((rs: any) => rs.type !== 'PBS')
+              // Resources from CommID specs selected by user
               const resources: any[] = []
-              for (const rs of poResourceSpecs2) {
-                const resNumber = formValues.contract[`_res_${rs.externalId || rs.id}`]
-                if (resNumber && resNumber.trim()) {
-                  const rsLabel = (rs.externalId || rs.name || rs.id).replace(/^RS\s*-\s*/, '').replace(/[^a-zA-Z0-9_-]/g, '')
-                  const resEntry: any = { externalId: `${rsLabel}-${resNumber}`, resourceNumber: resNumber }
-                  if (rs.externalId) resEntry.resourceSpecificationExternalId = rs.externalId
-                  else if (rs.id) resEntry.resourceSpecificationId = rs.id
-                  resources.push(resEntry)
-                }
+              for (const entry of selectedResources.filter(e => e.specExtId && e.value.trim())) {
+                const rsLabel = entry.specExtId.replace(/[^a-zA-Z0-9_-]/g, '')
+                resources.push({
+                  externalId: `${rsLabel}-${entry.value}`,
+                  resourceNumber: entry.value,
+                  resourceSpecificationExternalId: entry.specExtId,
+                })
               }
               if (resources.length) ctb.resource = resources
               if (selectedCommIdSpec) {
