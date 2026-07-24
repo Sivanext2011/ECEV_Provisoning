@@ -314,6 +314,16 @@ async def get_offerings():
 
 
 # === Catalog / Specs ===
+@router.get("/specs/debug")
+async def debug_specs():
+    """Debug: show resourceSpecifications for each PO."""
+    catalog = reload_catalog()
+    return [
+        {"externalId": po.get("externalId"), "name": po.get("name"), "resourceSpecifications": po.get("resourceSpecifications", [])}
+        for po in catalog.get("productOfferings", [])
+    ]
+
+
 @router.get("/specs")
 async def get_specs():
     """Get parsed RMCA specifications (from uploaded BusinessConfig)."""
