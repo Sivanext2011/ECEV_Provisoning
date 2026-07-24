@@ -131,6 +131,7 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
             ba["customerBillCycleSpecification"] = [{
                 "externalId": bcs_ext_id,
                 "billCycleSpecExternalId": bill_cycle,
+                "billCycleChangeType": defaults.get("billCycleChangeType", "NO_PRORATE"),
             }]
         body["account"] = [ba]
 
@@ -149,12 +150,10 @@ async def create_contract(
 
     offering_id = product_offering_external_id or defaults.get("basePlanProductOfferingExternalId", "")
     ba_ext_id = billing_account_external_id or defaults.get("customerBAExternalId", f"BA_{msisdn}")
-    payment_context = defaults.get("paymentContext", "Postpaid")
     contract_ext_id = defaults.get("contractExternalId", f"CTR_{msisdn}")
 
     body = {
         "externalId": contract_ext_id,
-        "paymentContext": payment_context,
         "status": [{"status": "Active"}],
         "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn),
     }
@@ -179,6 +178,7 @@ async def create_contract(
         tech_product = {
             "productOfferingExternalId": tech_offering,
             "externalId": f"extID_tech-{msisdn}",
+            "correlationId": "1",
             "name": "Technical Product",
             "baRefForBillCycleAlignedRecurrence": {"externalId": ba_ext_id},
             "billingAccountReference": {"externalId": ba_ext_id},
@@ -206,6 +206,7 @@ async def create_contract(
         base_product = {
             "productOfferingExternalId": offering_id,
             "externalId": prod_ext_id,
+            "correlationId": "2",
             "name": prod_ext_id,
             "baRefForBillCycleAlignedRecurrence": {"externalId": ba_ext_id},
             "billingAccountReference": {"externalId": ba_ext_id},
@@ -217,9 +218,11 @@ async def create_contract(
 
     # Resources: LRS_msisdn_extid-{msisdn} / LRS_imsi_extid-{imsi}
     resources = []
+    # correlationId "2" = base plan product (LRS resources belong to the base plan)
     msisdn_res = {
         "resourceNumber": msisdn,
         "externalId": f"LRS_msisdn_extid-{msisdn}",
+        "productCorrelationId": ["2"],
     }
     msisdn_spec_ext = defaults.get("msisdnResourceSpecExternalId", "").strip()
     msisdn_spec_id = defaults.get("msisdnResourceSpecId", "").strip()
@@ -233,6 +236,7 @@ async def create_contract(
         imsi_res = {
             "resourceNumber": imsi,
             "externalId": f"LRS_imsi_extid-{imsi}",
+            "productCorrelationId": ["2"],
         }
         imsi_spec_ext = defaults.get("imsiResourceSpecExternalId", "").strip()
         imsi_spec_id = defaults.get("imsiResourceSpecId", "").strip()

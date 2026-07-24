@@ -330,16 +330,7 @@ function ProvisionWizard() {
             const optChars = cs ? getOptionalChars(cs.characteristics) : []
             const poMustChars = po ? getMustChars(po.characteristics || []) : []
             const poOptChars = po ? getOptionalChars(po.characteristics || []) : []
-            let poResourceSpecs = [...(po?.resourceSpecifications || [])]
-            if (po?.childOfferings?.length) {
-              const seen = new Set(poResourceSpecs.map((r: any) => r.id))
-              for (const childExtId of po.childOfferings) {
-                const childPO = poList.find((p: any) => p.externalId === childExtId)
-                for (const rs of (childPO?.resourceSpecifications || [])) {
-                  if (!seen.has(rs.id)) { seen.add(rs.id); poResourceSpecs.push(rs) }
-                }
-              }
-            }
+            const poResourceSpecs = [...(po?.resourceSpecifications || [])]
             return (
               <fieldset><legend>Contract & Product</legend>
                 {(() => {
@@ -531,16 +522,7 @@ function ProvisionWizard() {
               if (products.length) ctb.product = products
               // Resources from PO
               const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-              let poResourceSpecs2 = [...(po?.resourceSpecifications || [])]
-              if (po?.childOfferings?.length) {
-                const seen = new Set(poResourceSpecs2.map((r: any) => r.id))
-                for (const childExtId of po.childOfferings) {
-                  const childPO = specs?.productOfferings?.find((p: any) => p.externalId === childExtId)
-                  for (const rs of (childPO?.resourceSpecifications || [])) {
-                    if (!seen.has(rs.id)) { seen.add(rs.id); poResourceSpecs2.push(rs) }
-                  }
-                }
-              }
+              const poResourceSpecs2 = [...(po?.resourceSpecifications || [])]
               const resources: any[] = []
               for (const rs of poResourceSpecs2) {
                 const resNumber = formValues.contract[`_res_${rs.externalId || rs.id}`]

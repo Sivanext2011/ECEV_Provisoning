@@ -166,6 +166,11 @@ def _normalize(item: dict, catalog_key: str) -> dict:
             {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
             for r in (item.get("productSpecification") or [])
         ]
+        # Resource specs may be directly on the PO response (some BSSF versions)
+        base["resourceSpecifications"] = [
+            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""), "type": r.get("type", "")}
+            for r in (item.get("resourceSpecification") or [])
+        ]
 
     elif catalog_key == "productSpecifications":
         base["resourceSpecifications"] = [
@@ -242,7 +247,27 @@ async def fetch_catalog_from_bssf() -> dict:
         if fetched < len(entries):
             errors[catalog_key] = f"{len(entries) - fetched} of {len(entries)} failed"
 
-    # Extract resourceSpecifications from productSpecifications
+    # Build PS lookup by id for PO -> PS -> RS traversal
+    ps_by_id = {ps["id"]: ps for ps in catalog.get("productSpecifications", []) if ps.get("id")}
+
+    # Resolve resourceSpecifications for each PO via linked productSpecifications
+    for po in catalog.get("productOfferings", []):
+        if po.get("resourceSpecifications"):  # already populated from direct PO response
+            continue
+        seen_rs_po = set()
+        rs_list = []
+        for ps_ref in (po.get("productSpecifications") or []):
+            ps = ps_by_id.get(ps_ref.get("id", ""))
+            if not ps:
+                continue
+            for rs in (ps.get("resourceSpecifications") or []):
+                key = rs.get("id") or rs.get("externalId")
+                if key and key not in seen_rs_po:
+                    seen_rs_po.add(key)
+                    rs_list.append(rs)
+        po["resourceSpecifications"] = rs_list
+
+    # Collect all resource specs into catalog-level list
     seen_rs = set()
     for ps in catalog.get("productSpecifications", []):
         for rs in (ps.get("resourceSpecifications") or []):
