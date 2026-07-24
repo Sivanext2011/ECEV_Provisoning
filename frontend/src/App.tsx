@@ -63,7 +63,7 @@ function ProvisionWizard() {
       if (cfg?.defaults?.homeTimeZone) setHomeTimeZone(cfg.defaults.homeTimeZone)
       if (cfg?.defaults) setCmDefaults(cfg.defaults)
     }).catch(() => {})
-  }, [step === 0])
+  }, [step])
 
   if (!specs) return (
     <div>

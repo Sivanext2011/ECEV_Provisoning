@@ -274,11 +274,13 @@ async def fetch_catalog_from_bssf() -> dict:
                 key = rs.get("id") or rs.get("externalId")
                 if key and key not in seen_rs_po:
                     seen_rs_po.add(key)
+                    # Keep the type from PS traversal — don't overwrite with empty rsType from catalog RS
+                    rs_type = rs_ref.get("type", "") or (rs_full.get("rsType") or rs_full.get("type", "") if rs_full else "")
                     rs_list.append({
                         "id": rs.get("id", ""),
                         "externalId": rs.get("externalId", ""),
                         "name": rs.get("name", ""),
-                        "type": rs.get("rsType") or rs.get("type", ""),
+                        "type": rs_type,
                     })
         po["resourceSpecifications"] = rs_list
 
