@@ -167,11 +167,19 @@ def _normalize(item: dict, catalog_key: str) -> dict:
             {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", "")}
             for r in (item.get("productSpecification") or [])
         ]
-        # Resource specs may be directly on the PO response (some BSSF versions)
+        # Collect RS from all possible fields in PO response
+        raw_rs = (
+            item.get("resourceSpecification") or
+            item.get("resourceSpecifications") or
+            item.get("resourceSpec") or []
+        )
         base["resourceSpecifications"] = [
-            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""), "type": r.get("type", "")}
-            for r in (item.get("resourceSpecification") or [])
+            {"id": r.get("id", ""), "externalId": r.get("externalId", ""), "name": r.get("name", ""), "type": r.get("type", "") or r.get("resourceSpecificationType", "")}
+            for r in raw_rs
         ]
+        # Log full PO response keys for first PO to diagnose missing RS link
+        if not raw_rs:
+            logger.debug(f"PO {base['externalId']} raw keys: {list(item.keys())}")
 
     elif catalog_key == "productSpecifications":
         base["resourceSpecifications"] = [
@@ -230,6 +238,7 @@ async def fetch_catalog_from_bssf() -> dict:
 
     counts = {}
     errors = {}
+    _po_raw_keys_logged = False
 
     for spec_type, api_key, ext_id_param, catalog_key in _SPEC_TYPE_MAP:
         entries = await _list_spec_ids(spec_type)
@@ -243,6 +252,9 @@ async def fetch_catalog_from_bssf() -> dict:
             spec_id = entry.get("id", "")
             item = await _fetch_spec(api_key, ext_id_param, ext_id, spec_id)
             if item:
+                if catalog_key == "productOfferings" and not _po_raw_keys_logged:
+                    logger.warning(f"PO raw response keys for '{ext_id}': {list(item.keys())}")
+                    _po_raw_keys_logged = True
                 catalog[catalog_key].append(_normalize(item, catalog_key))
                 fetched += 1
 
