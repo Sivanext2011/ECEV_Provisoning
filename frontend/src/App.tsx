@@ -330,14 +330,17 @@ function ProvisionWizard() {
             const optChars = cs ? getOptionalChars(cs.characteristics) : []
             const poMustChars = po ? getMustChars(po.characteristics || []) : []
             const poOptChars = po ? getOptionalChars(po.characteristics || []) : []
-            const poResourceSpecs = [...(po?.resourceSpecifications || [])]
+            // LRS = Logical Resource Spec (MSISDN/IMSI) — needs user input
+            // PBS = Product Bucket Spec — auto-created by BSSF, no user input needed
+            // No type = live-fetch path (treat as LRS, show to user)
+            const poResourceSpecs = (po?.resourceSpecifications || []).filter((rs: any) => rs.type !== 'PBS')
             return (
               <fieldset><legend>Contract & Product</legend>
                 {(() => {
                   return poResourceSpecs.length > 0 ? <>
                     <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Identification Resources (required by Product Offering):</p>
                     {poResourceSpecs.map((rs: any) => (
-                      <label key={rs.id} style={{ display: 'block', marginBottom: 6 }}>
+                      <label key={rs.id || rs.externalId} style={{ display: 'block', marginBottom: 6 }}>
                         {rs.name}{rs.externalId ? ` (${rs.externalId})` : ''}{rs.type ? ` [${rs.type}]` : ''} <span style={{ color: 'red' }}>*</span>
                         <input style={{ width: '100%' }} placeholder={`Enter ${rs.name} number`}
                           value={formValues.contract[`_res_${rs.externalId || rs.id}`] || ''}
@@ -345,7 +348,7 @@ function ProvisionWizard() {
                       </label>
                     ))}
                   </> : selectedPO ? <p style={{ fontSize: 11, color: '#888' }}>No identification resources linked to this PO.</p> : null
-                })()}
+                })()
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>Home Time Zone
                   <input style={{ width: '100%' }} value={homeTimeZone} onChange={e => setHomeTimeZone(e.target.value)} placeholder="e.g. Europe/Stockholm" />
                 </label>
@@ -522,7 +525,7 @@ function ProvisionWizard() {
               if (products.length) ctb.product = products
               // Resources from PO
               const po = specs?.productOfferings?.find((p: any) => p.externalId === selectedPO)
-              const poResourceSpecs2 = [...(po?.resourceSpecifications || [])]
+              const poResourceSpecs2 = (po?.resourceSpecifications || []).filter((rs: any) => rs.type !== 'PBS')
               const resources: any[] = []
               for (const rs of poResourceSpecs2) {
                 const resNumber = formValues.contract[`_res_${rs.externalId || rs.id}`]
