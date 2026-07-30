@@ -525,6 +525,13 @@ def parse_business_config(zip_bytes: bytes) -> dict:
                         c.get("alpha3Code") or c.get("id") for c in currencies
                         if c.get("alpha3Code") or c.get("id")
                     )
+                # Language -> languages
+                if "entities/Language.json" in gl_zip.namelist():
+                    langs = json.loads(gl_zip.read("entities/Language.json").decode("utf-8"))
+                    _catalog["languages"] = [
+                        {"id": l.get("alpha2Code") or l.get("id"), "name": l.get("name", "")}
+                        for l in langs if l.get("alpha2Code") or l.get("id")
+                    ]
     except Exception as e:
         logger.warning(f"Could not parse global lists from zip: {e}")
         # Preserve existing reference data if parse failed

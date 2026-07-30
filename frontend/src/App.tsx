@@ -45,6 +45,8 @@ function ProvisionWizard() {
   const [selectedCmSpecs, setSelectedCmSpecs] = useState<Array<{ specExtId: string; charVals: Record<string, string>; externalId: string }>>([{ specExtId: '', charVals: {}, externalId: '' }])
   const [homeTimeZone, setHomeTimeZone] = useState('Europe/Stockholm')
   const [includeContactMediumAssoc, setIncludeContactMediumAssoc] = useState(true)
+  const [cmAssocLanguage, setCmAssocLanguage] = useState('en')
+  const [languages, setLanguages] = useState<Array<{id: string; name: string}>>([])
   const [cmDefaults, setCmDefaults] = useState<any>({})
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
   const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: true, sharingProvider: false })
@@ -64,6 +66,7 @@ function ProvisionWizard() {
       if (cfg?.defaults?.homeTimeZone) setHomeTimeZone(cfg.defaults.homeTimeZone)
       if (cfg?.defaults) setCmDefaults(cfg.defaults)
     }).catch(() => {})
+    fetch(`${API}/refdata/languages`).then(r => r.ok ? r.json() : []).then(setLanguages).catch(() => {})
   }, [step])
 
   if (!specs) return (
@@ -384,8 +387,19 @@ function ProvisionWizard() {
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, marginBottom: 6 }}>
                   <input type="checkbox" checked={includeContactMediumAssoc} onChange={e => setIncludeContactMediumAssoc(e.target.checked)} />
-                  Include contactMediumAssociation (SMS/REST/EMAIL)
+                  Include contactMediumAssociation
                 </label>
+                {includeContactMediumAssoc && (
+                  <label style={{ display: 'block', fontSize: 12, marginBottom: 6 }}>Association Language
+                    {languages.length > 0 ? (
+                      <select style={{ width: '100%' }} value={cmAssocLanguage} onChange={e => setCmAssocLanguage(e.target.value)}>
+                        {languages.map(l => <option key={l.id} value={l.id}>{l.name} ({l.id})</option>)}
+                      </select>
+                    ) : (
+                      <input style={{ width: '100%' }} value={cmAssocLanguage} onChange={e => setCmAssocLanguage(e.target.value)} placeholder="e.g. en" />
+                    )}
+                  </label>
+                )}
                 {selectedPO && <>
                   <p style={{ fontSize: 12, color: '#555', margin: '8px 0 4px' }}>Product Options:</p>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
@@ -487,7 +501,7 @@ function ProvisionWizard() {
                 .filter(e => e.specExtId)
                 .map(e => ({
                   contactRole: 'Notification',
-                  language: 'en',
+                  language: cmAssocLanguage || 'en',
                   contactMediumExternalId: e.externalId || `cm_${e.specExtId}_${msisdn}`,
                   enabled: true,
                   validFor: { startDateTime: nowDt },

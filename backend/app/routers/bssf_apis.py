@@ -327,6 +327,13 @@ async def get_refdata_currencies():
     return get_catalog().get("currencies") or []
 
 
+@router.get("/refdata/languages")
+async def get_refdata_languages():
+    """Return languages list from catalog (parsed from BusinessConfig zip upload)."""
+    from ..services.catalog import get_catalog
+    return get_catalog().get("languages") or []
+
+
 # === Product Catalog Integration (RMCA Catalog endpoint, separate TLS) ===
 async def _catalog_call(api_key: str, body: dict = None, params: dict = None):
     try:
