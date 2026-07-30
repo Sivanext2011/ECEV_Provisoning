@@ -33,7 +33,7 @@ def _build_contact_mediums(defaults: dict, msisdn: str, email: str = None) -> li
         ("EMAIL", "EMail", email or f"{msisdn}@placeholder.com"),
     ]:
         cm = {
-            "externalId": defaults.get(f"{prefix}_contactMediumExternalId", f"cm_{prefix}_{msisdn}"),
+            "externalId": defaults.get(f"{prefix}_contactMediumExternalId") or f"cm_{prefix}_{msisdn}",
             "characteristic": [],
         }
         spec = defaults.get(f"{prefix}_contactMediumSpecExternalId")
@@ -56,7 +56,7 @@ def _build_contact_medium_associations(defaults: dict, msisdn: str, start_dt: st
         {
             "contactRole": "Notification",
             "language": "en",
-            "contactMediumExternalId": defaults.get(f"{prefix}_contactMediumExternalId", f"cm_{prefix}_{msisdn}"),
+            "contactMediumExternalId": defaults.get(f"{prefix}_contactMediumExternalId") or f"cm_{prefix}_{msisdn}",
             "enabled": True,
             **entry,
         }
@@ -69,7 +69,7 @@ async def create_party(given_name: str, family_name: str, msisdn: str, email: st
     defaults = _defaults()
 
     body = {
-        "externalId": defaults.get("partyExternalId", msisdn),
+        "externalId": defaults.get("partyExternalId") or f"extID-party-{msisdn}",
         "status": [{"status": "PartyActive"}],
         "contactMedium": _build_contact_mediums(defaults, msisdn, email),
     }
@@ -100,7 +100,7 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
 
     now = _now_bssf()
     body = {
-        "externalId": defaults.get("customerExternalId", msisdn),
+        "externalId": defaults.get("customerExternalId") or f"extID-customer-{msisdn}",
         "engagedParty": {"externalId": party_external_id, "@referredType": "Individual"},
         "status": [{"status": "CustomerActive"}],
         "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn, now),
@@ -122,7 +122,7 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
     # Billing account inline
     ba_spec = defaults.get("billingAccountSpecExternalId")
     if ba_spec:
-        ba_ext_id = defaults.get("customerBAExternalId", f"BA_{msisdn}")
+        ba_ext_id = defaults.get("customerBAExternalId") or f"extID_BA-{msisdn}"
         ba = {
             "billingAccountSpecExternalId": ba_spec,
             "externalId": ba_ext_id,
@@ -131,7 +131,7 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
         }
         bill_cycle = bill_cycle_spec_external_id or defaults.get("billCycleSpecExternalId")
         if bill_cycle:
-            bcs_ext_id = defaults.get("customerBCSExternalId", f"BCS_{msisdn}")
+            bcs_ext_id = defaults.get("customerBCSExternalId") or f"BCS_{msisdn}"
             ba["customerBillCycleSpecification"] = [{
                 "externalId": bcs_ext_id,
                 "billCycleSpecExternalId": bill_cycle,
