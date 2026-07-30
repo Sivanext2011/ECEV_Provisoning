@@ -482,12 +482,29 @@ function ProvisionWizard() {
               const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
               if (partyChars.length) pb.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
 
+              const nowDt = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z')
+              const buildCma = () => selectedCmSpecs
+                .filter(e => e.specExtId)
+                .map(e => ({
+                  contactRole: 'Notification',
+                  language: 'en',
+                  contactMediumExternalId: e.externalId || `cm_${e.specExtId}_${msisdn}`,
+                  enabled: true,
+                  validFor: { startDateTime: nowDt },
+                }))
               const cb: any = {
                 externalId: customerExtId,
                 customerSpecification: { externalId: selectedCustSpec },
                 status: [{ status: 'CustomerActive' }],
                 account: [{ externalId: baExtId, billingAccountSpecExternalId: selectedBASpec, status: [{ status: 'BillingAccountActive' }] }],
                 engagedParty: { externalId: partyExtId, '@referredType': 'Individual' },
+              }
+              if (includeContactMediumAssoc) {
+                const cma = buildCma()
+                if (cma.length) {
+                  cb.contactMediumAssociation = cma
+                  cb.account[0].contactMediumAssociation = cma
+                }
               }
               if (billCycleSpecExtId.trim()) {
                 cb.account[0].customerBillCycleSpecification = [{
