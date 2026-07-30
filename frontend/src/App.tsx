@@ -489,6 +489,7 @@ function ProvisionWizard() {
                 .map(e => ({
                   contactMediumSpecExternalId: e.specExtId,
                   externalId: e.externalId || `cm_${e.specExtId}_${msisdn}`,
+                  validFor: { startDateTime: nowDt },
                   characteristic: Object.entries(e.charVals)
                     .filter(([, v]) => v)
                     .map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] })),
