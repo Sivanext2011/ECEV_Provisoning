@@ -49,14 +49,16 @@ def _build_contact_mediums(defaults: dict, msisdn: str, email: str = None) -> li
     return mediums
 
 
-def _build_contact_medium_associations(defaults: dict, msisdn: str) -> list:
+def _build_contact_medium_associations(defaults: dict, msisdn: str, start_dt: str = None) -> list:
     """Build contactMediumAssociation referencing the 3 party contact mediums."""
+    entry = {"validFor": {"startDateTime": start_dt}} if start_dt else {}
     return [
         {
             "contactRole": "Notification",
             "language": "en",
             "contactMediumExternalId": defaults.get(f"{prefix}_contactMediumExternalId", f"cm_{prefix}_{msisdn}"),
             "enabled": True,
+            **entry,
         }
         for prefix in ("SMS", "REST", "EMAIL")
     ]
@@ -96,11 +98,12 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
     """Create Customer per bssfCustomerManagement v2.17 schema."""
     defaults = _defaults()
 
+    now = _now_bssf()
     body = {
         "externalId": defaults.get("customerExternalId", msisdn),
         "engagedParty": {"externalId": party_external_id, "@referredType": "Individual"},
         "status": [{"status": "CustomerActive"}],
-        "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn),
+        "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn, now),
     }
 
     cust_spec = defaults.get("customerSpecExternalId")
@@ -124,6 +127,7 @@ async def create_customer(party_external_id: str, msisdn: str, bill_cycle_spec_e
             "billingAccountSpecExternalId": ba_spec,
             "externalId": ba_ext_id,
             "status": [{"status": "BillingAccountActive"}],
+            "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn, now),
         }
         bill_cycle = bill_cycle_spec_external_id or defaults.get("billCycleSpecExternalId")
         if bill_cycle:
@@ -155,7 +159,7 @@ async def create_contract(
     body = {
         "externalId": contract_ext_id,
         "status": [{"status": "Active"}],
-        "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn),
+        "contactMediumAssociation": _build_contact_medium_associations(defaults, msisdn, _now_bssf()),
     }
 
     ctr_spec = defaults.get("contractSpecExternalId")

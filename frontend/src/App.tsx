@@ -41,7 +41,7 @@ function ProvisionWizard() {
   const [selectedPO, setSelectedPO] = useState('')
   const [additionalPOs, setAdditionalPOs] = useState<Array<{ poExtId: string; formVals: any }>>([{ poExtId: '', formVals: {} }])
   const [selectedCommIdSpec, setSelectedCommIdSpec] = useState('')
-  const [selectedResources, setSelectedResources] = useState<Array<{ specExtId: string; value: string }>>([])
+  const [selectedResources, setSelectedResources] = useState<Array<{ specExtId: string; specId?: string; value: string }>>([])
   const [selectedCmSpecs, setSelectedCmSpecs] = useState<Array<{ specExtId: string; charVals: Record<string, string>; externalId: string }>>([{ specExtId: '', charVals: {}, externalId: '' }])
   const [homeTimeZone, setHomeTimeZone] = useState('Europe/Stockholm')
   const [includeContactMediumAssoc, setIncludeContactMediumAssoc] = useState(true)
@@ -184,7 +184,13 @@ function ProvisionWizard() {
               setSelectedPO(e.target.value)
               const po = poList.find((p: any) => p.externalId === e.target.value)
               if (po) prefillDefaults(getPersonalizableChars(po.characteristics || []), 'contract')
-              setSelectedResources([{ specExtId: '', value: '' }])
+              // Pre-fill resource rows from PO's linked resource specs (from zip catalog)
+              const poRs = po?.resourceSpecifications || []
+              setSelectedResources(
+                poRs.length > 0
+                  ? poRs.map((rs: any) => ({ specExtId: rs.externalId, specId: rs.id, value: '' }))
+                  : [{ specExtId: '', specId: '', value: '' }]
+              )
             }}>
               <option value="">-- Select --</option>
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
@@ -337,21 +343,40 @@ function ProvisionWizard() {
                 {selectedPO && (
                   <div style={{ marginBottom: 8 }}>
                     <p style={{ fontSize: 12, color: '#555', margin: '0 0 6px' }}>Identification Resources (MSISDN/IMSI):</p>
-                    {selectedResources.map((entry, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
-                        <select style={{ flex: 2 }} value={entry.specExtId} onChange={e => {
-                          const u = [...selectedResources]; u[idx] = { ...u[idx], specExtId: e.target.value }; setSelectedResources(u)
-                        }}>
-                          <option value="">-- Select CommID Spec --</option>
-                          {commIdSpecs.map((s: any) => <option key={s.id || s.externalId} value={s.externalId}>{s.name} ({s.externalId})</option>)}
-                        </select>
-                        <input style={{ flex: 2 }} placeholder="Enter number (e.g. MSISDN or IMSI)"
-                          value={entry.value}
-                          onChange={e => { const u = [...selectedResources]; u[idx] = { ...u[idx], value: e.target.value }; setSelectedResources(u) }} />
-                        {selectedResources.length > 1 && <button type="button" onClick={() => setSelectedResources(selectedResources.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
-                      </div>
-                    ))}
-                    <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedResources([...selectedResources, { specExtId: '', value: '' }])}>+ Add Resource</button>
+                    {(() => {
+                      const selectedPOObj = poList.find((p: any) => p.externalId === selectedPO)
+                      const poHasRs = (selectedPOObj?.resourceSpecifications || []).length > 0
+                      return selectedResources.map((entry, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                          {poHasRs ? (
+                            // PO has linked RS from zip — show as read-only label
+                            <span style={{ flex: 2, fontSize: 12, padding: '4px 6px', background: '#f0f4ff', border: '1px solid #c7d2fe', borderRadius: 4 }}>
+                              {entry.specExtId}
+                            </span>
+                          ) : (
+                            // No RS from zip — fall back to CommID spec dropdown
+                            <select style={{ flex: 2 }} value={entry.specExtId} onChange={e => {
+                              const s = commIdSpecs.find((s: any) => s.externalId === e.target.value)
+                              const u = [...selectedResources]; u[idx] = { ...u[idx], specExtId: e.target.value, specId: s?.id || '' }; setSelectedResources(u)
+                            }}>
+                              <option value="">-- Select CommID Spec --</option>
+                              {commIdSpecs.map((s: any) => <option key={s.id || s.externalId} value={s.externalId}>{s.name} ({s.externalId})</option>)}
+                            </select>
+                          )}
+                          <input style={{ flex: 2 }} placeholder={entry.specExtId.toLowerCase().includes('imsi') ? 'IMSI (15 digits)' : 'MSISDN'}
+                            value={entry.value}
+                            onChange={e => { const u = [...selectedResources]; u[idx] = { ...u[idx], value: e.target.value }; setSelectedResources(u) }} />
+                          {!poHasRs && selectedResources.length > 1 && <button type="button" onClick={() => setSelectedResources(selectedResources.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
+                        </div>
+                      ))
+                    })()}
+                    {(() => {
+                      const selectedPOObj = poList.find((p: any) => p.externalId === selectedPO)
+                      const poHasRs = (selectedPOObj?.resourceSpecifications || []).length > 0
+                      return !poHasRs && (
+                        <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setSelectedResources([...selectedResources, { specExtId: '', specId: '', value: '' }])}>+ Add Resource</button>
+                      )
+                    })()}
                   </div>
                 )}
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>Home Time Zone
@@ -528,17 +553,22 @@ function ProvisionWizard() {
                 products.push(addOn)
               }
               if (products.length) ctb.product = products
-              // Resources from CommID specs selected by user
+              // Resources: use PO-linked RS specs (from zip) or CommID spec fallback
+              const selectedPOObj2 = poList.find((p: any) => p.externalId === selectedPO)
+              const poRsList: any[] = selectedPOObj2?.resourceSpecifications || []
               const resources: any[] = []
               for (const entry of selectedResources.filter(e => e.specExtId && e.value.trim())) {
-                const commIdSpec = commIdSpecs.find((s: any) => s.externalId === entry.specExtId)
                 const rsLabel = entry.specExtId.replace(/[^a-zA-Z0-9_-]/g, '')
+                // Find spec id: prefer PO-linked RS, then CommID spec
+                const linkedRs = poRsList.find((r: any) => r.externalId === entry.specExtId)
+                const commIdSpec = commIdSpecs.find((s: any) => s.externalId === entry.specExtId)
+                const specId = entry.specId || linkedRs?.id || commIdSpec?.id || ''
                 const res: any = {
                   externalId: `${rsLabel}-${entry.value}`,
                   resourceNumber: entry.value,
                   resourceSpecificationExternalId: entry.specExtId,
                 }
-                if (commIdSpec?.id) res.resourceSpecificationId = commIdSpec.id
+                if (specId) res.resourceSpecificationId = specId
                 resources.push(res)
               }
               if (resources.length) ctb.resource = resources
