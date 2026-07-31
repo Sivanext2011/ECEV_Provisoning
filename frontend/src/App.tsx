@@ -1586,7 +1586,8 @@ function OperationsPanel() {
     // Spec Enquiry
     spec_contract: { label: 'Read Contract Specification', method: 'GET', path: '/spec/contract', fields: ['externalId'], queryParams: ['externalId'] },
     spec_product: { label: 'Read Product Specification', method: 'GET', path: '/spec/product', fields: ['externalId'], queryParams: ['externalId'] },
-    spec_offering: { label: 'Read Product Offering', method: 'GET', path: '/spec/product_offering', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_offering: { label: 'Read Product Offering', method: 'GET', path: '/spec/productOffering', fields: ['externalId'], queryParams: ['externalId'] },
+    spec_cfss: { label: 'Read Customer Facing Service Spec', method: 'GET', path: '/spec/customerFacingService', fields: ['externalId'], queryParams: ['externalId'] },
     spec_bucket: { label: 'Read Bucket Specification', method: 'GET', path: '/spec/bucket', fields: ['externalId'], queryParams: ['externalId'] },
     spec_billing: { label: 'Read Billing Account Spec', method: 'GET', path: '/spec/billing_account', fields: ['externalId'], queryParams: ['externalId'] },
     // Account
@@ -2176,7 +2177,7 @@ function ApiLogsPanel() {
                   {l.headers && <><b>Request Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.headers, null, 2)}</pre></>}
                   {l.request_body && <><b>Request Body:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.request_body, null, 2)}</pre></>}
                   {l.response_headers && <><b>Response Headers:</b><pre style={{ fontSize: 11, margin: '4px 0' }}>{JSON.stringify(l.response_headers, null, 2)}</pre></>}
-                  {l.response_body && <><b>Response Body:</b><pre style={{ fontSize: 11, margin: '4px 0', maxHeight: 300, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{l.response_body}</pre></>}
+                  {l.response_body && <><b>Response Body:</b><pre style={{ fontSize: 11, margin: '4px 0', maxHeight: 600, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{(() => { try { return JSON.stringify(JSON.parse(l.response_body), null, 2) } catch { return l.response_body } })()}</pre></>}
                 </td></tr>
               )}
             </React.Fragment>

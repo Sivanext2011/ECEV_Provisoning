@@ -501,6 +501,16 @@ async def spec_price_tax_category(externalId: str = None):
     q = {"externalId": externalId} if externalId else {}
     return await _call("spec_price_tax_category", query_params=q)
 
+@router.get("/spec/product")
+async def spec_product(externalId: str = None):
+    q = {"externalId": externalId} if externalId else {}
+    return await _call("spec_product", query_params=q)
+
+@router.get("/spec/productOffering")
+async def spec_product_offering(externalId: str = None):
+    q = {"externalId": externalId} if externalId else {}
+    return await _call("spec_product_offering", query_params=q)
+
 @router.get("/spec/productOfferingPrice")
 async def spec_product_offering_price(externalId: str = None):
     q = {"externalId": externalId} if externalId else {}

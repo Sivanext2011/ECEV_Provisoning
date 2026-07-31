@@ -173,7 +173,7 @@ class EricssonClient:
             "url": url,
             "status": status,
             "request_body": req_body,
-            "response_body": resp_text[:2000] if resp_text else "",
+            "response_body": resp_text[:50000] if resp_text else "",
         }
         api_logs.append(entry)
         if len(api_logs) > 500:

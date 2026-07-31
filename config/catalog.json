@@ -1,0 +1,473 @@
+{
+  "individualPartySpecifications": [
+    {
+      "id": "c7862a46-12c9-4b2f-8ca0-2f50aee74251",
+      "externalId": "Party_Individual_CHT",
+      "name": "Party_Individual_CHT",
+      "characteristics": [
+        {
+          "id": "d1b116589814544528aa9fdcb51248ae",
+          "externalId": "Party Removal grace period",
+          "name": "Party Removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "12",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "1",
+          "valueTo": "9223372036854775807"
+        }
+      ]
+    }
+  ],
+  "customerSpecifications": [
+    {
+      "id": "06ce0153-525e-4b5f-b883-5f5ab4bba021",
+      "externalId": "CHT_Customer_Postpaid",
+      "name": "CHT_Customer_Postpaid",
+      "characteristics": [
+        {
+          "id": "maxNumberOfNotifications",
+          "externalId": "Maximum number of notifications",
+          "name": "Maximum number of notifications",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "10",
+          "possibleValues": [],
+          "unitOfMeasure": "",
+          "valueFrom": "0",
+          "valueTo": "9223372036854775807"
+        },
+        {
+          "id": "customerDeletionPeriod",
+          "externalId": "customerDeletionPeriod",
+          "name": "customerDeletionPeriod",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "10",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "9223372036854775807"
+        },
+        {
+          "id": "customerRole",
+          "externalId": "customerRole",
+          "name": "customerRole",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": true,
+          "defaultValue": "SC-OWNER",
+          "possibleValues": [
+            {
+              "name": "customerRoleValue",
+              "value": "SC-OWNER",
+              "default": true
+            }
+          ],
+          "unitOfMeasure": ""
+        }
+      ]
+    }
+  ],
+  "organizationSpecifications": [],
+  "contractSpecifications": [
+    {
+      "id": "5e266d65-6143-4c42-800a-65c4181b4ef2",
+      "externalId": "CHT_Contract_Postpaid",
+      "name": "CHT_Contract_Postpaid",
+      "characteristics": [
+        {
+          "id": "cd9660fae5e944adf9195e4cee2f4e30",
+          "externalId": "Contract removal grace period",
+          "name": "Contract removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "8",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "9223372036854775807"
+        },
+        {
+          "id": "bbd62923c787849559cc17745b918330",
+          "externalId": "Product removal grace period",
+          "name": "Product removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "7",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "2147483647"
+        },
+        {
+          "id": "d658e46234cb947f8b63b41d3af85ef5",
+          "externalId": "Product removal start time",
+          "name": "Product removal start time",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "1",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "23"
+        },
+        {
+          "id": "bb78c184db39942e59edd48187db84e4",
+          "externalId": "Product removal endtime",
+          "name": "Product removal endtime",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "5",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "23"
+        },
+        {
+          "id": "db74c154e81d746b48bcfc7f6137f906",
+          "externalId": "Product termination grace period",
+          "name": "Product termination grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "7",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "2147483647"
+        },
+        {
+          "id": "ee9f8fe977be24c16837db2b1e3b72f6",
+          "externalId": "Value container removal grace period",
+          "name": "Value container removal grace period",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "7",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "2147483647"
+        },
+        {
+          "id": "fd0786ebfcf9d42849f0277e8d33851f",
+          "externalId": "Contract initial activation date",
+          "name": "Contract initial activation date",
+          "valueType": "DATE_TIME",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "",
+          "valueFrom": "Beginning of time",
+          "valueTo": "End of time"
+        },
+        {
+          "id": "acb8f89aab37e45c8a653ef00356f8eb",
+          "externalId": "Grace period for contract termination",
+          "name": "Grace period for contract termination",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": true,
+          "defaultValue": "30",
+          "possibleValues": [
+            {
+              "name": "Default value for grace period for contract termination",
+              "value": "30",
+              "default": true
+            },
+            {
+              "name": "Possible value for grace period for contract termination",
+              "value": "5",
+              "default": false
+            }
+          ],
+          "unitOfMeasure": "Duration"
+        },
+        {
+          "id": "cd50e3f594f734d85b677f592456805e",
+          "externalId": "Has pending purchase",
+          "name": "Has pending purchase",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "selection",
+          "required": false,
+          "defaultValue": "false",
+          "possibleValues": [
+            {
+              "name": "Default value for has pending purchase",
+              "value": "false",
+              "default": true
+            },
+            {
+              "name": "Possible value for has pending purchase",
+              "value": "true",
+              "default": false
+            }
+          ],
+          "unitOfMeasure": ""
+        },
+        {
+          "id": "b7efa6ce8beb54f4c9a415bc03fb260b",
+          "externalId": "Use SC links",
+          "name": "Use SC links",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "selection",
+          "required": false,
+          "defaultValue": "true",
+          "possibleValues": [
+            {
+              "name": "Default value for use SC links",
+              "value": "true",
+              "default": true
+            },
+            {
+              "name": "Possible value for use SC links",
+              "value": "false",
+              "default": false
+            }
+          ],
+          "unitOfMeasure": ""
+        },
+        {
+          "id": "taxJurisdictionCode",
+          "externalId": "Tax Jurisdiction Code",
+          "name": "Tax Jurisdiction Code",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "",
+          "valueFrom": "1",
+          "valueTo": "256"
+        },
+        {
+          "id": "taxCategory",
+          "externalId": "Tax Category",
+          "name": "Tax Category",
+          "valueType": "STRING",
+          "valueRegulator": "mustBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "",
+          "valueFrom": "1",
+          "valueTo": "256"
+        }
+      ],
+      "paymentContext": "Postpaid"
+    }
+  ],
+  "billingAccountSpecifications": [],
+  "productSpecifications": [],
+  "productOfferings": [
+    {
+      "id": "f56b28eb-79b5-4e43-b06f-6df5d3b442ce",
+      "externalId": "PO_HOTSPOT_CHT",
+      "name": "PO_HOTSPOT_CHT",
+      "characteristics": [
+        {
+          "id": "ec793e51cd302ce3d24d919c6a05e115",
+          "externalId": "ActivePeriodFormationTechnique",
+          "name": "ActivePeriodFormationTechnique",
+          "valueType": "STRING",
+          "valueRegulator": "selection",
+          "required": false,
+          "defaultValue": "Relative",
+          "possibleValues": [
+            {
+              "name": "RelativeValue",
+              "value": "Relative",
+              "default": true
+            },
+            {
+              "name": "absoluteValue",
+              "value": "Absolute",
+              "default": false
+            }
+          ],
+          "unitOfMeasure": ""
+        },
+        {
+          "id": "aea7cab354684247d0953e5957cdc13f",
+          "externalId": "ActivePeriodExpiryWarningTimeInAdvance",
+          "name": "ActivePeriodExpiryWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "9223372036854775807"
+        },
+        {
+          "id": "f8e1203e3ecbcd33fbc84f7a96232e39",
+          "externalId": "TerminationWarningTimeInAdvance",
+          "name": "TerminationWarningTimeInAdvance",
+          "valueType": "LONG",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "Duration",
+          "valueFrom": "0",
+          "valueTo": "9223372036854775807"
+        }
+      ],
+      "offeringTypes": [
+        "BASE"
+      ],
+      "productSpecifications": []
+    }
+  ],
+  "resourceSpecifications": [],
+  "bucketTags": [],
+  "characteristicSetSpecifications": [],
+  "customerFacingServiceSpecifications": [
+    {
+      "id": "86aa364a-20fa-41f1-a938-6e5039fe6185",
+      "externalId": "CFSS_Data",
+      "name": "CFSS_Data",
+      "characteristics": [],
+      "type": "",
+      "subType": ""
+    }
+  ],
+  "scheduleDefinitions": [],
+  "billingCycleSpecifications": [],
+  "contactMediumSpecifications": [
+    {
+      "id": "6224ab45-caf8-419b-a3a2-5af89565a98d",
+      "externalId": "CHT_SMS",
+      "name": "CHT_SMS",
+      "characteristics": [],
+      "commIdCharKey": "",
+      "channelTypeCharKey": ""
+    }
+  ],
+  "agreementSpecifications": [],
+  "agreementItemSpecifications": [],
+  "partyRoleSpecifications": [],
+  "settlementAccountSpecifications": [],
+  "sharingProviderSpecifications": [
+    {
+      "id": "621da638-9157-477c-9db8-afe444fc6648",
+      "externalId": "",
+      "name": "SPS - Use all PBS and BABS",
+      "characteristics": [
+        {
+          "id": "db0b0445d512b47e8814cad020fb207a",
+          "externalId": "maxEntriesInTheConsumerList",
+          "name": "Max entries in the consumer list",
+          "valueType": "LONG",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "defaultValue": "1",
+          "possibleValues": [
+            {
+              "name": "defaultAllowedConsumers",
+              "value": "1",
+              "default": true
+            }
+          ],
+          "unitOfMeasure": ""
+        },
+        {
+          "id": "d8ed60715a6a548a0a46fa0c931aead7",
+          "externalId": "consumersInBasketRequest",
+          "name": "Consumers in basket request",
+          "valueType": "",
+          "valueRegulator": "",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": ""
+        }
+      ]
+    }
+  ],
+  "communicationIdentifierSpecifications": [],
+  "customerListSpecifications": [],
+  "referenceDataListSpecifications": [
+    {
+      "id": "GL_MccMncToZone",
+      "externalId": "GL_MccMncToZone",
+      "name": "GL_MccMncToZone",
+      "characteristics": []
+    },
+    {
+      "id": "E164NumberToOperatorIdMap",
+      "externalId": "E164NumberToOperatorIdMap",
+      "name": "E164NumberToOperatorIdMap",
+      "characteristics": []
+    },
+    {
+      "id": "E164Prefix",
+      "externalId": "E164Prefix",
+      "name": "E164Prefix",
+      "characteristics": []
+    },
+    {
+      "id": "IpAddress",
+      "externalId": "IpAddress",
+      "name": "IpAddress",
+      "characteristics": []
+    },
+    {
+      "id": "RefillProfile",
+      "externalId": "RefillProfile",
+      "name": "RefillProfile",
+      "characteristics": []
+    }
+  ],
+  "bucketDeterminationSpecifications": [
+    {
+      "id": "9a605ea5-74d1-418d-a53a-b71f854c0054",
+      "externalId": "",
+      "name": "BDS - All PBS and BABS",
+      "characteristics": [
+        {
+          "id": "ddee5c7d575757fa9823c3adfee0662a",
+          "externalId": "sharingPricetypeLimitation",
+          "name": "Sharing pricetype limitation",
+          "valueType": "BOOLEAN",
+          "valueRegulator": "noPersonalization",
+          "required": true,
+          "defaultValue": "true",
+          "possibleValues": [
+            {
+              "name": "Sharing pricetype limitationValue",
+              "value": "true",
+              "default": true
+            }
+          ],
+          "unitOfMeasure": ""
+        },
+        {
+          "id": "b6daa6c9aa735f31bf291e9676c51341",
+          "externalId": "billingAccountId",
+          "name": "Billing account Id",
+          "valueType": "STRING",
+          "valueRegulator": "canBePersonalized",
+          "required": false,
+          "defaultValue": "",
+          "possibleValues": [],
+          "unitOfMeasure": "",
+          "valueFrom": "1",
+          "valueTo": "256"
+        }
+      ]
+    }
+  ],
+  "tagSpecifications": []
+}
