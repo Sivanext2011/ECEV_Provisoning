@@ -203,11 +203,12 @@ function ProvisionWizard() {
                   .then(r => r.ok ? r.json() : [])
                   .then((pops: any[]) => {
                     setPopPersonalization(pops)
-                    // Pre-fill defaults
+                    // Pre-fill defaults: key = `${popId}_${rowId}_${charId}`
                     const defaults: Record<string, {value:string;unit:string}> = {}
                     for (const pop of pops)
-                      for (const c of pop.chars)
-                        defaults[`${pop.popId}_${c.externalId}`] = { value: c.defaultValue || '', unit: c.defaultUnit || (c.units?.[0] || '') }
+                      for (const row of (pop.rows || []))
+                        for (const c of (row.chars || []))
+                          defaults[`${pop.popId}_${row.rowId}_${c.id}`] = { value: c.defaultValue || '', unit: c.defaultUnit || (c.units?.[0] || '') }
                     setPopValues(defaults)
                   }).catch(() => {})
               }
@@ -442,31 +443,36 @@ function ProvisionWizard() {
                 </>}
                 {popPersonalization.length > 0 && <>
                   <p style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', margin: '10px 0 4px' }}>💰 Product Offering Price — Personalization:</p>
-                  {popPersonalization.map(pop => (
+                  {popPersonalization.map((pop: any) => (
                     <fieldset key={pop.popId} style={{ marginBottom: 8, borderColor: '#bfdbfe' }}>
                       <legend style={{ fontSize: 11, color: '#1d4ed8' }}>{pop.popName || pop.popExternalId}</legend>
-                      {pop.chars.map((c: any) => {
-                        const key = `${pop.popId}_${c.externalId}`
-                        const val = popValues[key] || { value: '', unit: c.defaultUnit || '' }
-                        return (
-                          <div key={c.externalId} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-                            <span style={{ fontSize: 12, flex: 2 }}>{c.name || c.externalId}</span>
-                            <input style={{ flex: 2, fontSize: 12 }} placeholder={c.defaultValue || 'value'}
-                              value={val.value}
-                              onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, value: e.target.value } }))} />
-                            {c.units?.length > 1 ? (
-                              <select style={{ flex: 1, fontSize: 12 }} value={val.unit}
-                                onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))}>
-                                {c.units.map((u: string) => <option key={u} value={u}>{u}</option>)}
-                              </select>
-                            ) : (
-                              <input style={{ flex: 1, fontSize: 12 }} placeholder={c.defaultUnit || 'unit'}
-                                value={val.unit}
-                                onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))} />
-                            )}
-                          </div>
-                        )
-                      })}
+                      {(pop.rows || []).map((row: any) => (
+                        <div key={row.rowId} style={{ marginBottom: 6 }}>
+                          {pop.rows.length > 1 && <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 2 }}>Row: {row.rowExternalId || row.rowId}</div>}
+                          {(row.chars || []).map((c: any) => {
+                            const key = `${pop.popId}_${row.rowId}_${c.id}`
+                            const val = popValues[key] || { value: '', unit: c.defaultUnit || '' }
+                            return (
+                              <div key={c.id} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                                <span style={{ fontSize: 12, flex: 2 }}>{c.name}</span>
+                                <input style={{ flex: 2, fontSize: 12 }} placeholder={c.defaultValue || 'value'}
+                                  value={val.value}
+                                  onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, value: e.target.value } }))} />
+                                {c.units?.length > 1 ? (
+                                  <select style={{ flex: 1, fontSize: 12 }} value={val.unit}
+                                    onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))}>
+                                    {c.units.map((u: string) => <option key={u} value={u}>{u}</option>)}
+                                  </select>
+                                ) : (
+                                  <input style={{ flex: 1, fontSize: 12 }} placeholder={c.defaultUnit || 'unit'}
+                                    value={val.unit}
+                                    onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))} />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ))}
                     </fieldset>
                   ))}
                 </>}
@@ -615,27 +621,29 @@ function ProvisionWizard() {
                 if (poCharEntries.length)
                   basePlanProduct.characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
                 // Inject POP personalization as price[].priceRow[].priceAction[].characteristic[]
+                // Schema: price[].productOfferingPrice{id,externalId}, priceRow[].productOfferingPriceRow{id}, priceAction[].characteristic[].charSpecId + value[]{value,unitOfMeasure}
                 const priceEntries = popPersonalization
-                  .map(pop => {
-                    const priceAction = pop.chars
-                      .map((c: any) => {
-                        const val = popValues[`${pop.popId}_${c.externalId}`]
+                  .map((pop: any) => {
+                    const priceRows = (pop.rows || []).map((row: any) => {
+                      const priceAction = (row.chars || []).map((c: any) => {
+                        const val = popValues[`${pop.popId}_${row.rowId}_${c.id}`]
                         if (!val?.value?.trim()) return null
-                        return {
-                          characteristic: [{
-                            charSpecExternalId: c.externalId,
-                            value: [{ value: val.value, unitOfMeasure: val.unit || undefined }]
-                          }]
-                        }
-                      })
-                      .filter(Boolean)
-                    if (!priceAction.length) return null
-                    return {
-                      productOfferingPrice: { id: pop.popId, externalId: pop.popExternalId },
-                      priceRow: [{
-                        ...(pop.priceRowId ? { productOfferingPriceRow: { id: pop.priceRowId } } : {}),
+                        const char: any = { value: [{ value: val.value }] }
+                        if (val.unit) char.value[0].unitOfMeasure = val.unit
+                        if (c.externalId) char.charSpecExternalId = c.externalId
+                        else char.charSpecId = c.id
+                        return { characteristic: [char] }
+                      }).filter(Boolean)
+                      if (!priceAction.length) return null
+                      return {
+                        ...(row.rowId ? { productOfferingPriceRow: { id: row.rowId } } : {}),
                         priceAction,
-                      }]
+                      }
+                    }).filter(Boolean)
+                    if (!priceRows.length) return null
+                    return {
+                      productOfferingPrice: { id: pop.popId, ...(pop.popExternalId ? { externalId: pop.popExternalId } : {}) },
+                      priceRow: priceRows,
                     }
                   })
                   .filter(Boolean)

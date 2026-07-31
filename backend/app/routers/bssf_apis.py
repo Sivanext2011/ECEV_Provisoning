@@ -541,34 +541,63 @@ async def spec_product_offering(externalId: str = None):
 
 @router.get("/spec/productOffering/popPersonalization")
 async def spec_po_pop_personalization(externalId: str = None):
-    """Return personalizable POP characteristics for a product offering."""
+    """Return personalizable POP characteristics for a product offering.
+    Chars are nested inside productOfferingPrice[].productOfferingPriceRow[].actionGroup.action[].specCharacteristic[]
+    """
     q = {"productOfferingExternalId": externalId} if externalId else {}
     po = await _call("spec_product_offering", query_params=q)
-    # Handle array or single response
     po_obj = po[0] if isinstance(po, list) else po
+
+    PERSONALIZABLE = {"CAN_BE_PERSONALIZED", "CANBE_PERSONALIZED", "MUST_BE_PERSONALIZED", "MUSTBE_PERSONALIZED"}
+
+    def extract_char(c: dict) -> dict:
+        vals = c.get("specCharacteristicValue") or []
+        default_val = next((v.get("value") for v in vals if v.get("isDefault")), "")
+        default_unit = next((v.get("unitOfMeasure") for v in vals if v.get("isDefault")), "")
+        units = list({v["unitOfMeasure"] for v in vals if v.get("unitOfMeasure")})
+        return {
+            "id": c.get("id", ""),            # -> charSpecId in contract
+            "externalId": c.get("externalId") or "",  # -> charSpecExternalId if present
+            "name": c.get("name", ""),
+            "valueType": c.get("valueType", ""),
+            "measure": c.get("measure", ""),
+            "defaultValue": default_val,
+            "defaultUnit": default_unit,
+            "units": units,
+        }
+
     result = []
+    seen_pop_ids = set()
     for pop in (po_obj.get("productOfferingPrice") or []):
-        chars = [
-            {
-                "id": c.get("id", ""),
-                "externalId": c.get("externalId") or c.get("name", ""),
-                "name": c.get("name", ""),
-                "valueType": c.get("valueType", ""),
-                "measure": c.get("measure", ""),
-                "defaultValue": next((v.get("value") for v in (c.get("specCharacteristicValue") or []) if v.get("isDefault")), ""),
-                "defaultUnit": next((v.get("unitOfMeasure") for v in (c.get("specCharacteristicValue") or []) if v.get("isDefault")), ""),
-                "units": list({v["unitOfMeasure"] for v in (c.get("specCharacteristicValue") or []) if v.get("unitOfMeasure")}),
-            }
-            for c in (pop.get("specCharacteristic") or [])
-            if (c.get("valueRegulator") or "").upper() in ("CAN_BE_PERSONALIZED", "CANBE_PERSONALIZED", "MUST_BE_PERSONALIZED", "MUSTBE_PERSONALIZED")
-        ]
-        if chars:
+        pop_id = pop.get("id", "")
+        if pop_id in seen_pop_ids:
+            continue
+        seen_pop_ids.add(pop_id)
+
+        # One entry per priceRow — each row may have different default values
+        rows_with_chars = []
+        for row in (pop.get("productOfferingPriceRow") or []):
+            actions = row.get("action") or (row.get("actionGroup") or {}).get("action") or []
+            chars_by_id: dict = {}
+            for action in actions:
+                for c in (action.get("specCharacteristic") or []):
+                    if (c.get("valueRegulator") or "").upper() in PERSONALIZABLE:
+                        cid = c.get("id", c.get("name", ""))
+                        if cid not in chars_by_id:
+                            chars_by_id[cid] = extract_char(c)
+            if chars_by_id:
+                rows_with_chars.append({
+                    "rowId": row.get("id", ""),
+                    "rowExternalId": row.get("externalId", ""),
+                    "chars": list(chars_by_id.values()),
+                })
+
+        if rows_with_chars:
             result.append({
-                "popId": pop.get("id", ""),
+                "popId": pop_id,
                 "popExternalId": pop.get("externalId", ""),
                 "popName": pop.get("name", ""),
-                "priceRowId": (((pop.get("productOfferingPriceRow") or [{}])[0]).get("id", "")),
-                "chars": chars,
+                "rows": rows_with_chars,
             })
     return result
 
