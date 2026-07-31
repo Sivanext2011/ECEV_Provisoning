@@ -50,8 +50,10 @@ function ProvisionWizard() {
   const [cmDefaults, setCmDefaults] = useState<any>({})
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
   const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: true, sharingProvider: false })
-  const [popPersonalization, setPopPersonalization] = useState<Array<{popId:string;popExternalId:string;popName:string;priceRowId:string;chars:any[]}>>([]) // POP personalizable chars for selected base PO
-  const [popValues, setPopValues] = useState<Record<string, {value:string;unit:string}>>({}) // key: `${popId}_${charExternalId}`
+  const [popPersonalization, setPopPersonalization] = useState<Array<{popId:string;popExternalId:string;popName:string;rows:Array<{rowId:string;rowExternalId:string;chars:any[]}>}>>([]) // POP personalizable chars for selected base PO
+  const [popValues, setPopValues] = useState<Record<string, {value:string;unit:string}>>({}) // key: `${popId}_${rowId}_${charId}`
+  const [popError, setPopError] = useState('')
+  const [popLoading, setPopLoading] = useState(false)
   const [billCycleSpecExtId, setBillCycleSpecExtId] = useState('')
   const [billCycleChangeType, setBillCycleChangeType] = useState('NO_PRORATE')
   const [msisdn, setMsisdn] = useState('')
@@ -197,21 +199,27 @@ function ProvisionWizard() {
                   : [{ specExtId: '', specId: '', value: '' }]
               )
               // Fetch POP personalization from live spec enquiry
-              setPopPersonalization([]); setPopValues({})
-              if (e.target.value) {
-                fetch(`${API}/spec/productOffering/popPersonalization?externalId=${encodeURIComponent(e.target.value)}`)
-                  .then(r => r.ok ? r.json() : [])
+              setPopPersonalization([]); setPopValues({}); setPopError('')
+              const fetchPop = (poExtId: string) => {
+                setPopLoading(true)
+                fetch(`${API}/spec/productOffering/popPersonalization?externalId=${encodeURIComponent(poExtId)}`)
+                  .then(async r => {
+                    if (!r.ok) { const t = await r.text(); throw new Error(`HTTP ${r.status}: ${t.slice(0,200)}`) }
+                    return r.json()
+                  })
                   .then((pops: any[]) => {
                     setPopPersonalization(pops)
-                    // Pre-fill defaults: key = `${popId}_${rowId}_${charId}`
                     const defaults: Record<string, {value:string;unit:string}> = {}
                     for (const pop of pops)
                       for (const row of (pop.rows || []))
                         for (const c of (row.chars || []))
                           defaults[`${pop.popId}_${row.rowId}_${c.id}`] = { value: c.defaultValue || '', unit: c.defaultUnit || (c.units?.[0] || '') }
                     setPopValues(defaults)
-                  }).catch(() => {})
+                    setPopLoading(false)
+                  })
+                  .catch((err: any) => { setPopError(err.message); setPopLoading(false) })
               }
+              if (e.target.value) fetchPop(e.target.value)
             }}>
               <option value="">-- Select --</option>
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
@@ -441,6 +449,12 @@ function ProvisionWizard() {
                   <p style={{ fontSize: 12, color: '#0a7', margin: '8px 0 4px' }}>Base Plan — Optional Characteristics:</p>
                   {poOptChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}
                 </>}
+                {popLoading && <p style={{ fontSize: 12, color: '#888', margin: '8px 0' }}>⏳ Loading POP personalization...</p>}
+                {popError && (
+                  <p style={{ fontSize: 12, color: '#c00', background: '#fff0f0', padding: '6px 8px', borderRadius: 4, margin: '8px 0', wordBreak: 'break-all' }}>
+                    ⚠ POP fetch error: {popError}
+                  </p>
+                )}
                 {popPersonalization.length > 0 && <>
                   <p style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', margin: '10px 0 4px' }}>💰 Product Offering Price — Personalization:</p>
                   {popPersonalization.map((pop: any) => (
