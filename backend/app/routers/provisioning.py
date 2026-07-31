@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pathlib import Path
 import httpx
-from ..services.ericsson_client import ericsson_client, load_config, api_logs, CONFIG_PATH
+from ..services.ericsson_client import ericsson_client, load_config, api_logs, CONFIG_PATH, LOG_FILE
 from ..services.bae_client import rmca_catalog_client
 from ..services.catalog import get_catalog, parse_business_config, reload_catalog
 
@@ -287,14 +287,26 @@ async def update_settings(body: dict):
 
 # === API Logs ===
 @router.get("/logs")
-async def get_api_logs(limit: int = 50, offset: int = 0):
-    logs = list(reversed(api_logs))
-    return logs[offset:offset + limit]
+async def get_api_logs(limit: int = 200, offset: int = 0):
+    if LOG_FILE.exists():
+        lines = LOG_FILE.read_text(encoding="utf-8").splitlines()
+        entries = []
+        for line in reversed(lines):
+            line = line.strip()
+            if line:
+                try:
+                    entries.append(json.loads(line))
+                except Exception:
+                    pass
+        return entries[offset:offset + limit]
+    return list(reversed(api_logs))[offset:offset + limit]
 
 
 @router.delete("/logs/clear")
 async def clear_api_logs():
     api_logs.clear()
+    if LOG_FILE.exists():
+        LOG_FILE.write_text("", encoding="utf-8")
     return {"status": "ok"}
 
 

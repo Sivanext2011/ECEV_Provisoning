@@ -511,6 +511,40 @@ async def spec_product_offering(externalId: str = None):
     q = {"externalId": externalId} if externalId else {}
     return await _call("spec_product_offering", query_params=q)
 
+
+@router.get("/spec/productOffering/popPersonalization")
+async def spec_po_pop_personalization(externalId: str = None):
+    """Return personalizable POP characteristics for a product offering."""
+    q = {"externalId": externalId} if externalId else {}
+    po = await _call("spec_product_offering", query_params=q)
+    # Handle array or single response
+    po_obj = po[0] if isinstance(po, list) else po
+    result = []
+    for pop in (po_obj.get("productOfferingPrice") or []):
+        chars = [
+            {
+                "id": c.get("id", ""),
+                "externalId": c.get("externalId") or c.get("name", ""),
+                "name": c.get("name", ""),
+                "valueType": c.get("valueType", ""),
+                "measure": c.get("measure", ""),
+                "defaultValue": next((v.get("value") for v in (c.get("specCharacteristicValue") or []) if v.get("isDefault")), ""),
+                "defaultUnit": next((v.get("unitOfMeasure") for v in (c.get("specCharacteristicValue") or []) if v.get("isDefault")), ""),
+                "units": list({v["unitOfMeasure"] for v in (c.get("specCharacteristicValue") or []) if v.get("unitOfMeasure")}),
+            }
+            for c in (pop.get("specCharacteristic") or [])
+            if (c.get("valueRegulator") or "").upper() in ("CAN_BE_PERSONALIZED", "CANBE_PERSONALIZED", "MUST_BE_PERSONALIZED", "MUSTBE_PERSONALIZED")
+        ]
+        if chars:
+            result.append({
+                "popId": pop.get("id", ""),
+                "popExternalId": pop.get("externalId", ""),
+                "popName": pop.get("name", ""),
+                "priceRowId": (((pop.get("productOfferingPriceRow") or [{}])[0]).get("id", "")),
+                "chars": chars,
+            })
+    return result
+
 @router.get("/spec/productOfferingPrice")
 async def spec_product_offering_price(externalId: str = None):
     q = {"externalId": externalId} if externalId else {}

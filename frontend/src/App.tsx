@@ -50,6 +50,8 @@ function ProvisionWizard() {
   const [cmDefaults, setCmDefaults] = useState<any>({})
   const [formValues, setFormValues] = useState<any>({ party: {}, customer: {}, contract: {}, billingAccount: {} })
   const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: true, sharingProvider: false })
+  const [popPersonalization, setPopPersonalization] = useState<Array<{popId:string;popExternalId:string;popName:string;priceRowId:string;chars:any[]}>>([]) // POP personalizable chars for selected base PO
+  const [popValues, setPopValues] = useState<Record<string, {value:string;unit:string}>>({}) // key: `${popId}_${charExternalId}`
   const [billCycleSpecExtId, setBillCycleSpecExtId] = useState('')
   const [billCycleChangeType, setBillCycleChangeType] = useState('NO_PRORATE')
   const [msisdn, setMsisdn] = useState('')
@@ -194,6 +196,21 @@ function ProvisionWizard() {
                   ? poRs.map((rs: any) => ({ specExtId: rs.externalId, specId: rs.id, value: '' }))
                   : [{ specExtId: '', specId: '', value: '' }]
               )
+              // Fetch POP personalization from live spec enquiry
+              setPopPersonalization([]); setPopValues({})
+              if (e.target.value) {
+                fetch(`${API}/spec/productOffering/popPersonalization?externalId=${encodeURIComponent(e.target.value)}`)
+                  .then(r => r.ok ? r.json() : [])
+                  .then((pops: any[]) => {
+                    setPopPersonalization(pops)
+                    // Pre-fill defaults
+                    const defaults: Record<string, {value:string;unit:string}> = {}
+                    for (const pop of pops)
+                      for (const c of pop.chars)
+                        defaults[`${pop.popId}_${c.externalId}`] = { value: c.defaultValue || '', unit: c.defaultUnit || (c.units?.[0] || '') }
+                    setPopValues(defaults)
+                  }).catch(() => {})
+              }
             }}>
               <option value="">-- Select --</option>
               {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
@@ -423,6 +440,36 @@ function ProvisionWizard() {
                   <p style={{ fontSize: 12, color: '#0a7', margin: '8px 0 4px' }}>Base Plan — Optional Characteristics:</p>
                   {poOptChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[`_po_${c.externalId || c.id}`] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [`_po_${c.externalId || c.id}`]: v } })} />)}
                 </>}
+                {popPersonalization.length > 0 && <>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', margin: '10px 0 4px' }}>💰 Product Offering Price — Personalization:</p>
+                  {popPersonalization.map(pop => (
+                    <fieldset key={pop.popId} style={{ marginBottom: 8, borderColor: '#bfdbfe' }}>
+                      <legend style={{ fontSize: 11, color: '#1d4ed8' }}>{pop.popName || pop.popExternalId}</legend>
+                      {pop.chars.map((c: any) => {
+                        const key = `${pop.popId}_${c.externalId}`
+                        const val = popValues[key] || { value: '', unit: c.defaultUnit || '' }
+                        return (
+                          <div key={c.externalId} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                            <span style={{ fontSize: 12, flex: 2 }}>{c.name || c.externalId}</span>
+                            <input style={{ flex: 2, fontSize: 12 }} placeholder={c.defaultValue || 'value'}
+                              value={val.value}
+                              onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, value: e.target.value } }))} />
+                            {c.units?.length > 1 ? (
+                              <select style={{ flex: 1, fontSize: 12 }} value={val.unit}
+                                onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))}>
+                                {c.units.map((u: string) => <option key={u} value={u}>{u}</option>)}
+                              </select>
+                            ) : (
+                              <input style={{ flex: 1, fontSize: 12 }} placeholder={c.defaultUnit || 'unit'}
+                                value={val.unit}
+                                onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))} />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </fieldset>
+                  ))}
+                </>}
                 {mustChars.length > 0 && <>
                   <p style={{ fontSize: 12, color: '#c60', margin: '8px 0 4px' }}>Contract — Required Characteristics:</p>
                   {mustChars.map((c: any) => <CharInput key={c.id} char={c} value={formValues.contract[c.externalId || c.id] || ''} onChange={v => setFormValues({ ...formValues, contract: { ...formValues.contract, [c.externalId || c.id]: v } })} />)}
@@ -567,6 +614,32 @@ function ProvisionWizard() {
                   .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
                 if (poCharEntries.length)
                   basePlanProduct.characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
+                // Inject POP personalization as price[].priceRow[].priceAction[].characteristic[]
+                const priceEntries = popPersonalization
+                  .map(pop => {
+                    const priceAction = pop.chars
+                      .map((c: any) => {
+                        const val = popValues[`${pop.popId}_${c.externalId}`]
+                        if (!val?.value?.trim()) return null
+                        return {
+                          characteristic: [{
+                            charSpecExternalId: c.externalId,
+                            value: [{ value: val.value, unitOfMeasure: val.unit || undefined }]
+                          }]
+                        }
+                      })
+                      .filter(Boolean)
+                    if (!priceAction.length) return null
+                    return {
+                      productOfferingPrice: { id: pop.popId, externalId: pop.popExternalId },
+                      priceRow: [{
+                        ...(pop.priceRowId ? { productOfferingPriceRow: { id: pop.priceRowId } } : {}),
+                        priceAction,
+                      }]
+                    }
+                  })
+                  .filter(Boolean)
+                if (priceEntries.length) basePlanProduct.price = priceEntries
                 products.push(basePlanProduct)
               }
               // Add-on products

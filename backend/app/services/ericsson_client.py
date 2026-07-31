@@ -14,6 +14,8 @@ CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", Path(__file__).parent.parent.pa
 
 api_logs: list[dict] = []
 _config_cache: dict | None = None
+
+LOG_FILE = Path(os.environ.get("LOG_PATH", Path(__file__).parent.parent.parent.parent / "logs" / "api.log"))
 _config_mtime: float = 0
 
 
@@ -178,6 +180,12 @@ class EricssonClient:
         api_logs.append(entry)
         if len(api_logs) > 500:
             api_logs.pop(0)
+        try:
+            LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(LOG_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry) + "\n")
+        except Exception:
+            pass
 
     async def request(self, api_key: str, body: dict = None, path_params: dict = None, query_params: dict = None) -> dict:
         await self._ensure_client()
