@@ -71,6 +71,33 @@ async def delete_agreement_by_external_id(partyExternalId: str, agreementExterna
     return await _call("delete_agreement_by_external_id", path_params={"partyExternalId": partyExternalId, "agreementExternalId": agreementExternalId})
 
 
+# === Balance Adjustment (legacy alias) ===
+@router.post("/balance/adjust")
+async def balance_adjust(body: dict):
+    return await _call("billing_account_bucket_adjustment", body=body)
+
+# === Resource ===
+@router.post("/resource/swap")
+async def swap_resource(body: dict):
+    return await _call("swap_logical_resource", body=body)
+
+# === Product ===
+@router.post("/product/replace")
+async def replace_product(body: dict):
+    return await _call("replace_product", body=body)
+
+# === Sharing ===
+@router.get("/sharing/eligible-consumers")
+async def get_eligible_consumers(customerExternalId: str = None):
+    q = {"customerExternalId": customerExternalId} if customerExternalId else {}
+    return await _call("get_eligible_consumers", query_params=q)
+
+# === Recurrence ===
+@router.get("/recurrence")
+async def recurrence_enquiry(msisdn: str = None):
+    q = {"msisdn": msisdn} if msisdn else {}
+    return await _call("recurrence_enquiry", query_params=q)
+
 # === Balance Enquiry (extra) ===
 @router.get("/balance/topupDetails")
 async def get_balance_topup_details(communicationId: str = None, communicationIdType: str = "E.164", customerExternalId: str = None):
@@ -503,19 +530,19 @@ async def spec_price_tax_category(externalId: str = None):
 
 @router.get("/spec/product")
 async def spec_product(externalId: str = None):
-    q = {"externalId": externalId} if externalId else {}
+    q = {"productSpecificationExternalId": externalId} if externalId else {}
     return await _call("spec_product", query_params=q)
 
 @router.get("/spec/productOffering")
 async def spec_product_offering(externalId: str = None):
-    q = {"externalId": externalId} if externalId else {}
+    q = {"productOfferingExternalId": externalId} if externalId else {}
     return await _call("spec_product_offering", query_params=q)
 
 
 @router.get("/spec/productOffering/popPersonalization")
 async def spec_po_pop_personalization(externalId: str = None):
     """Return personalizable POP characteristics for a product offering."""
-    q = {"externalId": externalId} if externalId else {}
+    q = {"productOfferingExternalId": externalId} if externalId else {}
     po = await _call("spec_product_offering", query_params=q)
     # Handle array or single response
     po_obj = po[0] if isinstance(po, list) else po
