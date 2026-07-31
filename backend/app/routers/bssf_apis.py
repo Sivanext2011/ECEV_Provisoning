@@ -541,9 +541,7 @@ async def spec_product_offering(externalId: str = None):
 
 @router.get("/spec/productOffering/popPersonalization")
 async def spec_po_pop_personalization(externalId: str = None):
-    """Return personalizable POP characteristics for a product offering.
-    Chars are nested inside productOfferingPrice[].productOfferingPriceRow[].actionGroup.action[].specCharacteristic[]
-    """
+    """Return personalizable POP characteristics for a product offering."""
     q = {"productOfferingExternalId": externalId} if externalId else {}
     po = await _call("spec_product_offering", query_params=q)
     po_obj = po[0] if isinstance(po, list) else po
@@ -556,8 +554,8 @@ async def spec_po_pop_personalization(externalId: str = None):
         default_unit = next((v.get("unitOfMeasure") for v in vals if v.get("isDefault")), "")
         units = list({v["unitOfMeasure"] for v in vals if v.get("unitOfMeasure")})
         return {
-            "id": c.get("id", ""),            # -> charSpecId in contract
-            "externalId": c.get("externalId") or "",  # -> charSpecExternalId if present
+            "id": c.get("id", ""),
+            "externalId": c.get("externalId") or "",
             "name": c.get("name", ""),
             "valueType": c.get("valueType", ""),
             "measure": c.get("measure", ""),
@@ -574,10 +572,20 @@ async def spec_po_pop_personalization(externalId: str = None):
             continue
         seen_pop_ids.add(pop_id)
 
-        # One entry per priceRow — each row may have different default values
+        price_rows = (
+            pop.get("productOfferingPriceRow")
+            or (pop.get("pricingLogicAlgorithm") or {}).get("productOfferingPriceRow")
+            or []
+        )
         rows_with_chars = []
-        for row in (pop.get("productOfferingPriceRow") or []):
-            actions = row.get("action") or (row.get("actionGroup") or {}).get("action") or []
+        all_chars_by_id: dict = {}
+        first_row_id = ""
+        for row in price_rows:
+            actions = (
+                row.get("action")
+                or (row.get("actionGroup") or {}).get("action")
+                or []
+            )
             chars_by_id: dict = {}
             for action in actions:
                 for c in (action.get("specCharacteristic") or []):
@@ -586,20 +594,50 @@ async def spec_po_pop_personalization(externalId: str = None):
                         if cid not in chars_by_id:
                             chars_by_id[cid] = extract_char(c)
             if chars_by_id:
+                if not first_row_id:
+                    first_row_id = row.get("id", "")
                 rows_with_chars.append({
                     "rowId": row.get("id", ""),
                     "rowExternalId": row.get("externalId", ""),
                     "chars": list(chars_by_id.values()),
                 })
+                for cid, cv in chars_by_id.items():
+                    if cid not in all_chars_by_id:
+                        all_chars_by_id[cid] = cv
 
         if rows_with_chars:
             result.append({
                 "popId": pop_id,
                 "popExternalId": pop.get("externalId", ""),
                 "popName": pop.get("name", ""),
+                # new structure for rebuilt frontend
                 "rows": rows_with_chars,
+                # legacy flat structure for old frontend bundle — use id as externalId fallback
+                "priceRowId": first_row_id,
+                "chars": [{**c, "externalId": c["externalId"] or c["id"]} for c in all_chars_by_id.values()],
             })
     return result
+
+
+@router.get("/spec/productOffering/popPersonalization/debug")
+async def spec_po_pop_personalization_debug(externalId: str = None):
+    """Debug: return raw productOfferingPrice[] from spec enquiry to inspect structure."""
+    q = {"productOfferingExternalId": externalId} if externalId else {}
+    po = await _call("spec_product_offering", query_params=q)
+    po_obj = po[0] if isinstance(po, list) else po
+    pops = po_obj.get("productOfferingPrice") or []
+    return [
+        {
+            "popId": p.get("id"),
+            "popExternalId": p.get("externalId"),
+            "popName": p.get("name"),
+            "keys": list(p.keys()),
+            "priceRowCount": len(p.get("productOfferingPriceRow") or []),
+            "pricingLogicAlgorithmKeys": list((p.get("pricingLogicAlgorithm") or {}).keys()),
+            "firstRowKeys": list((p.get("productOfferingPriceRow") or [{}])[0].keys()) if p.get("productOfferingPriceRow") else [],
+        }
+        for p in pops
+    ]
 
 @router.get("/spec/productOfferingPrice")
 async def spec_product_offering_price(externalId: str = None):
