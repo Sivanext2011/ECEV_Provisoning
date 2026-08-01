@@ -94,8 +94,8 @@ async def get_eligible_consumers(customerExternalId: str = None):
 
 # === Recurrence ===
 @router.get("/recurrence")
-async def recurrence_enquiry(msisdn: str = None, communicationIdType: str = "E.164"):
-    q = {"communicationId": msisdn, "communicationIdType": communicationIdType} if msisdn else {}
+async def recurrence_enquiry(communicationId: str = None, communicationIdType: str = "E.164"):
+    q = {"communicationId": communicationId, "communicationIdType": communicationIdType} if communicationId else {}
     return await _call("recurrence_enquiry", query_params=q)
 
 # === Balance Enquiry (extra) ===
