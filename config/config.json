@@ -182,7 +182,7 @@
     },
     "recurrence_enquiry": {
       "method": "GET",
-      "url": "{{ROOT_BAE}}/bae/bssfRecurrenceEnquiry/v1/recurrenceInformation?communicationIdType=E.164&communicationId={{msisdn}}"
+      "url": "{{ROOT_BAE}}/bae/bssfRecurrenceEnquiry/v1/recurrenceInformation"
     },
     "create_recurrence_job": {
       "method": "POST",
