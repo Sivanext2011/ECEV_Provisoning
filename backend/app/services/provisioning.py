@@ -215,6 +215,12 @@ async def create_contract(
             "baRefForBillCycleAlignedRecurrence": {"externalId": ba_ext_id},
             "billingAccountReference": {"externalId": ba_ext_id},
         }
+        prod_spec_ext = defaults.get("basePlanProductSpecExternalId", "").strip()
+        prod_spec_id = defaults.get("basePlanProductSpecId", "").strip()
+        if prod_spec_ext:
+            base_product["productSpecificationExternalId"] = prod_spec_ext
+        elif prod_spec_id:
+            base_product["productSpecificationId"] = prod_spec_id
         products.append(base_product)
 
     if products:

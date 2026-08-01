@@ -588,11 +588,13 @@ async def spec_po_pop_personalization(externalId: str = None):
             )
             chars_by_id: dict = {}
             for action in actions:
+                action_id = action.get("id", "")
+                action_ext_id = action.get("externalId", "")
                 for c in (action.get("specCharacteristic") or []):
                     if (c.get("valueRegulator") or "").upper() in PERSONALIZABLE:
                         cid = c.get("id", c.get("name", ""))
                         if cid not in chars_by_id:
-                            chars_by_id[cid] = extract_char(c)
+                            chars_by_id[cid] = {**extract_char(c), "actionId": action_id, "actionExternalId": action_ext_id}
             if chars_by_id:
                 if not first_row_id:
                     first_row_id = row.get("id", "")

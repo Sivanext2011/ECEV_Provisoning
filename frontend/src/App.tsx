@@ -532,6 +532,7 @@ function ProvisionWizard() {
               const customerExtId = `extID-customer-${msisdn}`
               const baExtId = `extID_BA-${msisdn}`
               const contractExtId = `extID-contract-${msisdn}`
+              const nowDt = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z')
 
               const pb: any = {
                 externalId: partyExtId,
@@ -564,7 +565,6 @@ function ProvisionWizard() {
               const partyChars = Object.entries(formValues.party).filter(([, v]) => v)
               if (partyChars.length) pb.characteristic = partyChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
 
-              const nowDt = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z')
               const buildCma = () => selectedCmSpecs
                 .filter(e => e.specExtId)
                 .map(e => ({
@@ -646,7 +646,10 @@ function ProvisionWizard() {
                         if (val.unit) char.value[0].unitOfMeasure = val.unit
                         if (c.externalId) char.charSpecExternalId = c.externalId
                         else char.charSpecId = c.id
-                        return { characteristic: [char] }
+                        const action: any = { characteristic: [char] }
+                        if (c.actionId) action.action = { id: c.actionId }
+                        else if (c.actionExternalId) action.action = { externalId: c.actionExternalId }
+                        return action
                       }).filter(Boolean)
                       if (!priceAction.length) return null
                       return {

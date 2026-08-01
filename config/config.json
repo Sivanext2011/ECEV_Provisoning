@@ -826,6 +826,8 @@
     "technicalProductOffering": "",
     "basePlanProductOfferingExternalId": "PO_HOTSPOT_CHT",
     "basePlanProductExternalId": "",
+    "basePlanProductSpecExternalId": "PS_HOTSPOT_ALLOWANCE_CHT",
+    "basePlanProductSpecId": "",
     "paymentContext": "Postpaid",
     "homeTimeZone": "Europe/Stockholm",
     "msisdnResourceSpecExternalId": "",
