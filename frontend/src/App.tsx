@@ -647,8 +647,10 @@ function ProvisionWizard() {
                         if (c.externalId) char.charSpecExternalId = c.externalId
                         else char.charSpecId = c.id
                         const action: any = { characteristic: [char] }
-                        if (c.actionId) action.action = { id: c.actionId }
-                        else if (c.actionExternalId) action.action = { externalId: c.actionExternalId }
+                        const aid = c.actionId || ''
+                        const aeid = c.actionExternalId || ''
+                        if (aid) action.action = { id: aid }
+                        else if (aeid) action.action = { externalId: aeid }
                         return action
                       }).filter(Boolean)
                       if (!priceAction.length) return null
