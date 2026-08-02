@@ -69,11 +69,9 @@ async def provision_subscriber(body: dict):
 
 # === Party ===
 @router.post("/party")
-async def create_party(req: IndividualCreate):
+async def create_party(body: dict):
     try:
-        return await prov.create_party(req.givenName, req.familyName, req.msisdn, req.email)
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+        return await _safe_call("create_party", body=body)
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
@@ -96,11 +94,9 @@ async def delete_party(identifier: str, by: str = "externalId"):
 
 # === Customer ===
 @router.post("/customer")
-async def create_customer(req: CustomerCreate):
+async def create_customer(body: dict):
     try:
-        return await prov.create_customer(req.partyExternalId, req.msisdn, req.billCycleSpecExternalId)
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+        return await _safe_call("create_customer", body=body)
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
@@ -125,11 +121,9 @@ async def delete_customer(identifier: str, by: str = "externalId"):
 
 # === Contract ===
 @router.post("/contract")
-async def create_contract(req: ContractCreate):
+async def create_contract(body: dict):
     try:
-        return await prov.create_contract(req.customerExternalId, req.msisdn, req.productOfferingExternalId, req.billingAccountExternalId, req.imsi)
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=e.response.text[:500])
+        return await _safe_call("create_contract", body=body)
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
