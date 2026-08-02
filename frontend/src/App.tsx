@@ -52,6 +52,8 @@ function ProvisionWizard() {
   const [productOptions, setProductOptions] = useState({ baRef: true, baRefRecurrence: true, sharingProvider: false })
   const [popPersonalization, setPopPersonalization] = useState<Array<{popId:string;popExternalId:string;popName:string;rows:Array<{rowId:string;rowExternalId:string;chars:any[]}>}>>([]) // POP personalizable chars for selected base PO
   const [popValues, setPopValues] = useState<Record<string, {value:string;unit:string}>>({}) // key: `${popId}_${rowId}_${charId}`
+  const [popEnabled, setPopEnabled] = useState(false) // master toggle
+  const [popSelected, setPopSelected] = useState<Record<string, boolean>>({}) // per-POP enable
   const [popError, setPopError] = useState('')
   const [popLoading, setPopLoading] = useState(false)
   const [billCycleSpecExtId, setBillCycleSpecExtId] = useState('')
@@ -216,7 +218,7 @@ function ProvisionWizard() {
                   : [{ specExtId: '', specId: '', value: '' }]
               )
               // Fetch POP personalization from live spec enquiry
-              setPopPersonalization([]); setPopValues({}); setPopError('')
+              setPopPersonalization([]); setPopValues({}); setPopError(''); setPopEnabled(false); setPopSelected({})
               const fetchPop = (poExtId: string) => {
                 setPopLoading(true)
                 fetch(`${API}/spec/productOffering/popPersonalization?externalId=${encodeURIComponent(poExtId)}`)
@@ -473,39 +475,51 @@ function ProvisionWizard() {
                   </p>
                 )}
                 {popPersonalization.length > 0 && <>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', margin: '10px 0 4px' }}>💰 Product Offering Price — Personalization:</p>
-                  {popPersonalization.map((pop: any) => (
-                    <fieldset key={pop.popId} style={{ marginBottom: 8, borderColor: '#bfdbfe' }}>
-                      <legend style={{ fontSize: 11, color: '#1d4ed8' }}>{pop.popName || pop.popExternalId}</legend>
-                      {(pop.rows || []).map((row: any) => (
-                        <div key={row.rowId} style={{ marginBottom: 6 }}>
-                          {pop.rows.length > 1 && <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 2 }}>Row: {row.rowExternalId || row.rowId}</div>}
-                          {(row.chars || []).map((c: any) => {
-                            const key = `${pop.popId}_${row.rowId}_${c.id}`
-                            const val = popValues[key] || { value: '', unit: c.defaultUnit || '' }
-                            return (
-                              <div key={c.id} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-                                <span style={{ fontSize: 12, flex: 2 }}>{c.name}</span>
-                                <input style={{ flex: 2, fontSize: 12 }} placeholder={c.defaultValue || 'value'}
-                                  value={val.value}
-                                  onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, value: e.target.value } }))} />
-                                {c.units?.length > 1 ? (
-                                  <select style={{ flex: 1, fontSize: 12 }} value={val.unit}
-                                    onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))}>
-                                    {c.units.map((u: string) => <option key={u} value={u}>{u}</option>)}
-                                  </select>
-                                ) : (
-                                  <input style={{ flex: 1, fontSize: 12 }} placeholder={c.defaultUnit || 'unit'}
-                                    value={val.unit}
-                                    onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))} />
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ))}
-                    </fieldset>
-                  ))}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, margin: '10px 0 4px', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={popEnabled} onChange={e => setPopEnabled(e.target.checked)} />
+                    Personalize POP prices ({popPersonalization.length} available)
+                  </label>
+                  {popEnabled && <>
+                    {popPersonalization.map((pop: any) => (
+                      <fieldset key={pop.popId} style={{ marginBottom: 8, borderColor: popSelected[pop.popId] ? '#bfdbfe' : '#e5e7eb' }}>
+                        <legend style={{ fontSize: 11 }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', color: popSelected[pop.popId] ? '#1d4ed8' : '#555' }}>
+                            <input type="checkbox"
+                              checked={!!popSelected[pop.popId]}
+                              onChange={e => setPopSelected(prev => ({ ...prev, [pop.popId]: e.target.checked }))} />
+                            {pop.popName || pop.popExternalId}
+                          </label>
+                        </legend>
+                        {popSelected[pop.popId] && (pop.rows || []).map((row: any) => (
+                          <div key={row.rowId} style={{ marginBottom: 6 }}>
+                            {pop.rows.length > 1 && <div style={{ fontSize: 10, color: '#6b7280', marginBottom: 2 }}>Row: {row.rowExternalId || row.rowId}</div>}
+                            {(row.chars || []).map((c: any) => {
+                              const key = `${pop.popId}_${row.rowId}_${c.id}`
+                              const val = popValues[key] || { value: '', unit: c.defaultUnit || '' }
+                              return (
+                                <div key={c.id} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                                  <span style={{ fontSize: 12, flex: 2 }}>{c.name}</span>
+                                  <input style={{ flex: 2, fontSize: 12 }} placeholder={c.defaultValue || 'value'}
+                                    value={val.value}
+                                    onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, value: e.target.value } }))} />
+                                  {c.units?.length > 1 ? (
+                                    <select style={{ flex: 1, fontSize: 12 }} value={val.unit}
+                                      onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))}>
+                                      {c.units.map((u: string) => <option key={u} value={u}>{u}</option>)}
+                                    </select>
+                                  ) : (
+                                    <input style={{ flex: 1, fontSize: 12 }} placeholder={c.defaultUnit || 'unit'}
+                                      value={val.unit}
+                                      onChange={e => setPopValues(prev => ({ ...prev, [key]: { ...val, unit: e.target.value } }))} />
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ))}
+                      </fieldset>
+                    ))}
+                  </>}
                 </>}
                 {mustChars.length > 0 && <>
                   <p style={{ fontSize: 12, color: '#c60', margin: '8px 0 4px' }}>Contract — Required Characteristics:</p>
@@ -651,9 +665,9 @@ function ProvisionWizard() {
                   .filter(([k, v]) => k.startsWith('_po_') && v && (v as string).trim())
                 if (poCharEntries.length)
                   basePlanProduct.characteristic = poCharEntries.map(([k, v]) => ({ charSpecExternalId: k.replace('_po_', ''), value: [{ value: v }] }))
-                // Inject POP personalization as price[].priceRow[].priceAction[].characteristic[]
-                // Schema: price[].productOfferingPrice{id,externalId}, priceRow[].productOfferingPriceRow{id}, priceAction[].characteristic[].charSpecId + value[]{value,unitOfMeasure}
-                const priceEntries = popPersonalization
+                // Inject POP personalization — only if master toggle on and POP is selected
+                const priceEntries = (!popEnabled ? [] : popPersonalization)
+                  .filter((pop: any) => popSelected[pop.popId])
                   .map((pop: any) => {
                     const priceRows = (pop.rows || []).map((row: any) => {
                       const priceAction = (row.chars || []).map((c: any) => {
