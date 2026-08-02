@@ -623,43 +623,28 @@ async def spec_po_pop_personalization(externalId: str = None):
 
 @router.get("/spec/productOffering/popPersonalization/debug")
 async def spec_po_pop_personalization_debug(externalId: str = None):
-    """Debug: return raw productOfferingPrice[] from spec enquiry to inspect structure."""
+    """Debug: dump raw actionGroup/action objects to find correct id fields."""
     q = {"productOfferingExternalId": externalId} if externalId else {}
     po = await _call("spec_product_offering", query_params=q)
     po_obj = po[0] if isinstance(po, list) else po
     pops = po_obj.get("productOfferingPrice") or []
     result = []
     for p in pops:
-        rows = (
-            p.get("productOfferingPriceRow")
-            or (p.get("pricingLogicAlgorithm") or {}).get("productOfferingPriceRow")
-            or []
-        )
+        rows = p.get("productOfferingPriceRow") or (p.get("pricingLogicAlgorithm") or {}).get("productOfferingPriceRow") or []
         row_debug = []
         for row in rows:
-            actions = row.get("action") or (row.get("actionGroup") or {}).get("action") or []
+            action_group = row.get("actionGroup") or {}
+            actions_raw = row.get("action") or action_group.get("action") or []
             row_debug.append({
                 "rowId": row.get("id"),
-                "rowExternalId": row.get("externalId"),
                 "rowKeys": list(row.keys()),
-                "actions": [{
-                    "actionId": a.get("id"),
-                    "actionExternalId": a.get("externalId"),
-                    "actionRefId": (a.get("actionRef") or {}).get("id"),
-                    "actionRefExtId": (a.get("actionRef") or {}).get("externalId"),
-                    "actionKeys": list(a.keys()),
-                    "specCharCount": len(a.get("specCharacteristic") or []),
-                    "specChars": [{
-                        "id": c.get("id"), "externalId": c.get("externalId"),
-                        "name": c.get("name"), "valueRegulator": c.get("valueRegulator")
-                    } for c in (a.get("specCharacteristic") or [])]
-                } for a in actions]
+                "actionGroupKeys": list(action_group.keys()),
+                "actions": [dict(a) for a in actions_raw],  # full raw action objects
             })
         result.append({
             "popId": p.get("id"),
             "popExternalId": p.get("externalId"),
             "popName": p.get("name"),
-            "keys": list(p.keys()),
             "rows": row_debug,
         })
     return result
