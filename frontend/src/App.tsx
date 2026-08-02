@@ -125,6 +125,7 @@ function ProvisionWizard() {
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
     try {
+      const errMsg = (d: any) => typeof d.detail === 'string' ? d.detail : JSON.stringify(d.detail || d)
       if (provisionMode === 'all') {
         const payload = {
           partyBody: JSON.parse(partyJson),
@@ -133,19 +134,19 @@ function ProvisionWizard() {
           customerExternalId: JSON.parse(customerJson).externalId,
         }
         const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!r.ok) throw new Error((await r.json()).detail)
+        if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       } else if (provisionMode === 'party') {
         const r = await fetch(`${API}/party`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: partyJson })
-        if (!r.ok) throw new Error((await r.json()).detail)
+        if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       } else if (provisionMode === 'customer') {
         const r = await fetch(`${API}/customer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: customerJson })
-        if (!r.ok) throw new Error((await r.json()).detail)
+        if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       } else if (provisionMode === 'contract') {
         const r = await fetch(`${API}/contract`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: contractJson })
-        if (!r.ok) throw new Error((await r.json()).detail)
+        if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       }
     } catch (e: any) { setError(e.message) }
