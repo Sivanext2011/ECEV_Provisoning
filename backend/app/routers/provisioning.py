@@ -121,9 +121,11 @@ async def delete_customer(identifier: str, by: str = "externalId"):
 
 # === Contract ===
 @router.post("/contract")
-async def create_contract(body: dict):
+async def create_contract(body: dict, customerExternalId: str = None):
     try:
-        return await _safe_call("create_contract", body=body)
+        # customerExternalId is required as path param in the URL template
+        cust_ext_id = customerExternalId or body.get("customerExternalId") or ""
+        return await _safe_call("create_contract", path_params={"customerExternalId": cust_ext_id}, body=body)
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 

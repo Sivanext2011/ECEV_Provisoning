@@ -145,7 +145,8 @@ function ProvisionWizard() {
         if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       } else if (provisionMode === 'contract') {
-        const r = await fetch(`${API}/contract`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: contractJson })
+        const custExtId = JSON.parse(customerJson).externalId || ''
+        const r = await fetch(`${API}/contract?customerExternalId=${encodeURIComponent(custExtId)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: contractJson })
         if (!r.ok) throw new Error(errMsg(await r.json()))
         setResult(await r.json())
       }
