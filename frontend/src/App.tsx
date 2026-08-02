@@ -63,6 +63,7 @@ function ProvisionWizard() {
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [provisionMode, setProvisionMode] = useState<'all' | 'party' | 'customer' | 'contract'>('all')
 
   React.useEffect(() => {
     fetch(`${API}/specs`).then(r => r.ok ? r.json() : null).then(setSpecs).catch(() => {})
@@ -124,15 +125,29 @@ function ProvisionWizard() {
   const submit = async () => {
     setLoading(true); setError(''); setResult(null)
     try {
-      const payload = {
-        partyBody: JSON.parse(partyJson),
-        customerBody: JSON.parse(customerJson),
-        contractBody: JSON.parse(contractJson),
-        customerExternalId: JSON.parse(customerJson).externalId,
+      if (provisionMode === 'all') {
+        const payload = {
+          partyBody: JSON.parse(partyJson),
+          customerBody: JSON.parse(customerJson),
+          contractBody: JSON.parse(contractJson),
+          customerExternalId: JSON.parse(customerJson).externalId,
+        }
+        const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (!r.ok) throw new Error((await r.json()).detail)
+        setResult(await r.json())
+      } else if (provisionMode === 'party') {
+        const r = await fetch(`${API}/party`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: partyJson })
+        if (!r.ok) throw new Error((await r.json()).detail)
+        setResult(await r.json())
+      } else if (provisionMode === 'customer') {
+        const r = await fetch(`${API}/customer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: customerJson })
+        if (!r.ok) throw new Error((await r.json()).detail)
+        setResult(await r.json())
+      } else if (provisionMode === 'contract') {
+        const r = await fetch(`${API}/contract`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: contractJson })
+        if (!r.ok) throw new Error((await r.json()).detail)
+        setResult(await r.json())
       }
-      const r = await fetch(`${API}/subscribers/provision`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      if (!r.ok) throw new Error((await r.json()).detail)
-      setResult(await r.json())
     } catch (e: any) { setError(e.message) }
     setLoading(false)
   }
@@ -741,7 +756,15 @@ function ProvisionWizard() {
         <div style={{ display: 'grid', gap: 12, maxWidth: 700 }}>
           <h3 style={{ margin: 0 }}>Step 3: Review & Edit JSON</h3>
           <p style={{ fontSize: 12, color: '#555', margin: 0 }}>Edit the request bodies before sending. Add Technical Product, sharingProvider, etc. as needed.</p>
-
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', padding: '8px 10px', background: '#f0f4ff', border: '1px solid #c7d2fe', borderRadius: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 600 }}>Send:</span>
+            {(['all', 'party', 'customer', 'contract'] as const).map(m => (
+              <label key={m} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <input type="radio" name="provisionMode" value={m} checked={provisionMode === m} onChange={() => setProvisionMode(m)} />
+                {m === 'all' ? 'All (Party + Customer + Contract)' : m.charAt(0).toUpperCase() + m.slice(1) + ' only'}
+              </label>
+            ))}
+          </div>
 
 
           <fieldset>
@@ -762,7 +785,7 @@ function ProvisionWizard() {
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => setStep(1)}>← Back</button>
             <button disabled={loading} onClick={submit}>
-              {loading ? 'Provisioning...' : 'Provision'}
+              {loading ? 'Provisioning...' : provisionMode === 'all' ? 'Provision All' : `Send ${provisionMode.charAt(0).toUpperCase() + provisionMode.slice(1)}`}
             </button>
           </div>
         </div>
