@@ -39,7 +39,7 @@ function ProvisionWizard() {
   const [selectedBASpec, setSelectedBASpec] = useState('')
   const [selectedContractSpec, setSelectedContractSpec] = useState('')
   const [selectedPO, setSelectedPO] = useState('')
-  const [additionalPOs, setAdditionalPOs] = useState<Array<{ poExtId: string; formVals: any }>>([{ poExtId: '', formVals: {} }])
+  const [additionalPOs, setAdditionalPOs] = useState<Array<{ poExtId: string; formVals: any; baRef: boolean; baRefRecurrence: boolean }>>([{ poExtId: '', formVals: {}, baRef: true, baRefRecurrence: true }])
   const [selectedCommIdSpec, setSelectedCommIdSpec] = useState('')
   const [selectedResources, setSelectedResources] = useState<Array<{ specExtId: string; specId?: string; value: string }>>([])
   const [selectedCmSpecs, setSelectedCmSpecs] = useState<Array<{ specExtId: string; charVals: Record<string, string>; externalId: string }>>([{ specExtId: '', charVals: {}, externalId: '' }])
@@ -247,19 +247,33 @@ function ProvisionWizard() {
           <label style={{ fontSize: 12, fontWeight: 'bold', marginTop: 4 }}>Add-On Product Offerings
           </label>
           {additionalPOs.map((entry, idx) => (
-            <div key={idx} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <select style={{ flex: 1 }} value={entry.poExtId} onChange={e => {
-                const updated = [...additionalPOs]
-                updated[idx] = { ...updated[idx], poExtId: e.target.value, formVals: {} }
-                setAdditionalPOs(updated)
-              }}>
-                <option value="">-- None --</option>
-                {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
-              </select>
-              {additionalPOs.length > 1 && <button type="button" onClick={() => setAdditionalPOs(additionalPOs.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
+            <div key={idx} style={{ border: '1px solid #e5e7eb', borderRadius: 4, padding: '6px 8px', marginBottom: 4 }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                <select style={{ flex: 1 }} value={entry.poExtId} onChange={e => {
+                  const updated = [...additionalPOs]
+                  updated[idx] = { ...updated[idx], poExtId: e.target.value, formVals: {} }
+                  setAdditionalPOs(updated)
+                }}>
+                  <option value="">-- None --</option>
+                  {poList.map((p: any) => <option key={p.id} value={p.externalId}>{p.name} ({p.externalId})</option>)}
+                </select>
+                {additionalPOs.length > 1 && <button type="button" onClick={() => setAdditionalPOs(additionalPOs.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
+              </div>
+              {entry.poExtId && (
+                <div style={{ display: 'flex', gap: 10, paddingLeft: 4 }}>
+                  <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <input type="checkbox" checked={entry.baRef} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRef:e.target.checked}; setAdditionalPOs(u) }} />
+                    billingAccountRef
+                  </label>
+                  <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <input type="checkbox" checked={entry.baRefRecurrence} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRefRecurrence:e.target.checked}; setAdditionalPOs(u) }} />
+                    baRefRecurrence
+                  </label>
+                </div>
+              )}
             </div>
           ))}
-          <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setAdditionalPOs([...additionalPOs, { poExtId: '', formVals: {} }])}>+ Add Product Offering</button>
+          <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setAdditionalPOs([...additionalPOs, { poExtId: '', formVals: {}, baRef: true, baRefRecurrence: true }])}>+ Add Product Offering</button>
           <label style={{ fontSize: 12, fontWeight: 'bold', marginTop: 4 }}>Contact Mediums</label>
           {selectedCmSpecs.map((entry, idx) => {
             const spec = cmSpecs.find((s: any) => s.externalId === entry.specExtId)
@@ -707,9 +721,9 @@ function ProvisionWizard() {
                   externalId: `${entry.poExtId}-${msisdn}`,
                   name: entry.poExtId,
                   status: [{ status: 'ProductCreated' }],
-                  billingAccountReference: { externalId: baExtId },
-                  baRefForBillCycleAlignedRecurrence: { externalId: baExtId },
                 }
+                if (entry.baRef) addOn.billingAccountReference = { externalId: baExtId }
+                if (entry.baRefRecurrence) addOn.baRefForBillCycleAlignedRecurrence = { externalId: baExtId }
                 const addOnChars = Object.entries(entry.formVals).filter(([, v]) => (v as string)?.trim())
                 if (addOnChars.length)
                   addOn.characteristic = addOnChars.map(([k, v]) => ({ charSpecExternalId: k, value: [{ value: v }] }))
