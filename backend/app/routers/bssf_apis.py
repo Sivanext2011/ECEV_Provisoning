@@ -588,8 +588,8 @@ async def spec_po_pop_personalization(externalId: str = None):
             )
             chars_by_id: dict = {}
             for action in actions:
-                action_id = action.get("id", "")
-                action_ext_id = action.get("externalId", "")
+                action_id = action.get("id") or action.get("actionRef", {}).get("id") or ""
+                action_ext_id = action.get("externalId") or action.get("actionRef", {}).get("externalId") or ""
                 for c in (action.get("specCharacteristic") or []):
                     if (c.get("valueRegulator") or "").upper() in PERSONALIZABLE:
                         cid = c.get("id", c.get("name", ""))
@@ -628,18 +628,41 @@ async def spec_po_pop_personalization_debug(externalId: str = None):
     po = await _call("spec_product_offering", query_params=q)
     po_obj = po[0] if isinstance(po, list) else po
     pops = po_obj.get("productOfferingPrice") or []
-    return [
-        {
+    result = []
+    for p in pops:
+        rows = (
+            p.get("productOfferingPriceRow")
+            or (p.get("pricingLogicAlgorithm") or {}).get("productOfferingPriceRow")
+            or []
+        )
+        row_debug = []
+        for row in rows:
+            actions = row.get("action") or (row.get("actionGroup") or {}).get("action") or []
+            row_debug.append({
+                "rowId": row.get("id"),
+                "rowExternalId": row.get("externalId"),
+                "rowKeys": list(row.keys()),
+                "actions": [{
+                    "actionId": a.get("id"),
+                    "actionExternalId": a.get("externalId"),
+                    "actionRefId": (a.get("actionRef") or {}).get("id"),
+                    "actionRefExtId": (a.get("actionRef") or {}).get("externalId"),
+                    "actionKeys": list(a.keys()),
+                    "specCharCount": len(a.get("specCharacteristic") or []),
+                    "specChars": [{
+                        "id": c.get("id"), "externalId": c.get("externalId"),
+                        "name": c.get("name"), "valueRegulator": c.get("valueRegulator")
+                    } for c in (a.get("specCharacteristic") or [])]
+                } for a in actions]
+            })
+        result.append({
             "popId": p.get("id"),
             "popExternalId": p.get("externalId"),
             "popName": p.get("name"),
             "keys": list(p.keys()),
-            "priceRowCount": len(p.get("productOfferingPriceRow") or []),
-            "pricingLogicAlgorithmKeys": list((p.get("pricingLogicAlgorithm") or {}).keys()),
-            "firstRowKeys": list((p.get("productOfferingPriceRow") or [{}])[0].keys()) if p.get("productOfferingPriceRow") else [],
-        }
-        for p in pops
-    ]
+            "rows": row_debug,
+        })
+    return result
 
 @router.get("/spec/productOfferingPrice")
 async def spec_product_offering_price(externalId: str = None):
