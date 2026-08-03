@@ -259,18 +259,7 @@ function ProvisionWizard() {
                 </select>
                 {additionalPOs.length > 1 && <button type="button" onClick={() => setAdditionalPOs(additionalPOs.filter((_, i) => i !== idx))} style={{ fontSize: 11 }}>✕</button>}
               </div>
-              {entry.poExtId && (
-                <div style={{ display: 'flex', gap: 10, paddingLeft: 4 }}>
-                  <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <input type="checkbox" checked={entry.baRef} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRef:e.target.checked}; setAdditionalPOs(u) }} />
-                    billingAccountRef
-                  </label>
-                  <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <input type="checkbox" checked={entry.baRefRecurrence} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRefRecurrence:e.target.checked}; setAdditionalPOs(u) }} />
-                    baRefRecurrence
-                  </label>
-                </div>
-              )}
+
             </div>
           ))}
           <button type="button" style={{ fontSize: 11, width: 'fit-content' }} onClick={() => setAdditionalPOs([...additionalPOs, { poExtId: '', formVals: {}, baRef: true, baRefRecurrence: true }])}>+ Add Product Offering</button>
@@ -547,9 +536,19 @@ function ProvisionWizard() {
                   const addPo = poList.find((p: any) => p.externalId === entry.poExtId)
                   const addMust = addPo ? getMustChars(addPo.characteristics || []) : []
                   const addOpt = addPo ? getOptionalChars(addPo.characteristics || []) : []
-                  return (addMust.length > 0 || addOpt.length > 0) ? (
+                  return (
                     <fieldset key={idx} style={{ marginTop: 8 }}>
                       <legend style={{ fontSize: 12 }}>Add-On: {entry.poExtId}</legend>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
+                        <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <input type="checkbox" checked={entry.baRef} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRef:e.target.checked}; setAdditionalPOs(u) }} />
+                          billingAccountRef
+                        </label>
+                        <label style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <input type="checkbox" checked={entry.baRefRecurrence} onChange={e => { const u=[...additionalPOs]; u[idx]={...u[idx],baRefRecurrence:e.target.checked}; setAdditionalPOs(u) }} />
+                          baRefRecurrence
+                        </label>
+                      </div>
                       {addMust.length > 0 && <>
                         <p style={{ fontSize: 11, color: '#c60', margin: '4px 0' }}>Required:</p>
                         {addMust.map((c: any) => <CharInput key={c.id} char={c}
@@ -563,7 +562,7 @@ function ProvisionWizard() {
                           onChange={v => { const u = [...additionalPOs]; u[idx] = { ...u[idx], formVals: { ...u[idx].formVals, [c.externalId || c.id]: v } }; setAdditionalPOs(u) }} />)}
                       </>}
                     </fieldset>
-                  ) : null
+                  )
                 })}
               </fieldset>
             )
